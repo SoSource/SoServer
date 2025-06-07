@@ -1432,7 +1432,7 @@ def receive_user_login_view(request):
                                 err_code = 11
                                 user.assess_super_status()
                                 prnt('user.is_superuser',user.is_superuser)
-                                nodeData = None
+                                # nodeData = None
                                 try:
                                     prnt('trynode1')
                                     # nodeData = json.loads(received_data.get('nodeData'))
