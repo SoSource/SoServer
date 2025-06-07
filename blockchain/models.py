@@ -625,12 +625,20 @@ class DataPacket(models.Model):
         to_all = []
         save_self = False
         obj_ids = []
+        prnt('exclude:',exclude)
+        prnt('all:',all)
         if isinstance(obj, models.Model):
+            prnt('obj is model', obj)
+            prnt("get_model_prefix('Validator')",get_model_prefix('Validator'))
             if not obj.id.startswith(tuple(exclude)):
+                prnt('c1')
                 if obj.id.startswith(tuple(all)) and self.chainId != 'All':
+                    prnt('c2')
                     send_to_all(obj)
                 elif obj.id.startswith(get_model_prefix('Validator')):
+                    prnt('c3')
                     if any(d.startswith(tuple(all)) for d in obj.data):
+                        prnt('c4')
                         send_to_all(obj)
                 # dataPacket = DataPacket.objects.filter(data__has_key=obj.id).first()
                 # if dataPacket:

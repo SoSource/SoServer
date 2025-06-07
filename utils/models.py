@@ -1531,7 +1531,7 @@ def get_model_fields(obj=None):
 _appInfo = None
 
 def get_app_info(rerun=False):
-    prnt('get_app_info')
+    # prnt('get_app_info')
     global _appInfo
     if _appInfo is None or rerun:
         # prnt('running 1')
