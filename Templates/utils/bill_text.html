@@ -1,0 +1,63 @@
+{% load static %}
+
+
+<div id='detailExtension'>
+    {% if isMobile %}
+    <div>
+        <div class='postContext' style="text-align: center;" onclick='mobileSwitch("search")'>Table of Contents</div>
+
+    </div>
+    <div class='bottomDivider'></div>
+    {% endif %}
+    <div class='billText'>
+        {% if bill.modelVersion >= 2 %}
+            {% if bill.BillText_obj %}
+                {% with text=bill.BillText_obj.data|get_item:'TextHtml' %}
+                    {% if not text or text == '{}' %}
+                        <div style='margin:auto;'>Text not available.</div>
+                        <div></div>
+                    {% else %}
+                        {{ text|safe }}
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                <div style='margin:auto;'>Text not available.</div>
+                <div></div>
+            {% endif %}
+        {% else %}
+            {% with text=billUpdate.extra|get_item:'TextHtml' %}
+                {% if not text or text == '{}' %}
+                    <div style='margin:auto;'>Text not available.</div>
+                    <div></div>
+                {% else %}
+                    {{ text|safe }}
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    </div>
+    
+    {% comment %}
+    {% with billV=updatedVersion.BillVersion_obj %}
+    {% if billV.Version %}
+    {% if reading and reading == 'Royal_Assent' or view and view == 'LatestReading' and b.bill.royal_assent_html %}
+    <div class='billText'>
+        {{ b.bill.royal_assent_html |safe }}
+    </div>
+    {% elif reading and reading == 'Third_Reading' or view and view == 'LatestReading' and b.bill.third_reading_html %}
+    <div class='billText'>
+        {{ b.bill.third_reading_html |safe }}
+    </div>
+    {% elif reading and reading == 'Second_Reading' or view and view == 'LatestReading' and b.bill.second_reading_html %}
+    <div class='billText'>
+        {{ b.bill.second_reading_html |safe }}
+    </div>
+    {% elif reading and reading == 'First_Reading' or view and view == 'LatestReading' and b.bill.first_reading_html %}
+    <div class='billText'>
+        {{ b.bill.first_reading_html |safe }}
+    </div>
+    {% else %}
+    <div class='card'><p style='margin:auto;margin-top:20px;position: relative;'>Bill text not yet available</p></div>
+    {% endif %}
+    {% endwith %}
+    {% endcomment %}
+</div>

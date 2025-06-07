@@ -1,0 +1,30 @@
+{% comment %}
+{% if feed_list.has_next %}
+
+<div class='pageDivider'>
+    <ul>
+    <li><a href='?sort={{ sort }}&page={{ feed_list.next_page_number }}'>Page {{ feed_list.next_page_number }}</a></li>
+        <li><a href='/'>of {{ feed_list.paginator.num_pages }}</a></li>
+    </ul>
+</div>
+
+{% elif feed_list.paginator.num_pages %}
+
+
+<div class='pageDivider'>
+    <ul>
+    <li><a href='?sort={{ sort }}&page={{ feed_list.num_pages }}'>End</a></li>
+        <li><a href='/'>of {{ feed_list.paginator.num_pages }} {% if feed_list.paginator.num_pages > 1 %}Pages{% else %}Page{% endif %}</a></li>
+    </ul>
+</div>
+
+{% endif %}
+{% endcomment %}
+
+
+
+<div class="pagination">
+    {% include 'utils/paginator_links.html' %}
+</div>
+<div class='bottomDivider'></div>
+

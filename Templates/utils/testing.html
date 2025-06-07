@@ -1,0 +1,640 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/dchest/scrypt-async-js@1.3.0/scrypt-async.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script> -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: black;
+        color: white;
+    };
+    </style>
+</head>
+<body>
+
+  <h2>scrypt Performance Test</h2>
+  <!-- <button onclick="testScrypt()">Run Test</button>
+  <pre id="output"></pre> -->
+
+    <!-- <script>
+        const password = "jtVE5u8bT&s#";
+        const salt = "fj8D3h75Hnbe8u";
+
+        const testLogNs = [14,18];
+
+        function scryptTest(logN, callback) {
+        const start = performance.now();
+        scrypt(password, salt, {
+            N: Math.pow(2, logN),
+            r: 8,
+            p: 1,
+            dkLen: 32,
+            encoding: "hex"
+        }, function(derivedKey) {
+            const end = performance.now();
+            const duration = (end - start).toFixed(2);
+            callback({ logN, time: duration, derivedKey });
+        });
+        }
+
+        function testScrypt() {
+        const out = document.getElementById("output");
+        out.textContent = "Running tests...\n";
+        let i = 0;
+
+        function runNext() {
+            if (i >= testLogNs.length) return;
+            const logN = testLogNs[i];
+            scryptTest(logN, result => {
+            out.textContent += `logN = ${result.logN}: ${result.time} ms\n`;
+            console.log(`logN = ${result.logN}`, result);
+            i++;
+            setTimeout(runNext, 10); // small delay
+            });
+        }
+
+        runNext();
+        out.textContent += "Done\n";
+        }
+    </script> -->
+    
+    <!-- <script>
+        // FNV-1a 32-bit hash
+        function fnv1a32(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = (h * 0x01000193) >>> 0;
+        }
+        return h >>> 0;
+        }
+
+        // SplitMix64
+        function SplitMix64(seed) {
+        let state = BigInt(seed) & 0xFFFFFFFFFFFFFFFFn;
+        return function next() {
+            state = (state + 0x9E3779B97F4A7C15n) & 0xFFFFFFFFFFFFFFFFn;
+            let z = state;
+            z = (z ^ (z >> 30n)) * 0xBF58476D1CE4E5B9n & 0xFFFFFFFFFFFFFFFFn;
+            z = (z ^ (z >> 27n)) * 0x94D049BB133111EBn & 0xFFFFFFFFFFFFFFFFn;
+            return Number((z ^ (z >> 31n)) & 0xFFFFFFFFFFFFFFFFn);
+        };
+        }
+
+        // Shuffle
+        function deterministicShuffle(array, seed) {
+        const seedInt = fnv1a32(seed);
+        const rng = SplitMix64(seedInt);
+        const sorted = [...array].sort();
+        const a = [...sorted];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = rng() % (i + 1);
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+        }
+
+        // Run
+        const node_ids = ['node1','node2','node3','node4','node5','node6'];
+        console.log(deterministicShuffle(node_ids, "myseed"));
+
+
+        // function fnv1a32(str) {
+        // let h = 0x811c9dc5;
+        // for (let i = 0; i < str.length; i++) {
+        //     h ^= str.charCodeAt(i);
+        //     h = (h * 0x01000193) >>> 0;
+        // }
+        // return h;
+        // }
+
+        // function seededShuffle(items, seed) {
+        // return [...items].sort((a, b) => {
+        //     const ha = fnv1a32(a + seed);
+        //     const hb = fnv1a32(b + seed);
+        //     return ha - hb;
+        // });
+        // }
+
+        // // Example
+        // // const items = ['obj1', 'obj2', 'obj3'];
+        const seed = "my_seed";
+        console.log('here--')
+        // console.log(seededShuffle(node_ids, seed));
+
+
+        function fnv1a32(str) {
+        let h = 0x811c9dc5;
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(str);
+        for (let i = 0; i < bytes.length; i++) {
+            h ^= bytes[i];
+            h = (h * 0x01000193) >>> 0; // force 32-bit unsigned
+        }
+        return h;
+        }
+
+        function seededShuffle(items, seed) {
+        return [...items].sort((a, b) => {
+            return fnv1a32(a + seed) - fnv1a32(b + seed);
+        });
+        }
+
+        // Test
+        // const items = ['obj1', 'obj2', 'obj3'];
+        // const seed = "seedtext";
+        console.log(seededShuffle(node_ids, seed));
+
+        </script> -->
+
+    <!-- <script>
+        async function sha256ToInt(seed) {
+        const data = new TextEncoder().encode(seed);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        // Use the first 8 bytes to make a 64-bit integer
+        let seedInt = 0n;
+        for (let i = 0; i < 8; i++) {
+            seedInt = (seedInt << 8n) | BigInt(hashArray[i]);
+        }
+        return seedInt;
+        }
+
+        // LCG (Linear Congruential Generator) — matches behavior closely to Python random
+        function makeLCGRandom(seed) {
+        let state = seed;
+        const a = 6364136223846793005n;
+        const c = 1n;
+        const m = 2n ** 64n;
+        return function() {
+            state = (a * state + c) % m;
+            return Number(state) / Number(m);
+        };
+        }
+
+        function fisherYatesShuffle(array, rng) {
+        const a = [...array];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+        }
+
+        async function main() {
+        const node_ids = ['node1','node2','node3','node4','node5','node6'];
+        const seed = "myseed";
+        const seedInt = await sha256ToInt(seed);
+        const rng = makeLCGRandom(seedInt);
+        const sorted = [...node_ids].sort();
+        const shuffled = fisherYatesShuffle(sorted, rng);
+        console.log('shuffled_nodes', shuffled);
+        }
+
+        main();
+    </script> -->
+
+    <script type="module">
+
+        function isDate(obj) {
+        return obj instanceof Date && !isNaN(obj);
+        }
+        function formatDateToDjango1(isoString) {
+        console.log('formatDateToDjango', isoString);
+        const date = new Date(isoString);
+
+        function pad(number, length = 2) {
+            return String(number).padStart(length, '0');
+        }
+
+        const year = date.getUTCFullYear();
+        const month = pad(date.getUTCMonth() + 1);
+        const day = pad(date.getUTCDate());
+        const hours = pad(date.getUTCHours());
+        const minutes = pad(date.getUTCMinutes());
+        const seconds = pad(date.getUTCSeconds());
+        const milliseconds = pad(date.getUTCMilliseconds(), 3) + '000'; // Add three zeros to match six digits format
+
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+00:00`;
+        }
+
+
+        function formatDateToDjango2(isoString) {
+        // console.log('formatDateToDjango2', isoString);
+        const date = isoString instanceof Date ? isoString : new Date(isoString);
+        // if (isDate(date)) {
+        //     console.log('p1');
+        //     // const date = isoString;
+        // } else {
+        //     console.log('p2');
+        //     // const date = new Date(date);
+        //     // console.log('date', date);
+        // }
+        
+        // const date = new Date(isoString);
+
+        function pad(number, length = 2) {
+            // console.log('p3');
+            return String(number).padStart(length, '0');
+        }
+
+        // console.log('p4');
+        const year = date.getUTCFullYear();
+        const month = pad(date.getUTCMonth() + 1);
+        const day = pad(date.getUTCDate());
+        const hours = pad(date.getUTCHours());
+        const minutes = pad(date.getUTCMinutes());
+        const seconds = pad(date.getUTCSeconds());
+        const milliseconds = pad(date.getUTCMilliseconds(), 3); // Add three zeros to match six digits format
+
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+        // return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+00:00`;
+        // 2025-05-23T14:00:00.000000+00:00
+        // 2025-05-23T14:00:00+00:00
+        }
+
+        function get_current_time(return_string=true) {
+        console.log('get_current_time');
+        const currentDate = new Date();
+        const isoString = currentDate.toISOString();
+        if (return_string) {
+            return formatDateToDjango2(isoString)
+        } else {
+            return currentDate
+        }
+        }
+        
+
+        async function deterministicSort(text_input, dt, node_ids) {
+            console.log('deterministicSort');
+            async function sha256Hex(input) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(input);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+            }
+            
+            const dt_str = formatDateToDjango2(dt);
+            console.log('dt_str', dt_str);
+            // `${text_input}_${dt_str}_${item}`
+            const seed_input = `${text_input}_${dt_str}`;
+            // console.log('seed_input', seed_input);
+            // console.log('seed_inputEE', seed_input + node_ids[0]);
+            const hashes = await Promise.all(node_ids.map(async item => {
+                const hash = await sha256Hex(seed_input + item);
+                return { item, hash };
+            }));
+            hashes.sort((a, b) => a.hash.localeCompare(b.hash));
+            return hashes.map(obj => obj.item);
+        }
+
+
+        // if isinstance(dt, datetime.datetime):
+        //     dt_str = dt.isoformat()
+        // elif isinstance(dt, str):
+        //     dt_str = dt
+        // else:
+        //     raise ValueError("dt must be a datetime or ISO string")
+        // seed_input = f"{text_input}_{dt_str}"
+        // return sorted(node_ids, key=lambda item: hashlib.sha256((seed_input).encode('utf-8')).hexdigest())
+
+        // function deterministicSort(items, seed) {
+        // return [...items].map(item => ({
+        //     item,
+        //     hash: md5(seed + item)
+        // })).sort((a, b) => a.hash.localeCompare(b.hash))
+        //     .map(obj => obj.item);
+        // }
+
+        // const node_ids = ['node1','node2','node3','node4','node5','node6'];
+        // console.log('shuffled_nodes', deterministicSort(node_ids, 'myseed'));
+
+        // const node_ids = ['node1','node2','node3','node4','node5','node6','node','node','node','node','node','node','node','node','node','node','node','node','node','node','node'];
+        const node_ids = ['node1', 'node2', 'node3', 'node4', 'node5', 'node6', 'node7', 'node8', 'node9', 'node10', 'node11', 'node12', 'node13', 'node14', 'node15', 'node16', 'node17', 'node18', 'node19', 'node20', 'node21', 'node22', 'node23', 'node24', 'node25', 'node26', 'node27', 'node28', 'node29', 'node30', 'node31', 'node32', 'node33', 'node34', 'node35', 'node36', 'node37', 'node38', 'node39', 'node40', 'node41', 'node42', 'node43', 'node44', 'node45', 'node46', 'node47', 'node48', 'node49'];
+        // (async () => {
+        // const dt = get_current_time(false);
+        // console.log('dt', dt);
+        // const sorted = await deterministicSort('myseed', '2025-05-26T20:55:03.272Z', node_ids);
+        // console.log('shuffled_nodes0', sorted);
+        // // const sorted1 = await deterministicSort(node_ids, 'myseed');
+        // // console.log('shuffled_nodes0', sorted1);
+        // // const sorted2 = await deterministicSort(node_ids, 'myseed2');
+        // // console.log('shuffled_nodes2', sorted2);
+        // // const sorted3 = await deterministicSort(node_ids, 'myseed3');
+        // // console.log('shuffled_nodes3', sorted3);
+        // // const sorted4 = await deterministicSort(node_ids, 'myseed4');
+        // // console.log('shuffled_nodes4', sorted4);
+        // })();
+
+        // async function hashMessage(message) {
+        // const hashHex = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
+        // return hashHex;
+        // }
+        // function seededRandom(seed) {
+        // let state = BigInt(seed);
+        // return function () {
+        //     // xorshift64*
+        //     state ^= state >> 12n;
+        //     state ^= state << 25n;
+        //     state ^= state >> 27n;
+        //     return Number((state * 0x2545F4914F6CDD1Dn) % 0xFFFFFFFFn) / 0xFFFFFFFF;
+        // };
+        // }
+
+        // function shuffle(array, randomFunc) {
+        // for (let i = array.length - 1; i > 0; i--) {
+        //     const j = Math.floor(randomFunc() * (i + 1));
+        //     [array[i], array[j]] = [array[j], array[i]];
+        // }
+        // }
+
+        // const node_ids = ['node1', 'node2', 'node3', 'node4', 'node5', 'node6'];
+        // const seed_input = "myseed";
+
+        // const seed_hash = await hashMessage(seed_input)
+
+        // // const seed_hash = sha256Hex(seed_input);
+        // const seed_int = BigInt('0x' + seed_hash);
+        // const rng = seededRandom(seed_int);
+
+        // const sorted_nodes = [...node_ids].sort(); // sort like Python
+        // const shuffled_nodes = [...sorted_nodes];
+        // shuffle(shuffled_nodes, rng);
+
+        // console.log('shuffled_nodes', shuffled_nodes);
+
+        function storeKey(key, name) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('KeyDB', 1);
+            request.onupgradeneeded = () => {
+            request.result.createObjectStore('keys');
+            };
+            request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction('keys', 'readwrite');
+            tx.objectStore('keys').put(key, name);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+            };
+            request.onerror = () => reject(request.error);
+        });
+        }
+
+
+
+        function getKey(name) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('KeyDB', 1);
+            request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction('keys', 'readonly');
+            const getRequest = tx.objectStore('keys').get(name);
+            getRequest.onsuccess = () => resolve(getRequest.result);
+            getRequest.onerror = () => reject(getRequest.error);
+            };
+            request.onerror = () => reject(request.error);
+        });
+        }
+
+        const privateKey = await getKey('private');
+        if (!privateKey) {
+            console.log('key not found')
+        } else {
+            console.log('key found')
+        }
+
+        import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
+        import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
+
+        const strength = 256; // 24-word mnemonic
+        const mnemonic = generateMnemonic(wordlist, strength);
+        console.log("Mnemonic (24 words):", mnemonic);
+
+        async function hashMessage(message) {
+        const hashHex = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
+        return hashHex;
+        }
+
+
+        function deriveKey(user_id, user_pass) {
+            const saltHex = CryptoJS.SHA256(user_pass + ":" + user_id).toString(CryptoJS.enc.Hex);
+            console.log("saltHex:", saltHex);
+            const saltBytes = Uint8Array.from(saltHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+            return new Promise((resolve, reject) => {
+                scrypt(user_pass, saltBytes, {
+                N: 262144,
+                r: 8,
+                p: 1,
+                dkLen: 32,
+                encoding: 'hex'
+                }, function (derivedKeyHex) {
+                resolve(derivedKeyHex);
+                });
+            });
+        }
+
+        async function main() {
+        const user_id = 'fj8D3h75Hnbe8u';
+        // const user_pass = mnemonic;
+        const user_pass = 'cement when oil perfect infant version obscure fly lend air cross recall';
+
+        // // const salt = CryptoJS.SHA256("NeedsMoreSalt:" + user_id).toString(CryptoJS.enc.Hex);
+        // // const saltBytes = Uint8Array.from(salt.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+
+        const seedHex = await deriveKey(user_id, user_pass);
+        console.log("Derived Seed (Hex):", seedHex);
+
+        const ec = new elliptic.ec('secp256k1');
+        const keyPair = ec.keyFromPrivate(seedHex);
+
+        const privKeyHex = keyPair.getPrivate("hex");
+        const pubKeyHex = keyPair.getPublic().encode("hex"); // uncompressed
+
+        console.log("Private Key:", privKeyHex);
+        console.log("Public Key:", pubKeyHex);
+
+
+        await storeKey(privKeyHex, 'private');
+        await storeKey(pubKeyHex, 'public');
+
+        const msg = "hello world";
+        //   const msgHash = elliptic.utils.sha256(msg);
+        //   const signature = keyPair.sign(msgHash, { canonical: true });
+        //   const sigHex = signature.toDER("hex");
+        //   console.log("Signature:", sigHex);
+
+            
+        // hashed_data1 = await hashMessage(msg)
+
+        const hashed_data1 = CryptoJS.SHA256(msg).toString(CryptoJS.enc.Hex);
+        console.log('hashed1',hashed_data1)
+        const curve = new elliptic.ec('secp256k1');
+        let keys = curve.keyFromPrivate(privKeyHex);
+        const signature = keys.sign(hashed_data1, { canonical: true });
+        const sig = signature.toDER('hex');
+        console.log("Signature:", sig);
+
+
+
+
+        const loaded_privateKey = await getKey('private');
+        console.log('loaded_privateKey',loaded_privateKey)
+        
+        const hashed_data12 = CryptoJS.SHA256(msg).toString(CryptoJS.enc.Hex);
+        console.log('hashed12',hashed_data12)
+        const curve2 = new elliptic.ec('secp256k1');
+        let keys2 = curve2.keyFromPrivate(loaded_privateKey);
+        const signature2 = keys2.sign(hashed_data1, { canonical: true });
+        const sig2 = signature2.toDER('hex');
+        console.log("Signature2:", sig2);
+
+
+
+        // const encoder = new TextEncoder();
+        // const data = encoder.encode('hello world');
+
+        // const privateKey = await getKey('private');
+        // const signature = await crypto.subtle.sign(
+        // { name: 'ECDSA', hash: 'SHA-256' },
+        // privateKey,
+        // data
+        // );
+        // console.log('Signature (hex):', Buffer.from(signature).toString('hex'));
+
+        // const publicKey = await getKey('public');
+        // const isValid = await crypto.subtle.verify(
+        // { name: 'ECDSA', hash: 'SHA-256' },
+        // publicKey,
+        // signature,
+        // data
+        // );
+        // console.log('Is valid?', isValid);
+
+
+
+
+        
+        }
+
+        main();
+    </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+  <script>"https://cdnjs.cloudflare.com/ajax/libs/scrypt-js/3.0.1/scrypt.js"</script>
+</head>
+<body>
+  <script>
+    async function deriveKey(user_id, user_pass) {
+      const password = user_pass;
+      const salt = user_id;
+      const N = 16384, r = 8, p = 1, dkLen = 32;
+
+      return new Promise((resolve, reject) => {
+        scrypt(password, salt, {
+          N: N,
+          r: r,
+          p: p,
+          dkLen: dkLen,
+          encoding: 'hex'
+        }, function(derivedKeyHex) {
+          resolve(derivedKeyHex);
+        });
+      });
+    }
+
+    async function main() {
+      const user_id = 'fj8D3h75Hnbe8u';
+      const user_pass = 'jtVE5u8bT&s#';
+
+      const seedHex = await deriveKey(user_id, user_pass);
+      console.log("Derived Seed (Hex):", seedHex);
+
+      const ec = new elliptic.ec('secp256k1');
+      const keyPair = ec.keyFromPrivate(seedHex);
+
+      const privKeyHex = keyPair.getPrivate("hex");
+      const pubKeyHex = keyPair.getPublic().encode("hex"); // uncompressed
+
+      console.log("Private Key:", privKeyHex);
+      console.log("Public Key:", pubKeyHex);
+
+      const msg = "hello world";
+      const msgHash = elliptic.utils.sha256(msg);
+      const signature = keyPair.sign(msgHash, { canonical: true });
+      const sigHex = signature.toDER("hex");
+      console.log("Signature:", sigHex);
+    }
+
+    main();
+  </script>
+</body>
+</html> -->
+
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrypt-js/3.0.1/scrypt.min.js" integrity="sha512-w1rNNktltLsq7XsNzytxJ9aCl7I0kpDkNfwRaJjfotZKCXZ5b3a8jnbSUA6YN0QvS/UXQmVKXjITrHbsQcvBXw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <script>
+    async function deriveKey(user_id, user_pass) {
+      const password = new TextEncoder().encode(user_pass);
+      const salt = new TextEncoder().encode(user_id);
+      const N = 16384, r = 8, p = 1, dkLen = 32;
+
+      return new Promise((resolve, reject) => {
+        scrypt(password, salt, N, r, p, dkLen, (error, progress, key) => {
+          if (error) reject(error);
+          else if (key) resolve(key);
+        });
+      });
+    }
+
+    async function main() {
+      const user_id = 'fj8D3h75Hnbe8u';
+      const user_pass = 'jtVE5u8bT&s#';
+
+      const keyBytes = await deriveKey(user_id, user_pass);
+      const seedHex = Array.from(keyBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      console.log("Private Key Seed:", seedHex);
+
+      const ec = new elliptic.ec('secp256k1');
+      const keyPair = ec.keyFromPrivate(seedHex);
+
+      const privKeyHex = keyPair.getPrivate("hex");
+      const pubKeyHex = keyPair.getPublic().encode("hex"); // uncompressed
+
+      console.log("Private Key:", privKeyHex);
+      console.log("Public Key:", pubKeyHex);
+
+      const msg = "hello world";
+      const msgHash = elliptic.utils.sha256(msg);
+      const signature = keyPair.sign(msgHash, { canonical: true });
+      const sigHex = signature.toDER("hex");
+      console.log("Signature:", sigHex);
+    }
+
+    main();
+  </script>
+</body>
+</html> -->

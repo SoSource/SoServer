@@ -1,0 +1,62 @@
+{% load static %}
+<!--DOCTYPE html-->
+<html>
+<head>
+</head>
+
+<body>
+<div id='container'>
+    {% include 'index.html' %}
+
+<div id='feed'>
+<h1>{{ mp.honorific }} {{ mp.first_name }} {{ mp.last_name }}</h1>
+
+<img src={{ mp.logo }}>
+<br>
+
+<ul>
+<li><a href={{ mp.gov_profile_page }}>government page</a></li>
+<li><a href="/">back to index</a></li>
+</ul>
+
+<h2>Roles</h2>
+{% for r in roles %}
+<h3>{{ r.position }}</h3>
+<ul>
+    {% if r.parliment %}
+        <li>Parliment: {{ r.parliment }}</li>
+    {% endif %}
+    {% if r.title %}
+        <li>Title: {{ r.title }}</li>
+    {% endif %}
+    {% if r.group %}
+        <li>Group: {{ r.group }}</li>
+    {% endif %}
+    {% if r.party %}
+        <li>Party: {{ r.party }}</li>
+    {% endif %}
+    {% if r.constituency %}
+        <li>Constituency: {{ r.constituency }}</li>
+    {% endif %}
+    {% if r.province %}
+        <li>Province: {{ r.province }}</li>
+    {% endif %}
+    {% if r.result %}
+        <li>Result: {{ r.result }}</li>
+    {% endif %}
+    {% if r.start_date %}
+        <li>Start Date: {{ r.start_date }}</li>
+    {% endif %}
+    {% if r.end_date %}
+        <li>End Date: {{ r.end_date }}</li>
+    {% endif %}
+    <!-- <li>ordered: {{ r.ordered }}</li> -->
+</ul>
+<br>
+{% endfor %}
+
+</div>
+{% include 'happening.html' %}
+</div>
+</body>
+</html>

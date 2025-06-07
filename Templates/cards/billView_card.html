@@ -1,0 +1,40 @@
+{% load static %}
+<div class='card billVersion' id='b-{{ v.Bill_obj.id }}'>
+     
+    <div class='sponsor'>
+            {% if v.Bill_obj.Region_obj.modelType == 'provState' %}
+            <img class='sponsorPic' src={{ v.Bill_obj.Region_obj.LogoLinks|get_item:'flag' }}>
+            {% else %}
+            <img class='sponsorPic' src={% static 'img/house_coat_of_arms.png' %}>
+            {% endif %}
+    </div>
+    
+    <div class='cardContent'>
+    <div class='Info'>
+        <div class='Code'>
+            
+            
+        </div>
+        
+        <div class='Details'>
+                <div class='title'><a href='{{ v.get_absolute_url }}'>{{ v.Version }}</a></div>
+            
+        <ul>
+            <li style='margin: 10px 0px;' >{{ v.DateTime }}</li>
+            {% if post.Update_obj|get_updated_field:'status' == 'Current' and 'Royal Assent' not in v.Version %}
+            <li>In Progress</li>
+            {% elif 'Royal Assent' not in v.Version %}
+            <li style='margin: 10px 0px;' >Passed</li>
+            {% endif %}
+            <li style='margin: 10px 0px;' ><a href='{{ v.get_absolute_url }}'>Read</a></li>
+        </ul>
+        </div>
+        
+    </div>
+    </div>
+
+
+
+</div>    
+<div class='bottomDivider'></div>
+

@@ -1,0 +1,81 @@
+{% load static %}
+{% load social_share %}
+{% with i=useractions|get_item:post.id %}
+<div class='reactionBar' id='{{ post.id }}'>
+    <ul>
+        {% if i.Spren_obj %}
+        <li class="reactionbarSpren", title="SummarySpren"><span><img class='miniSprenPic' src={% static 'img/spren.png' %}></span></li>
+        {% endif %}
+        <li class='yea {% if i.UserVote_obj and i.UserVote_obj.vote == "yea" %}active{% endif %}' onclick='react("yea", "{{ post.id }}")'><span>{% if post.pointerType == 'Bill' %}Yea{% else %}Hear!{% endif %}</span></li>
+        <li class='nay {% if i.UserVote_obj and i.UserVote_obj.vote == "nay" %}active{% endif %}' onclick='react("nay", "{{ post.id }}")'><span>{% if post.pointerType == 'Bill' %}Nay{% else %}Rabble!{% endif %}</span></li>
+        {% comment %}
+        <li title='Discuss' class='discussionLink'><span class="material-icons">forum</span> <span class='count'>{% if post.total_comments > 0 %}({{ post.total_comments }}){% endif %}</span></li>
+        {% endcomment %}
+        
+        <li class="insight", title='Insights' onclick="react('insight','{{post.id}}')"><span class="material-icons">bar_chart</span></li>
+        <li title='Follow Person' class='follow {% if post.id in request.user.follow_post_id_array %}active{% endif %}' onclick='react("{% if post.id in request.user.follow_post_id_array %}unfollow{% else %}follow{% endif %}", "{{ post.id }}")'><span class="material-icons">person_add</span></li>
+        {% comment %}
+        <li title='Save' class='saveButton {% if i.SavePost_obj and i.SavePost_obj.saved %}active{% endif %}' onclick='react("saveButton", "{{ post.id }}")'><span class="material-icons">star_border</span></li>
+        <li title='Share' class='share lastButton' {% if isApp %} onclick='mobileShare("{{post.id}}")'{% else %} onclick="react('share','{{post.id}}')"{% endif %}><span class="material-icons">share</span></li>
+        {% endcomment %}
+        <li class="moreVert", title='More' onclick="react('more','{{post.id}}')"><span class="material-icons">more_horiz</span></li>
+        
+        
+        {% comment %}
+        {% if post.billVersion.bill in request.user.follow_bill.all or post.bill in request.user.follow_bill.all or post.committeeMeeting.committee in request.user.follow_committee.all or post.hansardItem.person in request.user.follow_person.all or post.committeeItem.person in request.user.follow_person.all %}
+        {% if not post.agendaTime%}
+        <li title='Follow' class='follow {% if post.bill in request.user.follow_bill.all or post.committeeMeeting.committee in request.user.follow_committee.all or post.hansardItem.person in request.user.follow_person.all or post.committeeItem.person in request.user.follow_person.all %}active{% endif %}' onclick='react("follow", "{{ post.id }}")'><span>+</span></li>
+        {% endif %}
+        <li title='Save' class='saveButton {% if r.saved %}active{% endif %}' onclick='react("saveButton", "{{ post.id }}")'>{% if theme == 'night' %}<img src={% static 'img/star2_night.png' %}>{% else %}<img src={% static 'img/star2_day.png' %}>{% endif %}</li>
+        <!-- <li class='saveButton {% if r.saved %}active{% endif %}' onclick='react("saveButton", "{{ post.id }}")'>Save</li> -->
+        <!-- <li class='saveButton {% if r.saved %}active{% endif %}' style='font-size:135%;' onclick='react("saveButton", "{{ post.id }}")'>...</li> -->
+        <li title='Share' class='shareButton'>{% if theme == 'night' %}<img src={% static 'img/share2_night.png' %}{% else %}<img src={% static 'img/share2_day.png' %}{% endif %}></li>
+        <!-- <li class='readingButton {% if reading == "third" %}active{% endif %}'><a {% if reading == "third" %}class='active'{% endif %} href='{{ b.get_absolute_url }}?reading=third'>Word Cloud</a></li> -->
+        
+        {% if b.royal_assent_html %}
+            <li class='readingButton {% if reading == "royal_assent" %}active{% endif %}'><a {% if reading == "royal_assent" %}class='active'{% endif %} href='{{ b.get_absolute_url }}?reading=royal_assent'>Royal Assent</a></li>
+        {% elif b.third_reading_html %}
+            <li class='readingButton {% if reading == "third" %}active{% endif %}'><a {% if reading == "third" %}class='active'{% endif %} href='{{ b.get_absolute_url }}?reading=third'>Third Reading</a></li>
+        {% elif b.second_reading_html %}
+            <li class='readingButton {% if reading == "second" %}active{% endif %}'><a  {% if reading == "second" %}class='active'{% endif %} href='{{ b.get_absolute_url }}?reading=second'>Second Reading</a></li>
+        {% elif b.first_reading_html %}
+            <li class='readingButton {% if reading == "first" %}active{% endif %}'><a  {% if reading == 'first' %}class='active'{% endif %} href='{{ b.get_absolute_url }}?reading=first'>First Reading</a></li>
+        {% endif %}
+        {% endcomment %}
+    </ul>
+</div>
+{% if not isApp %}
+{% comment %}
+<div class="sharePopUp" id='share-{{ post.id }}'>
+    <ul>
+    {% if post.bill %}
+        {% with b=post.bill %}
+        {% if post.ShortTitle %}
+            {% with title='Bill {{post.NumberCode}} {{b.ShortTitle}}' %}
+            <li>{% post_to_facebook b.get_absolute_url "Post to Facebook" %}</li>
+            <li>{% post_to_twitter title b.get_absolute_url "Post to Twitter" %}</li>
+            <li>{% post_to_reddit title  b.get_absolute_url "Post to Reddit" %}</li>
+            <li>{% send_email title 'SoVote' b.get_absolute_url "Share via email" %}</li>
+            <li>{% copy_to_clipboard b.get_absolute_url "Clipboard" %}</li>
+            {% endwith %}
+        {% else %}
+            {% with title='Bill {{b.NumberCode}} {{b.LongTitleEn}}' %}
+            <li>{% post_to_facebook b.get_absolute_url "Post to Facebook" %}</li>
+            <li>{% post_to_twitter title b.get_absolute_url "Post to Twitter" %}</li>
+            <li>{% post_to_reddit title  b.get_absolute_url "Post to Reddit" %}</li>
+            <li>{% send_email title 'SoVote' b.get_absolute_url "Share via email" %}</li>
+            <li onclick="copyToClipboard('copy-{{post.id}}', '{{b.get_absolute_url}}')">Clipboard</li>
+            {% endwith %}
+        {% endif %}
+        {% endwith %}
+    {% elif post %}
+        <li>{% post_to_facebook post.get_absolute_url "Post to Facebook" %}</li>
+        <li>{% post_to_twitter post.get_title post.get_absolute_url "Post to Twitter" %}</li>
+        <li>{% post_to_reddit post.get_title  post.get_absolute_url "Post to Reddit" %}</li>
+        <li>{% send_email post.get_title 'SoVote' post.get_absolute_url "Share via email" %}</li>
+        <li class='copyToClipboard' onclick="copyToClipboard('{{post.get_absolute_url}}')">Copy to Clipboard</li>
+    </ul>
+</div>
+{% endcomment %}
+{% endif %}
+{% endwith %}

@@ -1,0 +1,154 @@
+
+
+<div id="navBar">
+<ul id="navBarItems">
+    {% for item in nav_bar %}
+        {% if item|get_item:'type' == 'button' %}
+            {% if item|get_item:'text' == 'follow' %}
+                <li title='Follow' onclick="{{ item|get_item:'target' }}('{{ item|get_item:'var' }}')" class='option follow {% if item|get_item:"var" == "following" or request.user.is_authenticated and item|get_item:"target" in request.user.follow_topic_json %}active{% endif %}'><a><span class="material-icons">add</span></a></li>
+            {% else %}
+                <li onclick="{{ item|get_item:'target' }}('{{ item|get_item:'var' }}')"  class='option date {{ item|get_item:"var" }}'><a {% if 'Page' in item|get_item:'text' %}id='currentPage'{% endif %}>{{ item|get_item:'text' }}</a></li>
+            {% endif %}        
+        {% elif item|get_item:'type' == 'link' %}
+            {% if item|get_item:'text' == 'follow' %}
+                <li title='Follow' onclick='react("follow2", "{{ item|get_item:'target' }}")' class='option follow {% if "following" in item|get_item:"target" or request.user.is_authenticated and item|get_item:"target" in request.user.follow_topic_array %}active{% endif %}'><a><span class="material-icons">add</span></a></li>
+            {% else %}
+                <li class="option {% if view and view in item|get_item:'text' or filter in item|get_item:'text'  %}active{% endif %}"><a href="{{ item|get_item:'target' }}" {% if item|get_item:'new_tab' and item|get_item:'new_tab' == True %}target="_blank"{% endif %}>{{ item|get_item:'text' }}</a></li>
+            {% endif %}        
+        {% endif %}
+    {% endfor %}
+    
+    {% if isMobile %}
+    <div class='shadow'></div>
+    {% endif %}
+    
+    {% comment %}
+    {% for key, value in nav_bar %}
+        {% if 'follow' in key %}
+            <li title='Follow' onclick='react("follow2", "{{ value }}")' class='option follow {% if "following" in value or request.user.is_authenticated and value in request.user.follow_topic_json %}active{% endif %}'><a><span class="material-icons">add</span></a></li>
+        {% elif value == 'date' %}
+            <li title='Date Picker' onclick='subNavWidget("datePickerForm")' class='option date'><a>{{ key }}</a></li>
+        {% elif value == 'search' %}
+            <li onclick='subNavWidget("searchForm")' class='option date'><a>{{ key }}</a></li>
+        {% elif value == 'Chamber' %}
+            <li onclick='subNavWidget("chamberForm")'  class='option date'><a>{{ key }}</a></li>
+        {% elif 'Sort:' in key %} 
+            <li onclick='subNavWidget("sortForm")'  class='option date'><a id='currentPage'>{{ key }}</a></li>
+        {% elif 'Page:' in key %} 
+            <li onclick='subNavWidget("pageForm")'  class='option date'><a id='currentPage'>{{ key }}</a></li>
+        {% elif 'Party:' in key %} 
+            <li onclick='subNavWidget("partyForm")'  class='option date'><a>{{ key }}</a></li>
+        {% elif 'Vote:' in key %} 
+            <li onclick='subNavWidget("voteForm")'  class='option date'><a>{{ key }}</a></li>
+        {% else %}
+            <li class='option {% if view and view in key or filter in key  %}active{% endif %}'><a href='{{ value }}' >{{ key }}</a></li>
+        {% endif %}    
+    {% endfor %}
+    {% endcomment %}
+</ul>
+    <div id='navOptions'>
+    {% for item in nav_bar %}
+        {% if 'Date' in item|get_item:'text'%}
+            <div class="navOptionsMenu" id='datePickerForm' >
+                {% comment %}
+                <form method="POST" id='date-picker-form' enctype="multipart/form-data">{% csrf_token %}
+                    {% for i in dateForm %}<input type="submit" class='btn btn-default' value="enter"/>{{ i }}{% endfor %}
+                </form> 
+                {% endcomment %}
+                <form method="GET" id="search-form">
+                    {% for i in searchForm %}
+                        {{ i }}
+                    {% endfor %}
+                    <input type="submit" class="btn btn-default" value="Enter"/>
+                </form>
+            </div> 
+        {% elif 'Search' in item|get_item:'text' %}
+            <div class="navOptionsMenu" id='searchForm'>
+                {% comment %}
+                <form method="POST" id='search-form' enctype="multipart/form-data">{% csrf_token %}
+                    {% for i in searchForm %}<input type="submit" class='btn btn-default' value="enter"/>{{ i }}{% endfor %}
+                </form> 
+                {% endcomment %}
+                <form method="GET" id="search-form">
+                    {% for i in searchForm %}
+                        {{ i }}
+                    {% endfor %}
+                    <input type="submit" class="btn btn-default" value="Enter"/>
+                </form>
+            </div> 
+        {% elif 'Page:' in item|get_item:'text' %}
+            <div class="navOptionsMenu" id='pageForm'>   
+                {% include 'utils/paginator_links.html' %}
+            </div> 
+        {% comment %}
+        {% elif 'Chamber' in item|get_item:'text' %}
+            <div id='chamberForm'>
+                <ul id='chamberPicker'>
+                    <li><a href='?chamber=All&view={{view}}'>All</a></li>
+                    <li><a href='?chamber=House&view={{view}}'>House</a></li>
+                    <li><a href='?chamber=Senate&view={{view}}'>Senate</a></li>
+                    {% if provState.is_supported %}
+                    <li><a href='?chamber={{ region }}-Assembly&view={{view}}'>Assembly</a></li>
+                    {% endif %}
+                </ul>
+            </div> 
+        {% endcomment %}
+        {% comment %}
+        {% elif 'Sort:' in item|get_item:'text' %}
+            <div id='sortForm'>
+                <ul id='sortPicker'>
+                    {% for i in item|get_item:'fields' %}
+                        <li><a href='?sort={{ i }}{% if topic %}&topic={{topic}}{% endif %}{% if speaker_id %}&speaker_id={{speaker_id}}{% endif %}{% if keyword %}&keyword={{keyword}}{% endif %}'>{{ i }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div> 
+        {% elif 'Page:' in item|get_item:'text' %}
+            <div id='pageForm'>   
+                {% include 'utils/paginator_links.html' %}
+            </div> 
+        {% elif 'Party:' in item|get_item:'text' %}
+            {% if motion %}
+                <div id='partyForm'>
+                    <ul id='partyPicker'>
+                        <li><a href='{{ value }}?party=All'>All</a></li>
+                        {% for i in partyOptions %}
+                            <li><a href='{{ value }}?party={{ i }}'>{{ i|get_item:'Party' }}</a></li>
+                        {% endfor %}
+                        
+                    </ul>
+                </div>
+            {% endif %}
+        {% elif 'Vote:' in item|get_item:'text' %}
+            <div id='voteForm'>
+                <ul id='votePicker'>
+                    <li><a href='{{ value }}?vote=All'>All</a></li>
+                    {% for i in voteOptions %}
+                        <li><a href='{{ value }}?vote={{ i }}'>{{ i }}</a></li>
+                    {% endfor %}
+                    
+                </ul>
+            </div> 
+        {% elif 'Filter:' in item|get_item:'text' %}
+            <div id='sortForm'>
+                <ul id='sortPicker'>
+                    {% for i in item|get_item:'fields' %}
+                        <li><a href='{{ value }}?sort={{ i }}'>{{ i }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div> 
+        {% endcomment %}
+        {% elif item|get_item:'target' == 'subNavWidget' %}
+            <div class="navOptionsMenu" id='{{ item|get_item:"var" }}'>
+                <ul id='sortPicker'>
+                    {% for i in item|get_item:'fields' %}
+                        <li><a href='{{ value }}?{{ item|get_item:"key" }}={{ i }}'>{{ i }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div> 
+        {% endif %}
+        
+    {% endfor %}
+    </div>
+</div>
+
+

@@ -1,0 +1,57 @@
+{% load static %}
+
+    <div class='card hansard' id='han-{{ h.id }}'>
+        
+    <div class='sponsor'>
+        <img class='sponsorPic' src={% static 'img/house_coat_of_arms.png' %}>
+    </div>
+    <div class='cardContent'>
+        <div class='Info' style=width:100%;>
+            <div class='Code'>
+                <h2><a href='{{ h.get_absolute_url }}'>{% if 'Assembly' in a.organization %}Assembly{% else %}{{ a.organization }}{% endif %} Debates</a></h2>
+                <!-- <h2 style='max-width:70%;'><a href='{{ h.get_absolute_url }}'>Debate {{ h.Title }}</a></h2> -->
+                <div class='Parl'>
+                    <div>{{ h.ParliamentNumber|get_ordinal }} Parl. {{ h.SessionNumber|get_ordinal }} Sess.</div>
+                    <div>{{ h.Publication_date_time|date:"F d, Y" }} </div>  
+                </div>
+            </div>
+            <div class='Details'>
+                <div>
+                    {% if a.VideoURL and h.has_transcript %}
+                        <a style='display:inline-block;'style='margin-left:10px;' href='{{ h.get_absolute_url }}'>View from Start</a>
+                    {% elif a.VideoURL %}
+                        <a style='display:inline-block;'style='margin-left:10px;' href='{{ h.get_absolute_url }}'>Watch from Start</a>
+                    {% elif h.has_transcript %}
+                        <a style='display:inline-block;'style='margin-left:10px;' href='{{ h.get_absolute_url }}'>Read from Start</a>
+                    {% else %}
+                        <a style='display:inline-block;'style='margin-left:10px;' href='{{ h.get_absolute_url }}'>Transcripts may take several days</a>
+                    {% endif %}
+                    </div>
+                <ul>
+                <li>{{ h|get_bill_term:b.bill|safe }}</li>
+                
+
+                {% comment %}
+                {% for i in a.agendaitem_set.all %}
+                <li>aaa{{i}}</li>
+                    {% if b.bill == i.bill %}
+                    <li>{{ i.bill }}</li>
+                        {% for hitem in h.hansardItem_set.all %}
+                        <li>---{{ key }}|{{ value }}|{{ b.bill }}|{{ h.Terms }}</li>
+                            {% if b.bill.NumberCode in key or b.bill in i.Terms %}
+                                <!-- <li style='display:block; list-style: inside;'><a href='{{ h.get_absolute_url }}/?topic={{ key }}' class='shorten2' >&nbsp;{{ i.text }}</a></li> -->
+                                <li><span>({{ value }})</span>&nbsp; <a href='{{ h.get_absolute_url }}/?topic={{ key }}' title='{{ key }}'>{{ key }}  </a></li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                {% endcomment %}
+                
+                </ul>
+            </div>        
+                    
+            <div class='Embed' ></div>
+        </div>  
+    </div>
+    </div>
+    <div class='bottomDivider'></div>

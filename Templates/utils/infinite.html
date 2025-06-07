@@ -1,0 +1,87 @@
+<script>
+    $(window).scroll(InView);
+    
+    
+    
+    
+    function InView() {
+        var bottom = document.getElementById("bottomCard");
+        var docViewBottom = window.innerHeight;
+    
+        var elemTop = bottom.offsetTop;
+        var distanceScrolled = document.body.scrollTop;
+        var target = distanceScrolled + docViewBottom
+        if (target >= (elemTop+100)){
+            // console.log('inview')
+            if (!$("#bottomCard").hasClass("active")) {
+                $("#bottomCard").addClass("active");
+                var spinner = document.getElementsByClassName("step-links")[0];
+                // console.log(spinner)
+                if (spinner) {
+                    spinner.innerHTML = '<div class="lds-dual-ring"></div>'
+                    infinite(bottom)
+                }
+            }
+        }
+    }
+    
+    function infinite(bottom){
+        // console.log('inf')
+        var page = document.getElementById("nextPage").name;
+        var url = document.getElementById("nextUrl").name;    
+        var cards = document.getElementsByClassName('card');
+        var myList = new Array();
+        try{
+            for (f = 0; f < cards.length; f++){
+                try{
+                    var iden = cards[f].id
+                    var n = iden.search("-");
+                    n += 1
+                    var id = iden.slice(n,)
+    
+    
+                     myList.push(id);
+
+                 }catch(err){}
+            }
+        }catch(err){}
+        $.ajax({
+              url: page,
+              success: function (data) {
+                ParsedElements = $.parseHTML(data);
+                var new_cards =  $(ParsedElements);
+                var newList = new Array();
+                var remove_paginator = true
+                var remove_paginator_border = false
+                for (f = 0; f < new_cards.length; f++){
+                    if (remove_paginator && f < 5 && new_cards[f].classList && new_cards[f].classList.contains('pagination')) {
+                        remove_paginator = false
+                        remove_paginator_border = true
+                    } else if (remove_paginator_border && new_cards[f].classList && new_cards[f].classList.contains('bottomDivider')) {
+                        remove_paginator_border = false
+                    } else {
+                        newList.push(new_cards[f])
+                        
+                    }
+                }
+                $('#feed').append(newList);
+                var cards = document.getElementsByClassName('card');
+                shorten_text(cards)
+                document.getElementById("bottomCard").outerHTML='';
+                window.history.pushState('', '', url);
+                
+                page = new_cards.filter(".pageNum");
+                currentPage = document.getElementById('currentPage')
+                currentPage.innerHTML = page[0].id
+                
+                page_picker = document.getElementsByClassName('pagePicker');
+                page_form = document.getElementById("pageForm");
+                page_form.innerHTML = page_picker[page_picker.length - 1].outerHTML;
+
+                 },
+              dataType: 'html'
+           });
+    }
+    
+    
+    </script>

@@ -1,0 +1,62 @@
+{% load static %}
+<div id='splash'>
+    <img id='splashLogo' src={% static sonet.LogoLink %}>
+    <h1>{{ sonet.Title }}</h1>
+    <h2><span style="font-style: italic;">A Decentralized Democracy</span></h2>
+    <h2><span style="font-style: italic;">Experiment</span></h2>
+    <br>
+    <ul id='flags'>
+        {% for region in supported_regions %}
+        <li id='flag'><a href='/{{ region.lowerName }}/home'><img src={% static region.LogoLinks|get_item:'flag' %}></a></li>
+        {% endfor %}
+    </ul>
+    <h2>If you could run your own government as easily as using Facebook,</h2><h2>Would you?</h2>
+    <br>
+    <div>
+        <p style="text-indent: 10px;">Currently, participation in democracy for most means marking a ballot for one of two or three people, every four years. Thousands of years ago, when democracy was created, that was not the case. 
+            At that time citizens could vote on the issues themselves. Many centuries later came representative democracy. It was practical; most citizens were too far away or ignorant of issues.</p>
+        <p>But they didn't have the Internet, they didn't have smartphones and they didn't have the stakes of today.</p>
+    </div>
+    <div>
+        <p>Today, your legislative government consists of two chambers, the House and the Senate. The conditions have come to be for a third: the Citizenry. A chamber that consists of every voting age citizen and gives them the ability to collectively approve or veto any new law.</p>
+        <p>At SoVote,</p>
+        <p>We believe by engaging with our government we are exercising and fulfilling our civic duty as citizens of our community and country.</p>
+        <p>We believe we can save ourselves from those ignorant or corrupt by claiming our own power for ourselves.
+        </p>
+        <p>We believe if enough of us gather in one place, we will be heard.</p>
+        <p>This is a place to:
+            <ul>
+                <li>Represent yourself in all levels of government.</li>
+                <li>Debate the merits of any bill or issue.</li>
+                <li>Vote yea or nay on any bill.</li>
+                <li>Write your own bills.</li>
+                <!-- <li>Create and participate in polls.</li> -->
+                <br>
+                <li>Reduce partisan politics by taking power from those who would vote down party lines.</li>
+                <li>Match your voting history to candidates to see who would best represent your will.</li>
+                <br>
+                <li>Write all votes to a decentralized, immutable blockchain for independant backup and verification.</li>
+                <li>Create a SoVote node for each and every locality.</li>
+                <li>Decentralize Democracy.</li>
+            </ul>  
+        
+        </p>
+    </div>
+    <br>
+    <br>
+    <!-- <div style="display:flex; justify-content: center;">
+        <span>Choose your path</span>
+    </div> -->
+    <div>
+        <span style="display:flex; justify-content: center; font-style: italic;"><strong>So Say Us All</strong></span>
+    </div>
+    <br>
+    <ul id="flags">
+        {% for region in supported_regions %}
+            <li style="display:inline-block; padding:30px"><a href='/{{ region.lowerName }}'>{{ region.Name }}</a></li>
+        {% endfor %}
+    </ul>
+    <br>
+    
+    
+</div>

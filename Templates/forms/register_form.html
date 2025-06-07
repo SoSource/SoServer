@@ -1,0 +1,2730 @@
+{% comment %}
+{% load socialaccount %}
+{% endcomment %}
+{% load static %}
+
+<div class='form'>
+    <div>
+        {% comment %}
+        {% if userForm.errors %}
+            <li>{{ userForm.errors }}</li>
+        {% endif %}
+        {% if optionsForm.errors %}
+            <li>{{ optionsForm.errors }}</li>
+        {% endif %}
+        <!-- <li>or</li>
+        <li><a href="{% provider_login_url 'google' %}" >Login with Google</a></li> -->
+        {% endcomment %}
+        {% comment %}
+        <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
+            <ul>
+
+                <span>Username:</span><li id="username">{{ userForm.username }}</li>
+                <!-- <span>Email:</span><li>{{ optionsForm.email }}</li> -->
+                <span>Password:</span><li id="password">{{ userForm.password }}</li>
+                <span>Confirm Password:</span><li id="confirm_password">{{ userForm.password_confirm }}</li>
+
+            <!-- <li><input type="submit" class='btn btn-default' value="Sign Up" /></li> -->
+            <button onclick="register({{ user_dict }})">Submit</button>
+            
+            
+            
+            
+            </ul>
+        </form>
+        {% endcomment %}
+        <form id="userForm" method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
+<!--             
+                <span>Username:</span><li id="username">{{ userForm.username }}</li>
+                <span>Password:</span><li id="password">{{ userForm.password }}</li>
+                <span>Confirm Password:</span><li id="confirm_password">{{ userForm.password_confirm }}</li> -->
+
+            
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username"><br>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password"><br>
+
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="confirm_password" id="confirm_password" name="confirm_password"><br>
+            
+            <button onclick="register({{ user_dict }})">Submit</button>
+            <div></div>
+            <span>Be sure to save your username and password somewhere very safe.</span>
+        </form>
+        {% comment %}
+        <ul>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+            <!-- <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br><br> -->
+            <label for="password">Password:</label><br>
+            <input type="text" id="password" name="password"><br><br>
+            <label for="confirm_password">Confirm Password:</label><br>
+            <input type="text" id="confirm_password" name="confirm_password"><br><br>
+            <!-- <input type="submit" value="Submit"> -->
+                <li>{{ user_dict }}</li>
+            <!-- <li><span>Username:</span><input type="'text"></li>
+            <li><span>Email:</span><input type="'email"></li>
+            <li><span>Password:</span><input type="'text"></li>
+            <li><span>Confirm Password:</span><input type="'text"></li> -->
+            <button onclick="register({{ user_dict }})">Submit</button>
+            <!-- <li onclick="register()">RunFunc</li> -->
+            <li>or</li>
+            <!-- <li id="tkn" value={{ csrf_token }}></li> -->
+            <!-- <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %} -->
+            <!-- <button id="btnLogin">Login with WebAuthn A</button>
+            <button id="btnBegin">Register with WebAuthn B</button> -->
+        <!-- </form> -->
+
+            <span id="success"></span>
+            <span id="error"></span>
+
+            <!-- <button id="loginBtn">Login with WebAuthn</button> -->
+        </ul>
+        {% endcomment %}
+    </div>
+    <!-- <button onclick="register({{ user_dict }})">Submit2</button> -->
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+<script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js" integrity="sha384-9+Bm5pUMP2324xMjhRahdomA9HaTxP6JcMhbl3tUAcV2+Jiohq8/T+dGj/rx/MaM" crossorigin="anonymous"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/bip39@1.0.3/index.js"></script> -->
+<script src="https://www.unpkg.com/browse/bip39@3.1.0/src/index.js"></script>
+{% comment %}
+<!-- <script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/src/index.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bip39-in-browser@latest/dist/bip39.min.js"></script> -->
+<!-- <script src="
+https://cdn.jsdelivr.net/npm/bip39@3.1.0/src/index.min.js
+"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/web-bip39@0.0.3/dist/web-bip39.global.js"></script> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script> -->
+<!-- Include webauthn.io library -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/@github/webauthn.js@3.0.0/dist/webauthn.js"></script> -->
+
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/js-sha3@0.8.0/build/sha3.min.js"></script> -->
+<!-- <script type="module">
+    console.log('pre-mnemonic');
+
+    import * as bip39 from 'https://cdn.jsdelivr.net/npm/@scure/bip39@1.2.2/index.min.js';
+    
+    // const mnemonic = bip39.generateMnemonic();
+    console.log('mnemonic',mnemonic);
+  </script> -->
+{% endcomment %}
+<script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+    
+<script>
+
+function generatePassword() {
+    var length = 16,
+        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&",
+        retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    
+    var form = document.getElementById("userForm");
+    
+    // Access input values by their names
+    // var username = form.elements["username"].value;
+    // var email = form.elements["email"].value;
+    form.elements["password"].value = retVal;
+    form.elements["confirm_password"].value  = retVal;
+    // return retVal;
+}
+
+generatePassword()
+async function hashMessage(message) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+
+  const buffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(buffer));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+  return hashHex;
+}
+
+
+async function createKeys(seed, id) {
+    data = seed + id + id
+
+    console.log("seed:", data);
+    const curve = new elliptic.ec('secp256k1');
+    let keyPair = curve.keyFromPrivate(data);
+    let privKey = keyPair.getPrivate("hex");    
+    console.log('privKey',privKey);
+    localStorage.setItem('userData', privKey);
+    var item = localStorage.getItem("userData");
+    let keyPair2 = curve.keyFromPrivate(privKey);
+    console.log('privKey2',keyPair2.getPrivate("hex"));
+    const publicKey = keyPair.getPublic();
+    const publicKeyHex = keyPair.getPublic().encode('hex');
+    console.log("Public Key:", publicKeyHex);
+    // const data = "testmessage1111";
+    hashed_data = await hashMessage(data)
+    console.log('msg',hashed_data);
+    const signature = keyPair.sign(hashed_data, { canonical: true });
+    console.log("Signature:", signature.toDER('hex'));
+
+    // const isSignatureValid = publicKey.verify(hashed_data, signature);
+    // console.log("isSignatureValid:", isSignatureValid);
+
+    const isVerified = curve.verify(hashed_data, signature, publicKey);     
+    console.log("is valid:", isVerified);
+
+    // const publicKeyHex3 = '04215fdc1568795077dfa836cbecc98e94272c7bd881d00964633c100b50e494b3589f15122132e304fa17f7cb5d323708abb7492867ade51788c1e9a732c93093'; // Example hex string
+    let importedPublicKey = curve.keyFromPublic(publicKeyHex3, 'hex')
+    // console.log("Public Keyhex:", importedPublicKey);
+    
+    // sig = '3044022076621b8c55f51cf571700ff184228ded82302f46b2ea17b994fdd3bf45a70d3b02204d50915652bb894b10c99053070b18cd7534454890b647dbaf48d88995255913'
+    // const importedVerified = curve.verify(hashed_data, sig, importedPublicKey);     
+    // console.log("is importedVerified:", importedVerified);
+    return publicKeyHex;
+    // const dict = {
+    // signature: signature.toDER('hex') ,
+    // transactionData: data,
+    // publicKeyHex: publicKeyHex,
+    // csrfmiddlewaretoken: '{{ csrf_token }}'
+    // };
+
+    //     $.ajax({
+    //     type:'POST',
+    //     url:'/verify-authentication/',
+    //     data: dict,
+    //     success:function(verificationResp){
+    //     },
+    // });
+}
+
+function gatherFormData() {
+    // Get the form element
+    var form = document.getElementById("userForm");
+    
+    // Access input values by their names
+    var username = form.elements["username"].value;
+    // var email = form.elements["email"].value;
+    var password = form.elements["password"].value;
+    
+    // Do something with the form data
+    console.log("Username:", username);
+    // console.log("Email:", email);
+    console.log("Password:", password);
+}
+async function register(user_data) {
+    console.log('start')
+    const json_data = JSON.stringify(user_data)
+
+    var form = document.getElementById("userForm");
+    
+    // Access input values by their names
+    var username = form.elements["username"].value;
+    var password = form.elements["password"].value;
+    var confirm_password = form.elements["confirm_password"].value;
+    
+    // Do something with the form data
+    console.log("Username:", username);
+    console.log("Password:", password);
+    console.log("confirm_password:", confirm_password);
+
+    // console.log('json_data',json_data);
+    // username = document.getElementById('username').textContent; 
+    // console.log('username',username);
+    // // email = document.getElementById('email'); 
+    // password = document.getElementById('password').textContent; 
+    // confirm_password = document.getElementById('confirm_password').textContent; 
+    if (username == '') {
+        alert('Please enter a username')
+    // } else if (email == '') {
+    //     alert('Please enter an email')
+    }else if (password == '') {
+        alert('Please enter a password')
+    } else if (password != confirm_password){
+        alert("Passwords don't match")
+    } else if (password == confirm_password){
+        console.log('go')
+        const data = user_data;
+        console.log('id', data['id'])
+        data['username'] = username
+        // data['options']['email'] = email
+        pubKey = await createKeys(password, data['id']);
+        console.log('retreived pubkey', pubKey)
+        // customSecretKey = deriveKeyFromPassword(password, crypto.getRandomValues(new Uint8Array(16)))
+        // keys = generateKeyPair(customSecretKey)
+        // encryptAndStore(password, keys);
+        // data.options = data.options || {};
+        // data.options.public_key = pubKey;
+        data['public_key'] = pubKey
+        var privKey = localStorage.getItem("userData");
+        console.log('retreived privKey', privKey)
+        // data.options.private_key = privKey;
+        data['private_key'] = privKey
+
+        data['csrfmiddlewaretoken'] = '{{ csrf_token }}'
+        console.log('data', data)
+
+        // const dict = {
+        // signature: signature.toDER('hex') ,
+        // transactionData: data,
+        // publicKeyHex: publicKeyHex,
+        // csrfmiddlewaretoken: '{{ csrf_token }}'
+        // };
+
+            $.ajax({
+            type:'POST',
+            url:'/receive_new_user/',
+            data: data,
+            success:function(verificationResp){
+            },
+        });
+
+    }
+
+}
+
+
+
+    const { startRegistration } = SimpleWebAuthnBrowser;
+
+    // <button>
+    const elemBegin = document.getElementById('btnBegin');
+    // const tkn = document.getElementById('tkn');
+    // alert(tkn.value)
+    // alert(elemBegin)
+    // <span>/<p>/etc...
+    const elemSuccess = document.getElementById('success');
+    // <span>/<p>/etc...
+    const elemError = document.getElementById('error');
+
+    // Start registration when the user clicks a button
+    elemBegin.addEventListener('click', async () => {
+        // alert('begin')
+        // Reset success/error messages
+        elemSuccess.innerHTML = '';
+        elemError.innerHTML = '';
+
+        // GET registration options from the endpoint that calls
+        // @simplewebauthn/server -> generateRegistrationOptions()
+        // alert('get');
+        // const resp = await fetch('/generate-registration-options');
+        // alert('1');
+        // alert(resp.json());
+        let attResp;
+        try {
+        // Pass the options to the authenticator and wait for a response
+        attResp = await startRegistration(await resp.json());
+        } catch (error) {
+        // Some basic error handling
+        if (error.name === 'InvalidStateError') {
+            elemError.innerText = 'Error: Authenticator was probably already registered by user';
+        } else {
+            elemError.innerText = error;
+        }
+
+        throw error;
+        }
+        // pubKey = await createKeys('the cat jumped the fox');
+        // alert(JSON.stringify(attResp))
+        // POST the response to the endpoint that calls
+        // @simplewebauthn/server -> verifyRegistrationResponse()
+        // alert('q')
+        // let headers = new Headers();
+        // // add header from cookie
+        // alert('2')
+        // // const csrftoken = Cookies.get('csrftoken');
+        // headers.append('csrfmiddlewaretoken', tkn.name);
+        // headers.append('Content-Type', 'application/json');
+        // alert(headers)
+
+        console.log("return pubkey:", pubKey);
+
+
+        const storedData = localStorage.getItem('userData');
+        console.log("storedData:", storedData);
+        // var j = JSON.stringify(attResp)
+
+        // // alert(j)
+        // console.log("attResp:", j);
+
+        // var dict = {
+        //     content: JSON.stringify(attResp),
+        //     csrfmiddlewaretoken: '{{ csrf_token }}'
+        //     };
+        // // alert('2')
+        // // alert(dict)
+        //     $.ajax({
+        //     type:'POST',
+        //     url:'/verify-registration/',
+        //     data: dict,
+        //     // data:{
+        //     //     date:$('#post-form').serialize(),
+        //     //     csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+        //     //     action: 'post'
+        //     // },
+        //       success:function(verificationResp){
+        //         alert(verificationResp)
+        //       },
+        // //       error : function(xhr,errmsg,err) {
+        // //         alert(err)
+        // //     //   console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        // //   }
+        // });
+
+
+
+        // alert('3')
+        // let data = new FormData();
+        // data.append('data', JSON.stringify(attResp) );
+        // data.append('csrfmiddlewaretoken', tkn.value);
+        // alert(data['data'])
+    //     const verificationResp = await fetch('/verify-registration/', {
+    //     method: 'POST',
+    //     // headers: headers,
+    //     credentials: 'same-origin',
+    //     body: data,
+    //     });
+
+    //     // Wait for the results of verification
+    //     const verificationJSON = await verificationResp.json();
+
+    //     // Show UI appropriate for the `verified` status
+    //     if (verificationJSON && verificationJSON.verified) {
+    //     elemSuccess.innerHTML = 'Success!';
+    //     } else {
+    //     elemError.innerHTML = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
+    //         verificationJSON,
+    //     )}</pre>`;
+    //     }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // alert('start');
+
+// if (window.crypto && window.crypto.subtle) {
+
+    //     alert('supported')
+
+    // } else {
+    //     // The Web Crypto API is not supported
+    //     alert('Web Crypto API is not supported in this browser.');
+    // }
+
+
+
+
+//     (async () => {
+
+// // createSignature2(); // Fix: apply consistently async/await syntax
+
+// async function createSignature2(){
+    
+//     const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+
+//     const privateKey = await importPrivateKey(p);
+//     console.log('keyey1:', privateKey)
+
+//     const data = str2ab("Test buffer")
+//     const sign = await window.crypto.subtle.sign({name: "ECDSA",hash: {name: "SHA-512"}}, privateKey, data);
+//     console.log(window.btoa(ab2str(sign)));
+// }
+
+// async function importPrivateKey(keyHex) {   
+//     const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+//     // const pem = `-----BEGIN PRIVATE KEY-----
+//     // MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL
+//     //              -----END PRIVATE KEY-----`;
+//     // const pemHeader = "-----BEGIN PRIVATE KEY-----";
+//     // const pemFooter = "-----END PRIVATE KEY-----";
+//     // const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+//     const binaryDerString = window.atob(keyHex);
+//     const binaryDer = str2ab(binaryDerString);
+//     return await window.crypto.subtle.importKey("pkcs8", binaryDer,{name: "ECDSA",namedCurve: "P-256"}, true, ["sign"]); // Fix: import ECDSA key
+// }
+
+// function str2ab(str) {
+//     const buf = new ArrayBuffer(str.length);
+//     const bufView = new Uint8Array(buf);
+//     for (let i = 0, strLen = str.length; i < strLen; i++) {
+//         bufView[i] = str.charCodeAt(i);
+//     }
+//     return buf;
+// }
+  
+function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
+// })();
+
+
+// (async () => {
+
+// // createSignature2(); // Fix: apply consistently async/await syntax
+
+// async function createSignature2(){
+    
+//     const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+
+//     const privateKey = await importPrivateKey(p);
+//     console.log('keyey1:', privateKey)
+
+//     const data = str2ab("Test buffer")
+//     const sign = await window.crypto.subtle.sign({name: "ECDSA",hash: {name: "SHA-512"}}, privateKey, data);
+//     console.log(window.btoa(ab2str(sign)));
+// }
+
+// async function importPrivateKey(keyHex) {   
+//     const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+//     // const pem = `-----BEGIN PRIVATE KEY-----
+//     // MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL
+//     //              -----END PRIVATE KEY-----`;
+//     // const pemHeader = "-----BEGIN PRIVATE KEY-----";
+//     // const pemFooter = "-----END PRIVATE KEY-----";
+//     // const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+//     const binaryDerString = window.atob(keyHex);
+//     const binaryDer = str2ab(binaryDerString);
+//     return await window.crypto.subtle.importKey("pkcs8", binaryDer,{name: "ECDSA",namedCurve: "P-256"}, true, ["sign"]); // Fix: import ECDSA key
+// }
+
+// function str2ab(str) {
+//     const buf = new ArrayBuffer(str.length);
+//     const bufView = new Uint8Array(buf);
+//     for (let i = 0, strLen = str.length; i < strLen; i++) {
+//         bufView[i] = str.charCodeAt(i);
+//     }
+//     return buf;
+// }
+  
+// function ab2str(buf) {
+//     return String.fromCharCode.apply(null, new Uint8Array(buf));
+// }
+
+// })();
+
+    
+//     function str2ab(str) {
+//     var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+//     var bufView = new Uint16Array(buf);
+//     for (var i=0, strLen=str.length; i<strLen; i++) {
+//         bufView[i] = str.charCodeAt(i);
+//     }
+//     return buf;
+//     }
+    function ab2b64(arrayBuffer) {
+        return window.btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+    }
+
+async function prog2(){
+            
+
+
+
+    // // Derive a cryptographic key from the seed phrase
+    // const seedBuffer = new TextEncoder().encode('123456');
+    // const derivedKey = await crypto.subtle.importKey(
+    //     "raw",
+    //     seedBuffer,
+    //     {name: "PBKDF2"},
+    //     false,
+    //     ["sign"]
+    // );
+    // console.log('derivedKey',derivedKey);
+
+    // // Generate a keypair using the derived key
+    // // const keyPair = await crypto.subtle.deriveKey(
+    // //     {
+    // //         name: "ECDH",
+    // //         namedCurve: "P-256",
+    // //         public: true,
+    // //     },
+    // //     derivedKey,
+    // //     {
+    // //         name: "ECDSA",
+    // //         namedCurve: "P-256",
+    // //     },
+    // //     true,
+    // //     ["sign", "verify"]
+    // // );
+
+    // // Export the keypair
+    // // const publicKey = await crypto.subtle.exportKey("spki", derivedKey);
+    // // const privateKey = await crypto.subtle.exportKey("pkcs8", derivedKey);
+
+    // // console.log('privKey',privateKey);
+    // // console.log('publicKey',publicKey);
+
+    // const data2 = str2ab("Test buffer")
+    // const sign = await window.crypto.subtle.sign(
+    //     {name: "ECDSA",
+    //     hash: {name: "SHA-256"}},
+    //     derivedKey, 
+    //      data2);
+    // console.log('testsign',window.btoa(ab2str(sign)));
+
+    // var EC = require('elliptic').ec;
+
+    // Create and initialize EC context
+    // (better do it once and reuse it)
+    // var ec = new EC('secp256k1');
+
+    // const curve = new elliptic.ec('secp256k1');
+    // Generate keys
+    // var key = curve.genKeyPair();
+
+
+
+        
+    // let keyPair = ec.genKeyPair();
+    // let keyPair = curve.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+    let keyPair = curve.keyFromPrivate("123456");
+    let privKey = keyPair.getPrivate("hex");    
+    console.log('privKey',privKey);
+
+
+
+
+    // // Sign the message's hash (input must be an array, or a hex-string)
+    // var msgHash = JSON.stringify('testmessage');
+    // console.log('msgHash',msgHash);
+    var signature = keyPair.sign(msgHash);
+
+    // // Export DER encoded signature in Array
+    // var derSign = signature.toDER('hex');
+
+    // // Get the signature components
+    // const r = signature.r.toString('hex');
+    // const s = signature.s.toString('hex');
+    // const v = signature.recoveryParam;
+
+    // Verify signature
+    console.log('derSign',derSign);
+    console.log('verfiy sig',keyPair.verify(msgHash, derSign));
+
+
+
+    
+    // // Get the private key in hexadecimal format
+    // const privateKeyHex = keyPair.getPrivate('hex');
+    // console.log('Private Keyaaa:', privateKeyHex);
+
+    // // Get the public key in uncompressed format (hex)
+    // const publicKeyHex = keyPair.getPublic('hex');
+    // console.log('Public Keyaaa:', publicKeyHex);
+
+
+// --------
+// console.log("Public Keystart:");
+
+
+    // const curve = new elliptic.ec('secp256k1');
+    // // Generate keys
+    // // var key = curve.genKeyPair();
+
+
+
+        
+    // // let keyPair = ec.genKeyPair();
+    // // let keyPair = curve.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+    // let keyPair = curve.keyFromPrivate("123456");
+    // let privKey = keyPair.getPrivate("hex");    
+    // console.log('privKey',privKey);
+
+
+
+    // // const ec = new elliptic.ec('secp256k1');
+
+    // // Generate key pair (replace with secure generation method)
+    // // const privateKey = ec.keyPair();
+    // const publicKey = keyPair.getPublic().encode('hex');
+
+    // console.log("Public Key:", publicKey);
+
+    // // Prepare data (replace with actual transaction data and hashing)
+    // const data = "Transaction data";
+    // // const hash = require('crypto').createHash('sha256').update(data).digest('hex');
+    // var msgHash = JSON.stringify('testmessage');
+    // console.log('msgHash',msgHash);
+    // // Sign the data
+    // const signature = keyPair.sign(msgHash, { canonical: true });
+
+    // // Send signature and public key for verification
+    // console.log("Signature:", signature.toDER('hex'));
+
+    // const r = signature.r.toString('hex');
+    // const s = signature.s.toString('hex');
+    // const v = signature.recoveryParam;
+    // const sig = r+s
+    // console.log("r:", r);
+    // console.log("s:", s);
+    // console.log("s+r:", sig);
+
+    // const dict = {
+    //   r: r,
+    //   s: s,
+    //   v: v,
+    //     // privateKey: privKey,
+    // signature: signature.toDER('hex') ,
+    // transactionData: msgHash,
+    // publicKeyHex: publicKey,
+    // csrfmiddlewaretoken: '{{ csrf_token }}'
+    // };
+    // // dict.signature = Array.from(signature.toDER()).map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+    //     $.ajax({
+    //     type:'POST',
+    //     url:'/verify-registration/',
+    //     data: dict,
+    //     success:function(verificationResp){
+    //         // alert(verificationResp)
+    //     },
+    // });
+
+
+
+
+//     // CHECK WITH NO PRIVATE KEY
+
+//     var pubPoint = keyPair.getPublic();
+//     var x = pubPoint.getX();
+//     var y = pubPoint.getY();
+
+//     // Public Key MUST be either:
+//     // 1) '04' + hex string of x + hex string of y; or
+//     // 2) object with two hex string properties (x and y); or
+//     // 3) object with two buffer properties (x and y)
+//     var pub = pubPoint.encode('hex');                                 // case 1
+//     // var pub = { x: x.toString('hex'), y: y.toString('hex') };         // case 2
+//     // var pub = { x: x.toBuffer(), y: y.toBuffer() };                   // case 3
+//     // var pub = { x: x.toArrayLike(Buffer), y: y.toArrayLike(Buffer) }; // case 3
+//     console.log('Public pub:', pub);
+
+//     // Import public key
+//     var keya = curve.keyFromPublic(pub, 'hex');
+
+    // Signature MUST be either:
+    // 1) DER-encoded signature as hex-string; or
+    // 2) DER-encoded signature as buffer; or
+    // 3) object with two hex-string properties (r and s); or
+    // 4) object with two buffer properties (r and s)
+
+    // var signature = '3046022100...'; // case 1
+    // var signature = new Buffer('...'); // case 2
+    // var signature = { r: 'b1fc...', s: '9c42...' }; // case 3
+
+    // Verify signature
+    // console.log('sigver2', keyPair.verify(msgHash, signature.toDER('hex')));
+
+
+    // // Create a secp256k1 curve object
+    // const curve = new elliptic.ec('p-256');
+
+    // // Generate key pair from the private key
+    // // const ekeyPair = curve.keyFromPrivate(privateKeyHex, 'hex');
+
+
+    // // // generate()
+    // // const elliptic = window.elliptic;
+    // // const ec = new elliptic.ec('P-256');
+
+    // // Generate a keypair
+    // const ekeypair = curve.genKeyPair();
+
+    // // Get the private key in hexadecimal format
+    // const eprivateKeyHex = ekeypair.getPrivate('hex');
+    // console.log('ePrivate Key:', eprivateKeyHex);
+
+    // // Get the public key in uncompressed format (hex)
+    // const epublicKeyHex = ekeypair.getPublic('hex');
+    // console.log('ePublic Key:', epublicKeyHex);
+
+    // // Create some transaction data
+    // const etransactionData = 'Sample Transaction Data';
+
+    // // Sign the transaction data with the private key
+    // const esignature = ekeypair.sign(etransactionData, 'hex');
+    // console.log('Signature:', esignature);
+
+    // const rawSignature = esignature.signature;
+    // const esignatureHex = rawSignature.slice(0, 32).toString('hex') + rawSignature.slice(32, 64).toString('hex');
+    // console.log('eSignature:', esignatureHex);
+
+
+
+
+
+    // const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+    // // const password = '123456';
+    // // createSignature2(p); // Fix: apply consistently async/await syntax
+
+    // async function createSignature2(p){
+        
+
+    //     const privateKey = await importPrivateKey(p);
+    //     console.log('keyey1222tester:', privateKey)
+    //     // return privateKey;
+
+    //     const data = str2ab("Test buffer")
+    //     const sign = await window.crypto.subtle.sign({name: "ECDSA",hash: {name: "SHA-512"}}, privateKey, data);
+    //     console.log('testsign',window.btoa(ab2str(sign)));
+    // }
+
+    async function importPrivateKey(keyHex) {   
+        // const p = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL';
+        // const pem = `-----BEGIN PRIVATE KEY-----
+        // MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtGDRaX+bs9RKlH1rRUDtbTO48phIrbe9gHHakV6LxzuhRANCAAQx288mr7pkV1v3/bsKK2YsLGkv/3ksglHlVZ0z9RGAG5M7Bz2Rre1nSvuVU3edRTUNzXhWaFBA/g/tVcAWhXdL
+        //              -----END PRIVATE KEY-----`;
+        // const pemHeader = "-----BEGIN PRIVATE KEY-----";
+        // const pemFooter = "-----END PRIVATE KEY-----";
+        // const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+        // var keyHex = '123456';
+        const binaryDerString = window.atob(keyHex);
+        const binaryDer = str2ab(binaryDerString);
+        const x = await window.crypto.subtle.importKey(
+            "pkcs8", 
+            binaryDer,
+            {name: "ECDSA",namedCurve: "P-256"}, 
+            true, 
+            ["sign"]
+            ); 
+        // console.log('keyeyxxxxtester:', x)
+        return x
+    }
+
+    function str2ab(str) {
+        const buf = new ArrayBuffer(str.length);
+        const bufView = new Uint8Array(buf);
+        for (let i = 0, strLen = str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+    }
+    
+    // function ab2str(buf) {
+    //     return String.fromCharCode.apply(null, new Uint8Array(buf));
+    // }
+
+
+
+
+
+
+
+
+    // const rawKey = '98UmKEmYy5sht5XufP4FkTX6s8qZVOaJy1Tf26NQioY=';
+    // // const binaryDerString = window.atob(EncodedKey);
+    // // // convert from a binary string to an ArrayBuffer
+    // // const binaryDer = str2ab(binaryDerString);
+    
+    // var keyBuf = new TextEncoder().encode(rawKey).buffer
+    // // // const keyBuf = Uint8Array.from(atob(EncodedKey), c => c.charCodeAt(0)).buffer;
+    // // var importedKey = crypto.subtle.importKey(
+    // //     'raw', // Format of the key data (raw, pkcs8, spki, jwk)
+    // //     keyBuf, // ArrayBuffer representing the key data
+    // //     {
+    // //         name: 'ECDSA', // Name of the algorithm
+    // //         namedCurve: "P-256", 
+    // //     },
+    // //     true, // Whether the key is extractable (true or false)
+    // //     ['sign', 'verify'] // List of permitted operations (e.g., encrypt, decrypt, sign, verify)
+    // // )
+    // // console.log("importedKey: " + ab2b64(importedKey));
+
+    // Your input string
+    // const inputString = "your_string_here";
+
+    // // Function to derive a private key from a string
+    // function derivePrivateKeyFromString(string) {
+    //     // Using PBKDF2 with SHA-256
+    //     const salt = 1000; // Generate a random salt
+    //     const iterations = 10000; // Adjust this value according to your security requirements
+
+    //     // Derive a key using PBKDF2
+    //     const derivedKey = crypto.pbkdf2Sync(string, salt, iterations, 32, 'sha256');
+
+    //     return derivedKey.toString('hex'); // Convert the derived key to hexadecimal representation
+    // }
+
+    // // Generate private key from string
+    // const testprivateKey = derivePrivateKeyFromString(inputString);
+    // console.log("Generated private key:", testprivateKey);
+
+
+
+    var keypair = await window.crypto.subtle.generateKey(
+        {
+            name: "ECDSA",
+            namedCurve: "P-256", // secp256r1 
+        },
+        true,
+        ["sign", "verify"] 
+    );
+    // console.log("keypair: " + keypair);
+
+    // window.crypto.subtle.exportKey(
+    //     "jwk", 
+    //     keypair.privateKey 
+    // ).then(privkey => {
+        var privateKey = await window.crypto.subtle.exportKey(
+        "pkcs8", 
+        keypair.privateKey 
+    );  
+    console.log("private key: " + ab2b64(privateKey));
+
+
+    // (async () => {
+    //     privkey = await importPrivateKey(p)
+    //     console.log("importedKey key222: " + privkey.privateKey)
+    // })()
+
+
+    importedKey = await importPrivateKey(ab2b64(privateKey));
+    // // alert(ab2b64(privateKey222))
+    // for (let variable in privateKey222) {
+    // console.log("importedKey key222: " + variable);
+    // // code to be executed
+    // }
+    console.log("importedKey: " + importedKey);
+    // const sign = await window.crypto.subtle.sign(
+    //     {name: "ECDSA",
+    //     hash: {name: "SHA-512"}},
+    //     privateKey, 
+    //     data);
+
+    // const privateKey = await importPrivateKey(p);
+    // console.log('keyey1222tester:', privateKey)
+    // return privateKey;
+
+    // const data2 = str2ab("Test buffer")
+    // const sign = await window.crypto.subtle.sign(
+    //     {name: "ECDSA",
+    //     hash: {name: "SHA-256"}},
+    //      importedKey, 
+    //      data2);
+    // console.log('testsign',window.btoa(ab2str(sign)));
+
+
+
+
+
+
+
+    // createSignature2(ab2b64(privateKey)).then(importedKey => {
+
+    //     console.log("importedKey key222: " + ab2b64(importedKey));
+    // }); // Fix: apply consistently async/await syntax
+    
+    // const importedKey = await importPrivateKey();
+    // // importedKey = importPrivateKey(ab2b64(privateKey))
+    // console.log("importedKey: " + ab2b64(importedKey));
+
+    // Export public key in X.509/SPKI format, DER encoded
+    var publicKey = await window.crypto.subtle.exportKey(
+        "spki", 
+        keypair.publicKey 
+    );  
+    // console.log("Public key111: " + publicKey);
+
+    // document.getElementById("pub").innerHTML = "Public key: " + ab2b64(publicKey);
+    // console.log("private key: " + ab2b64(privateKey));
+    pubkey64 = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKey)));
+    console.log("Public key: " + pubkey64);
+    
+
+
+
+    // // function importPrivateKey() {   
+    //     const pem = `-----BEGIN PRIVATE KEY-----
+    //                 MIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIA3G3l+QFixI4fD4zW
+    //                 lC9n7xnT/7MS4bm6Ge6KXPmesmy9AARSdysdhWLXq51hvd/4F4Rd+ZYWn8bdeN58
+    //                 zOJdRAOhgYkDgYYABAGBW8V/nf4yXdePGpotIL8WNR1182yBdcztCpWQUkL9TOEy
+    //                 vhhnf8SwtRDglbjCBiVONw4+WjC3pRfo3yTmee+mEQE3peJArA1zOFz9WJZhigA9
+    //                 aK3t8BUbisZ38C4jcRuGgaBYUvg3ndMdqZnsNdbcg7sKOM9szCUvzGWkIWn2l4lW
+    //                 zA==
+    //                 -----END PRIVATE KEY-----`;
+    //     const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    //     const pemFooter = "-----END PRIVATE KEY-----";
+    //     const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+    //     const binaryDerString = window.atob(pemContents);
+    //     const binaryDer = str2ab(binaryDerString);
+    // //     var ikey =  window.crypto.subtle.importKey(
+    // //         "pkcs8", 
+    // //         binaryDer,
+    // //         {name: "ECDSA",namedCurve: "P-521"}, 
+    // //         true, 
+    // //         ["sign"]
+    // //         )
+    // //     // .then(ikey => {
+    // //         console.log("imported key test: " + ab2b64(ikey.privateKey));
+
+    // //     // }); // Fix: import ECDSA key
+    // // // }
+
+    // // // importPrivateKey()
+    // // var importedKey = crypto.subtle.importKey(
+    // //         'pkcs8', // Format of the key data (raw, pkcs8, spki, jwk)
+    // //         binaryDer, // ArrayBuffer representing the key data
+    // //         {
+    // //             name: 'ECDSA', // Name of the algorithm
+    // //             namedCurve: "P-521", 
+    // //         },
+    // //         true, // Whether the key is extractable (true or false)
+    // //         ['sign', 'verify'] // List of permitted operations (e.g., encrypt, decrypt, sign, verify)
+    // //     )
+    // //     console.log("importedKey: " + ab2b64(importedKey));
+
+    // // var publicKey2 = await window.crypto.subtle.importKey(
+    // //     'pkcs8', // Format of the key data (raw, pkcs8, spki, jwk)
+    // //     binaryDer, // ArrayBuffer representing the key data
+    // //     {
+    // //         name: 'ECDSA', // Name of the algorithm
+    // //         namedCurve: "P-521", 
+    // //     },
+    // //     true, // Whether the key is extractable (true or false)
+    // //     ['sign', 'verify']
+    // // );  
+    // pubkey642 = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKey2)));
+    // console.log("Public key222: " + pubkey642);
+
+
+    // function hex2ab(hex){
+    //     return new Uint8Array(hex.match(/[\da-f]{2}/gi).map(function (h) {return parseInt(h, 16)}));
+    // }
+    // function ab2b64(arrayBuffer) {
+    //         return window.btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+    // }
+    // function ab2b64url(arrayBuffer) {
+    //         return ab2b64(arrayBuffer).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    // }
+
+
+
+    // // sample key pair: raw private key and raw public uncompressed key
+    // let rawPrivateKey = hex2ab(ab2b64(privateKey));
+    // let rawPublicKeyUncompressed = hex2ab(ab2b64(publicKey));
+    // let x = rawPublicKeyUncompressed.slice(1, 32 + 1); // ignore 0x04 start byte for uncompressed format
+    // let y = rawPublicKeyUncompressed.slice(32 + 1);
+    // let d = rawPrivateKey
+
+    // // convert to JWK
+    // let privateKeyjwk = {
+    // crv: "P-256",
+    // d: ab2b64url(d),
+    // kty: "EC",
+    // x: ab2b64url(x),
+    // y: ab2b64url(y)
+    // }
+    // console.log("jwk", privateKeyjwk)
+
+    // // import private key in JWK format
+    // let importedPrivateKey = await window.crypto.subtle.importKey(
+    //     "jwk", 
+    //     privateKeyjwk,                                         // valid private key in JWK format 
+    //     { name: "ECDSA", namedCurve: "P-256" },
+    //     true,                          
+    //     []                                       // deriveKey, deriveBits allowed
+    // ); 
+    // console.log("importedPrivateKey:", importedPrivateKey)
+    
+    //     // Export raw private key as ArrayBuffer
+    //     async function exportRawPrivateKey(privateKey){
+    //         var keyJwk = await crypto.subtle.exportKey("jwk", privateKey);
+    //         console.log("keyJwk: " + ab2b64(keyJwk));
+    //         alert(ab2b64(keyJwk))
+    //         var rawKeyB64 = toBase64(keyJwk.d);
+    //         console.log("rawKeyB64: " + ab2b64(rawKeyB64));
+    //         return b642ab(rawKeyB64);
+    //     }
+
+    //     //
+    //     // Helper
+    //     //
+
+    //     // Base64url -> Base64
+    //     function toBase64(input) {
+    //         input = input.replace(/-/g, '+').replace(/_/g, '/');
+    //         return input + "=".repeat(3 - (3 + input.length) % 4);
+    //     }
+
+    //     // Base64 -> ArrayBuffer
+    //     function b642ab(b64){
+    //         return Uint8Array.from(window.atob(b64), c => c.charCodeAt(0));
+    //     }
+
+    //     // ArrayBuffer -> hex
+    //     function ab2hex(ab) { 
+    //         return Array.prototype.map.call(new Uint8Array(ab), x => ('00' + x.toString(16)).slice(-2)).join('');
+    //     }
+
+
+
+    // var privkeyBuff = await exportRawPrivateKey(keypair.privateKey);
+    //     console.log("private key: " + ab2b64(privkeyBuff));
+    // var importedKey = crypto.subtle.importKey(
+    //     'raw', // Format of the key data (raw, pkcs8, spki, jwk)
+    //     privkeyBuff, // ArrayBuffer representing the key data
+    //     {
+    //         name: 'ECDSA', // Name of the algorithm
+    //         namedCurve: "P-256", 
+    //     },
+    //     true, // Whether the key is extractable (true or false)
+    //     ['sign', 'verify'] // List of permitted operations (e.g., encrypt, decrypt, sign, verify)
+    // )
+    // console.log("importedKey: " + ab2b64(importedKey));
+
+        // private key: 98UmKEmYy5sht5XufP4FkTX6s8qZVOaJy1Tf26NQioY=
+
+    // })
+    // function ab2hex(ab) { 
+    //     return Array.prototype.map.call(new Uint8Array(ab), x => ('00' + x.toString(16)).slice(-2)).join('');
+    // }
+    // // export raw public key (uncompressed format)
+    // let publicKeya = await window.crypto.subtle.exportKey("raw", keypair.privateKey)
+    // console.log("privKeyRaw:", ab2hex(publicKeya))
+    // function entropyToMnemonic(entropy, wordlist) {
+    //     if (!Buffer.isBuffer(entropy)) {
+    //         entropy = Buffer.from(entropy, 'hex');
+    //     }
+    //     wordlist = wordlist || DEFAULT_WORDLIST;
+    //     if (!wordlist) {
+    //         throw new Error(WORDLIST_REQUIRED);
+    //     }
+    //     // 128 <= ENT <= 256
+    //     if (entropy.length < 16) {
+    //         throw new TypeError(INVALID_ENTROPY);
+    //     }
+    //     if (entropy.length > 32) {
+    //         throw new TypeError(INVALID_ENTROPY);
+    //     }
+    //     if (entropy.length % 4 !== 0) {
+    //         throw new TypeError(INVALID_ENTROPY);
+    //     }
+    //     const entropyBits = bytesToBinary(Array.from(entropy));
+    //     const checksumBits = deriveChecksumBits(entropy);
+    //     const bits = entropyBits + checksumBits;
+    //     const chunks = bits.match(/(.{1,11})/g);
+    //     const words = chunks.map((binary) => {
+    //         const index = binaryToByte(binary);
+    //         return wordlist[index];
+    //     });
+    //     return wordlist[0] === '\u3042\u3044\u3053\u304f\u3057\u3093' // Japanese wordlist
+    //         ? words.join('\u3000')
+    //         : words.join(' ');
+    // }
+    // function generateMnemonic(strength, rng, wordlist) {
+    //     strength = strength || 128;
+    //     if (strength % 32 !== 0) {
+    //         // throw new TypeError(INVALID_ENTROPY);
+    //     }
+    //     rng = rng || ((size) => Buffer.from(utils_1.randomBytes(size)));
+    //     return entropyToMnemonic(rng(strength / 8), wordlist);
+    // }
+    // console.log("pre mnemonic:");
+    // const bip39 = import ('bip39');
+    // import { generateMnemonic } from 'bip39';
+    // const mnemonic = await WebBip39.generateMnemonic()
+    // import * as bip39 from '@scure/bip39';
+    // import { wordlist } from '@scure/bip39/wordlists/english';
+    // var bip39 = require('../')
+    // Generate x random words. Uses Cryptographically-Secure Random Number Generator.
+    // const mn = generateMnemonic(wordlist);
+    // console.log(mn);
+
+
+    // const bip39 = require('bip39');
+    // // const curve = new elliptic.ec('secp256k1');
+    // const bip39 = window.bip39;
+    // const mnemonic = bip39.generateMnemonic();
+    // const mnemonic = bip39.generateMnemonic();
+    // import * as bip39 from '@scure/bip39';
+    // import { wordlist } from '@scure/bip39/wordlists/english';
+
+    // // Generate x random words. Uses Cryptographically-Secure Random Number Generator.
+    // const mnemonic = bip39.generateMnemonic(wordlist);
+    // // console.log(mnemonic);
+    // console.log("Generated mnemonic:", mnemonic);
+
+    var data = "jumps over the lazy dog11"
+    console.log("data: " + data);
+    var dataStr = JSON.stringify(data) 
+    console.log("dataStr: " + dataStr);
+    // hashed_data = await hashMessage(dataStr)
+    // console.log("data: " + data);
+    var dataBuf = new TextEncoder().encode(dataStr).buffer
+
+
+    var signature = await window.crypto.subtle.sign(
+        {
+            name: "ECDSA",
+            hash: {name: "SHA-256"}, 
+        },
+        keypair.privateKey, 
+        dataBuf 
+    ); 
+    sig64 = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)))
+    // document.getElementById("sig").innerHTML = "Signature: " + ab2b64(signature);
+    console.log("Signature: " + sig64);
+
+
+    // const data2 = str2ab("Test buffer")
+    const sign = await window.crypto.subtle.sign(
+        {name: "ECDSA",
+        hash: {name: "SHA-256"}},
+         importedKey, 
+         dataBuf);
+    console.log('testsign',window.btoa(ab2str(sign)));
+
+    sig264 = btoa(String.fromCharCode.apply(null, new Uint8Array(sign)))
+    // document.getElementById("sig").innerHTML = "Signature: " + ab2b64(signature);
+    console.log("testsign2: " + sig264);
+
+
+    // var signature2 = await crypto.subtle.sign(
+    //     {
+    //     name: "ECDSA",
+    //     hash: {name: "SHA-256"},
+    //     },
+    //     keypair.privateKey,
+    //     dataBuf
+    // );
+    // sig642 = btoa(String.fromCharCode.apply(null, new Uint8Array(signature2)))
+    // console.log("Signature2: " + sig642);
+
+    // // return signature;
+    // }
+
+
+
+
+    // Function to verify a transaction
+    // async function verifyTransaction(publicKey, transaction, signature) {
+    // const encoder = new TextEncoder();
+    // const data = encoder.encode(JSON.stringify(transaction));
+
+    // var data = "jumps over the lazy dog11"
+    // console.log("data: " + data2);
+    // var dataStr2 = JSON.stringify(data2) 
+    // console.log("dataStr: " + dataStr2);
+    // // hashed_data = await hashMessage(dataStr)
+    // // console.log("data: " + data);
+    // var dataBuf2 = new TextEncoder().encode(dataStr2).buffer
+    const isValid = await crypto.subtle.verify(
+        {
+        name: "ECDSA",
+        hash: { name: "SHA-256" },
+        },
+        keypair.publicKey,
+        sign,
+        dataBuf
+    );
+
+    // return isValid;
+    // }
+
+    console.log("is_valid2: " + isValid);
+
+
+
+    // dataab = str2ab(hashed_data)
+    // console.log("dataab: " + dataab);
+    let is_valid = await window.crypto.subtle.verify(
+        {
+        name: "ECDSA",
+        hash: { name: "SHA-256" },
+        },
+        keypair.publicKey,
+        signature,
+        dataBuf,
+    );
+    console.log("is_valid: " + is_valid);
+
+
+    const dict = {
+//   r: r,
+//   s: s,
+//   v: v,
+    // privateKey: privKey,
+  signature: sig264,
+  transactionData: data,
+  publicKeyHex: pubkey64,
+  csrfmiddlewaretoken: '{{ csrf_token }}'
+};
+// dict.signature = Array.from(signature.toDER()).map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+    $.ajax({
+    type:'POST',
+    url:'/verify-registration/',
+    data: dict,
+      success:function(verificationResp){
+        // alert(verificationResp)
+      },
+});
+
+
+}
+// prog2()
+// -------------
+
+
+
+function prog1(){
+
+    (async () => {
+
+function ab2b64(arrayBuffer) {
+    return window.btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+}
+
+
+async function hashMessage(message) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+
+  const buffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(buffer));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+  return hashHex;
+}
+// Generate key pair
+var keypair = await window.crypto.subtle.generateKey(
+    {
+        name: "ECDSA",
+        namedCurve: "P-256", // secp256r1 
+    },
+    false,
+    ["sign", "verify"] 
+);
+// var privateKey = await window.crypto.subtle.exportKey(
+//     "spki", 
+//     keypair.privateKey 
+// );  
+// Export public key in X.509/SPKI format, DER encoded
+var publicKey = await window.crypto.subtle.exportKey(
+    "spki", 
+    keypair.publicKey 
+);  
+// document.getElementById("pub").innerHTML = "Public key: " + ab2b64(publicKey);
+// console.log("private key: " + ab2b64(privateKey));
+pubkey64 = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKey)));
+console.log("Public key: " + pubkey64);
+// Sign data
+var data = "jumps over the lazy dog"
+hashed_data = hashMessage(data)
+var dataStr = JSON.stringify(data) 
+var dataBuf = new TextEncoder().encode(dataStr).buffer
+var signature = await window.crypto.subtle.sign(
+    {
+        name: "ECDSA",
+        hash: {name: "SHA-256"}, 
+    },
+    keypair.privateKey, 
+    dataBuf 
+); 
+sig64 = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)))
+// document.getElementById("sig").innerHTML = "Signature: " + ab2b64(signature);
+console.log("Signature: " + sig64);
+
+
+const dict = {
+//   r: r,
+//   s: s,
+//   v: v,
+    // privateKey: privKey,
+  signature: sig64,
+  transactionData: data,
+  publicKeyHex: pubkey64,
+  csrfmiddlewaretoken: '{{ csrf_token }}'
+};
+// dict.signature = Array.from(signature.toDER()).map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+    $.ajax({
+    type:'POST',
+    url:'/verify-registration/',
+    data: dict,
+      success:function(verificationResp){
+        // alert(verificationResp)
+      },
+});
+
+
+})();
+
+
+
+
+}
+// prog1()
+
+
+
+
+
+
+
+
+
+    async function generateDerivedKey() {
+        // alert('generate derived key')
+      let password = 'your_starting_key';
+      let salt = 'salt';
+      let iterations = 1000000;
+    // alert('password');
+    // alert(password);
+      // Derive a key using PBKDF2
+      return await deriveKeyFromPassword(password, salt).then(derivedKey => {
+
+        console.log(`passkey11: ${derivedKey}`);
+        // const derivedKey = CryptoJS.PBKDF2(passkey, salt, { keySize: 256 / 32, iterations: iterations });
+        // alert('3');
+        // alert(`333 ${derivedKey}`)
+        // alert(derivedKey);
+        return derivedKey;
+        alert('4');
+      })
+      // Example of using the derived key for other cryptographic operations
+    //   console.log(derivedKey.toString(CryptoJS.enc.Hex));
+    //   return [startingKey,derivedKey.toString(CryptoJS.enc.Hex)]
+    
+    
+    }
+
+
+
+    // function firstFunction(_callback){
+    //     // do some asynchronous work
+    //     // and when the asynchronous stuff is complete
+    //     _callback();    
+    // }
+
+    // function secondFunction(){
+    //     // call first function and pass in a callback function which
+    //     // first function runs when it has completed
+    //     firstFunction(function() {
+    //         console.log('huzzah, I\'m done!');
+    //     });    
+    // }
+
+    // generateDerivedKey();
+
+    // generating the secret key from password and salt
+    async function deriveKeyFromPassword(password, salt) {
+        // alert(password)
+    const encoder = new TextEncoder();
+    const passwordBuffer = encoder.encode(password);
+    const saltBuffer = new Uint8Array(salt);
+    const derivedKeyBuffer = await crypto.subtle.importKey(
+        'raw',
+        passwordBuffer,
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+    )
+    const key = await crypto.subtle.deriveBits(
+        {
+        name: 'PBKDF2',
+        salt: saltBuffer,
+        iterations: 100000,
+        hash: 'SHA-256',
+        },
+        derivedKeyBuffer,
+        256  // Length of the derived key in bits
+    )
+    alert('step2')
+    alert(new Uint8Array(key));
+    alert(`derivedKeyBuffer ${derivedKeyBuffer}`)
+
+    // });
+    return new Uint8Array(key);
+
+
+    }
+
+
+
+    // signing a transaction
+    // async function signTransaction(privateKey, transactionData) {
+    //     // alert(privateKey);
+    //     // alert(transactionData);
+    // const encoder = new TextEncoder();
+    // const dataBuffer = encoder.encode(transactionData);
+
+    // // Hash the transaction data
+    // const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+
+    // alert('1')
+    // // Import the private key
+    // const importedPrivateKey = await crypto.subtle.importKey(
+    //     'pkcs8',
+    //     privateKey,
+    //     { name: 'ECDSA', namedCurve: 'P-256' },
+    //     true,
+    //     ['sign']
+    // );
+    // alert('2')
+    // // Sign the hashed transaction with the private key
+    // const signatureBuffer = await crypto.subtle.sign(
+    //     { name: 'ECDSA', hash: { name: 'SHA-256' } },
+    //     importedPrivateKey,
+    //     hashBuffer
+    // );
+
+    // // Convert the signature buffer to a hex string
+    // const signatureArray = new Uint8Array(signatureBuffer);
+    // const signatureHex = Array.from(signatureArray)
+    //     .map(byte => byte.toString(16).padStart(2, '0'))
+    //     .join('');
+
+    // return signatureHex;
+    // }
+
+
+
+    async function signTransaction(privateKeyString, transactionData) {
+      try {
+        // Assume you have a transaction object with data to be signed
+        // const transactionData = { sender: 'Alice', recipient: 'Bob', amount: 10 };
+
+        // Assume you have a private key in PEM format
+        // const privateKeyPem = `-----BEGIN PRIVATE KEY-----
+        // MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDmko9ZYXe7yK
+        // -----END PRIVATE KEY-----`;
+
+        // // Convert the private key from PEM to ArrayBuffer
+        // const privateKeyArrayBuffer = await crypto.subtle.importKey(
+        //   'pkcs8',
+        //   new TextEncoder().encode(privateKeyPem),
+        //   { name: 'RSA-OAEP', hash: 'SHA-256' },
+        //   false,
+        //   ['sign']
+        // );
+
+
+
+        // Convert the private key from string to ArrayBuffer
+        const privateKeyArrayBuffer = new TextEncoder().encode(privateKeyString);
+        alert('privatekeyarraybuuffer',privateKeyArrayBuffer);
+
+
+        // Convert the transaction data to a string
+        const transactionString = JSON.stringify(transactionData);
+
+        // Create a digest (hash) of the transaction data
+        const encoder = new TextEncoder();
+        const transactionBuffer = encoder.encode(transactionString);
+        const digest = await crypto.subtle.digest('SHA-256', transactionBuffer);
+        alert(`crypto.subtle.sign ${digest}`)
+        // Sign the digest using the private key
+        const signature = await crypto.subtle.sign(
+          { name: 'RSA-OAEP' },
+          privateKeyArrayBuffer,
+          digest
+        );
+        alert('after digest')
+        // Convert the signature to base64 for display
+        const signatureBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)));
+        alert('done sign')
+        // Print or use the signature as needed
+        console.log('Transaction Signature:\n', signatureBase64);
+        return signatureBase64;
+      } catch (error) {
+        console.error('Error signing transaction:', error);
+      }
+    }
+
+
+
+
+    async function generateKeyPairFromStartingKey(startingKey) {
+        alert(`generate pair from starting key, startingkey::, ${startingKey}`)
+      try {
+        // const startingKey = 'your_starting_key';
+        const salt = 'salt';
+        const iterations = 1000000;
+
+        // Derive a key using PBKDF2
+        const derivedKey = await crypto.subtle.importKey(
+          'raw',
+          new TextEncoder().encode(startingKey),
+          { name: 'PBKDF2' },
+          false,
+          ['deriveBits']
+        );
+        const keyMaterial = await crypto.subtle.deriveBits(
+          {
+            name: 'PBKDF2',
+            salt: new TextEncoder().encode(salt),
+            iterations: iterations,
+            hash: 'SHA-256'
+          },
+          derivedKey,
+          256
+        );
+
+        // Generate an RSA key pair using the derived key
+        const keyPair = await crypto.subtle.generateKey(
+          {
+            name: 'RSA-OAEP',
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+            hash: { name: 'SHA-256' },
+          },
+          true, // extractable
+          ['encrypt', 'decrypt'] // key usages
+        );
+
+        // Export the public key
+        const publicKey = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+
+        // Display the public key
+        const publicKeyBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKey)));
+        console.log('Public Key:\n', publicKeyBase64);
+        console.log('starting Key:\n', startingKey);
+        return [startingKey, publicKeyBase64]
+      } catch (error) {
+        console.error('Error generating key pair:', error);
+      }
+    }
+
+
+
+// alert('start');
+// derivedKey = generateDerivedKey().then(derivedKey => {
+
+//         alert('done derive key');
+//         alert(derivedKey);
+//         // return derivedKey;
+//     alert(`'next ${derivedKey}`)
+//         generateKeyPairFromStartingKey(derivedKey).then(keypair => {
+//             // alert('keypair', keypair);
+//     // alert('1a')
+//     alert(`keypair:, ${keypair}`);
+
+    
+    // const transactionData = "Sender: Alice, Recipient: Bob, Amount: 10 BTC";
+    //     alert('sign transaction');
+    // signTransaction(keypair[0], transactionData).then(sig => {
+    //     console.log(`Signature: ${sig}`);
+    // })
+    
+
+
+//     });
+    
+// })
+    
+
+
+
+
+
+
+
+async function getKeyPairFromPassword(password, salt) {
+  try {
+    // Encode password and salt into buffers
+    // const encoder = new TextEncoder();
+    // const passwordBuffer = encoder.encode(password);
+    // const saltBuffer = encoder.encode(salt);
+
+    // // alert(passwordBuffer);
+
+    // const derivedKeyBuffer = await crypto.subtle.importKey(
+    //     'raw',
+    //     passwordBuffer,
+    //     { name: 'PBKDF2' },
+    //     false,
+    //     ['deriveBits']
+    // )
+    // alert(derivedKeyBuffer);
+
+
+    // // Derive a symmetric key using PBKDF2
+    // const derivedKey = await crypto.subtle.deriveKey(
+    //   {
+    //     name: 'PBKDF2',
+    //     salt: saltBuffer,
+    //     iterations: 100000, // Choose an appropriate number of iterations
+    //     hash: 'SHA-256',
+    //   },
+    //   derivedKeyBuffer,
+    //   { name: 'AES-GCM', length: 256 }, // Use AES-GCM for symmetric key encryption
+    //   false,
+    //   ['encrypt', 'decrypt']
+    // );
+    //   alert(derivedKey);
+
+
+
+    const encoder = new TextEncoder();
+
+    // Encode password and salt into buffers
+    const passwordBuffer = encoder.encode(password);
+    const saltBuffer = encoder.encode(salt);
+
+    // Derive a key using PBKDF2
+    const derivedKeyBuffer = await crypto.subtle.importKey(
+      'raw',
+      passwordBuffer,
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits']
+    );
+
+    const derivedKey = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: saltBuffer,
+        iterations: 100000,
+        hash: 'SHA-256',
+      },
+      derivedKeyBuffer,
+      256
+    );
+      alert(derivedKey)
+    // Convert the derived key to a usable format (e.g., ArrayBuffer to hex)
+    const derivedKeyHex = Array.from(new Uint8Array(derivedKey))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+
+    alert('Derived Key (Hex): ' + derivedKeyHex);
+
+
+
+
+
+    // Generate an RSA key pair using the derived symmetric key
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: 'SHA-256' },
+      },
+      true, // Extractable private key
+      ['encrypt', 'decrypt'] // Key usages
+    );
+      alert(keyPair)
+    // Export the public key
+    const publicKey = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+
+    // Encrypt the symmetric key with the derived private key
+    const encryptedSymmetricKey = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      keyPair.publicKey,
+      derivedKey
+    );
+
+    return { publicKey, publicKey };
+  } catch (error) {
+    console.error('Error generating key pair:', error);
+  }
+}
+
+// // Example usage:
+// getKeyPairFromPassword('your_password', 'your_salt')
+//   .then((keyPair) => {
+//     console.log('Public Key:', keyPair.publicKey);
+//     console.log('Encrypted Symmetric Key:', keyPair.encryptedSymmetricKey);
+//   });
+
+
+
+// async function generateDeterministicKeyPair(seed) {
+//   try {
+//     // Use a deterministic key derivation function (e.g., PBKDF2) with a fixed seed
+//     const derivedKeyBuffer = await crypto.subtle.importKey(
+//       'raw',
+//       new TextEncoder().encode(seed),
+//       { name: 'PBKDF2' },
+//       false,
+//       ['deriveBits']
+//     );
+
+//     const derivedKey = await crypto.subtle.deriveBits(
+//       {
+//         name: 'PBKDF2',
+//         salt: new Uint8Array(0), // Use an empty salt for determinism
+//         iterations: 100000,
+//         hash: 'SHA-256',
+//       },
+//       derivedKeyBuffer,
+//       256
+//     );
+
+//     // Generate a random value for the public exponent
+//     const publicExponent = new Uint8Array([0x01, 0x00, 0x01]);
+
+//     // Generate an RSA private key with the derived key as the secret key
+//     const privateKey = await crypto.subtle.generateKey(
+//       {
+//         name: 'RSA-PSS',
+//         modulusLength: 2048,
+//         publicExponent: publicExponent,
+//         hash: { name: 'SHA-256' },
+//       },
+//       true,
+//       ['sign', 'verify']
+//     );
+
+//     // Export the private key
+//     const exportedPrivateKey = await crypto.subtle.exportKey('pkcs8', privateKey.privateKey);
+
+//     // Convert the private key to a usable format (e.g., ArrayBuffer to hex)
+//     const privateKeyHex = Array.from(new Uint8Array(exportedPrivateKey))
+//       .map(byte => byte.toString(16).padStart(2, '0'))
+//       .join('');
+
+//     console.log('Private Key (Hex): ' + privateKeyHex);
+//     console.log('Public Key (Hex): ' + publicKeyHex);
+//   } catch (error) {
+//     console.error('Error generating key pair:', error);
+//   }
+// }
+
+// // Example usage with a fixed seed
+// const seed = 'your_fixed_seed';
+// generateDeterministicKeyPair(seed);
+
+async function generateDeterministicKeyPair(seed) {
+  try {
+    // Use a deterministic key derivation function (e.g., PBKDF2) with a fixed seed
+    const derivedKeyBuffer = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(seed),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits']
+    );
+
+    const derivedKey = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: new Uint8Array(0), // Use an empty salt for determinism
+        iterations: 100000,
+        hash: 'SHA-256',
+      },
+      derivedKeyBuffer,
+      256
+    );
+
+    // Use the derived key as the secret key for the HMAC algorithm
+    const hmacKey = await crypto.subtle.importKey(
+      'raw',
+      derivedKey,
+      { name: 'HMAC', hash: { name: 'SHA-256' } },
+      false,
+      ['sign', 'verify']
+    );
+
+    // Generate a random value for the public exponent
+    const publicExponent = new Uint8Array([0x01, 0x00, 0x01]);
+
+    // Generate an RSA private key with the derived key as the secret key
+    const privateKey = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-PSS',
+        modulusLength: 2048,
+        publicExponent: publicExponent,
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['sign', 'verify']
+    );
+
+    // Export the public key
+    const exportedPublicKey = await crypto.subtle.exportKey('spki', privateKey.publicKey);
+
+    // Convert the public key to a usable format (e.g., ArrayBuffer to hex)
+    const publicKeyHex = Array.from(new Uint8Array(exportedPublicKey))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+
+      
+    // Export the private key
+    const exportedPrivateKey = await crypto.subtle.exportKey('pkcs8', privateKey.privateKey);
+
+    // Convert the private key to a usable format (e.g., ArrayBuffer to hex)
+    const privateKeyHex = Array.from(new Uint8Array(exportedPrivateKey))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+
+    console.log('Private Key (Hex): ' + privateKeyHex);
+
+    console.log('Public Key (Hex): ' + publicKeyHex);
+  } catch (error) {
+    console.error('Error generating key pair:', error);
+  }
+}
+
+// Example usage with a fixed seed
+// const seed = 'your_fixed_seed';
+// generateDeterministicKeyPair(seed);
+
+async function generateKeyPair() {
+  try {
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    // // You can access the public and private keys from the key pair object
+    // const publicKey = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+    // const privateKey = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+    // console.log('Public Key:', new TextDecoder().decode(publicKey));
+    // console.log('Private Key:', new TextDecoder().decode(privateKey));
+
+    // Export keys as ArrayBuffer
+    const publicKeyBuffer = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+    const privateKeyBuffer = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+
+    // Convert ArrayBuffer to Base64
+    const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer)));
+    const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKeyBuffer)));
+
+    console.log('Public Key (Base64):', publicKeyBase64);
+    console.log('Private Key (Base64):', privateKeyBase64);
+
+
+  } catch (error) {
+    console.error('Error generating key pair:', error);
+  }
+}
+
+// Call the function to generate the key pair
+// generateKeyPair();
+
+
+
+
+async function generateKeyPairWithSeed(seed) {
+  try {
+    // Convert the seed to an ArrayBuffer
+    const seedBuffer = new TextEncoder().encode(seed);
+
+    // Derive a key using the seed and a KDF (Key Derivation Function)
+    const key = await crypto.subtle.importKey(
+      'raw',
+      seedBuffer,
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+
+    // Derive the actual key pair using the derived key
+    const keyPair = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: new Uint8Array(0), iterations: 100000, hash: 'SHA-256' },
+      key,
+      { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    // Export keys as ArrayBuffer
+    const publicKeyBuffer = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+    const privateKeyBuffer = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+    // Convert ArrayBuffer to Base64
+    const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer)));
+    const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKeyBuffer)));
+
+    console.log('Public Key (Base64):', publicKeyBase64);
+    console.log('Private Key (Base64):', privateKeyBase64);
+  } catch (error) {
+    console.error('Error generating key pair with seed:', error);
+  }
+}
+
+
+// generateKeyPairWithSeed('12345')
+
+
+
+
+async function generate(){
+// Generate P-256 key pair
+const keyPair = await window.crypto.subtle.generateKey(
+        {
+            name: 'ECDSA',
+            namedCurve: 'P-256'
+        },
+        true,
+        ['sign']
+    );
+// const keyPair = await crypto.subtle.generateKey(
+//           {
+//             name: 'RSA-OAEP',
+//             modulusLength: 2048,
+//             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+//             hash: { name: 'SHA-256' },
+//           },
+//           true, // extractable
+//           ['encrypt', 'decrypt'] // key usages
+//         );
+// const keyPair = await crypto.subtle.generateKey(
+//     {
+//     name: 'RSA-OAEP',
+//     modulusLength: 2048,
+//     publicExponent: new Uint8Array([1, 0, 1]),
+//     hash: { name: 'SHA-256' },
+//     },
+//     true,
+//     ['sign']
+// );
+let transaction = {
+    sender: 'sender',
+    recipient: 'recipient',
+    amount: 'amount'
+};
+console.log('keyPair', keyPair);
+
+// Convert the transaction data to a JSON string
+// let dataString = JSON.stringify(transaction);
+
+console.log('1');
+
+// // Calculate the hash of the transaction data
+// let data_hash = arrayBufferToHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(dataString)));
+
+// console.log('2');
+
+
+// // Get the private key in hexadecimal format
+// privateKeyHex = keypair.getPrivate('hex');
+// console.log('Private Key:', privateKeyHex);
+
+// // Get the public key in uncompressed format (hex)
+// publicKeyHex = keypair.getPublic('hex');
+// console.log('Public Key:', publicKeyHex);
+
+
+const transactionData = 'Sample Transaction Data';
+
+// Sign the hash
+signature = await window.crypto.subtle.sign(
+    {
+        name: 'ECDSA',
+        hash: { name: 'SHA-256' }
+    },
+    keyPair,
+    transactionData
+);
+
+// // Convert the signature to hex
+// signatureHex = arrayBufferToHex(signature);
+
+// // Add the signature and original data hash to the transaction
+// transaction.signature = signatureHex;
+// transaction.hash = data_hash;
+
+console.log('Signature:', signature);
+
+
+// Get the private key in hexadecimal format
+const privateKeyHex = keypair.getPrivate('hex');
+console.log('Private Key:', privateKeyHex);
+
+// Get the public key in uncompressed format (hex)
+const publicKeyHex = keypair.getPublic('hex');
+console.log('Public Key:', publicKeyHex);
+
+// Create some transaction data
+
+// Sign the transaction data with the private key
+const signature = keypair.sign(transactionData, 'hex');
+console.log('Signature:', signature);
+
+const rawSignature = signature.signature;
+const signatureHex = rawSignature.slice(0, 32).toString('hex') + rawSignature.slice(32, 64).toString('hex');
+console.log('Signaturehex:', signatureHex);
+
+
+
+
+var dict = {
+    publicKeyHex: publicKeyHex,
+    transactionData: transactionData,
+    signature: signatureHex.toDER('hex'),
+    // hash: data_hash,
+    csrfmiddlewaretoken: '{{ csrf_token }}'
+    };
+// alert('2')
+alert(dict.signature)
+    $.ajax({
+    type:'POST',
+    url:'/verify-registration/',
+    data: dict,
+      success:function(verificationResp){
+        // alert(verificationResp)
+      },
+});
+
+}
+
+// generate()
+// const elliptic = window.elliptic;
+// const ec = new elliptic.ec('P-256');
+
+// // Generate a keypair
+// const keypair = ec.genKeyPair();
+
+// // Get the private key in hexadecimal format
+// const privateKeyHex = keypair.getPrivate('hex');
+// console.log('Private Key:', privateKeyHex);
+
+// // Get the public key in uncompressed format (hex)
+// const publicKeyHex = keypair.getPublic('hex');
+// console.log('Public Key:', publicKeyHex);
+
+// // Create some transaction data
+// const transactionData = 'Sample Transaction Data';
+
+// // Sign the transaction data with the private key
+// const signature = keypair.sign(transactionData, 'hex');
+// console.log('Signature:', signature);
+
+// const rawSignature = signature.signature;
+// const signatureHex = rawSignature.slice(0, 32).toString('hex') + rawSignature.slice(32, 64).toString('hex');
+// console.log('Signature:', signatureHex);
+
+
+// var dict = {
+//     publicKeyHex: publicKeyHex,
+//     transactionData: transactionData,
+//     signature: signatureHex,
+//     csrfmiddlewaretoken: '{{ csrf_token }}'
+//     };
+// // alert('2')
+// alert(dict.signatureHex)
+//     $.ajax({
+//     type:'POST',
+//     url:'/verify-registration/',
+//     data: dict,
+//       success:function(verificationResp){
+//         // alert(verificationResp)
+//       },
+// });
+// alert('done')
+
+async function go(){
+
+// // Replace these values with your own
+// const privateKeyHex = 'YourPrivateKey';
+// const fromAddress = 'YourFromAddress';
+// const toAddress = 'YourToAddress';
+// const valueInWei = '1000000000000000'; // 0.001 ETH in Wei
+// const gasPriceInWei = '21000000000'; // 21 Gwei in Wei
+// const nonce = 0; // Replace with the correct nonce for the sender address
+
+// // Create a secp256k1 curve object
+// const curve = new elliptic.ec('secp256k1');
+
+// // Generate key pair from the private key
+// const keyPair = curve.keyFromPrivate(privateKeyHex, 'hex');
+
+// const transactionData = 'Sample Transaction Data';
+
+// // Sign the transaction hash
+// const signature = keyPair.sign(transactionData);
+
+// // Get the signature components
+// const r = signature.r.toString('hex');
+// const s = signature.s.toString('hex');
+// const v = signature.recoveryParam;
+
+// // Verify the signature (optional)
+// const publicKey = keyPair.getPublic();
+// const publicKeyHex = keyPair.getPublic('hex');
+// const isVerified = curve.verify(transactionData, signature, publicKey);
+// // signature.toDER('hex')
+// console.log('Public Key Hex:', publicKeyHex);
+// // console.log('Public Key:', publicKey.toDER('hex'));
+
+// console.log('Signature1:', { r, s, v });
+// console.log('Signature:', signature);
+// console.log('Verified:', isVerified);
+
+
+
+// const dict = {
+//   signedData: {
+//     r,
+//     s,
+//     v,
+//   },
+//   r: r,
+//   s: s,
+//   v: v,
+//   signature: signature.toDER('hex'),
+//   transactionData: transactionData,
+//   publicKeyHex: publicKeyHex,
+//   csrfmiddlewaretoken: '{{ csrf_token }}'
+// };
+
+
+// // var dict = {
+// //     publicKeyHex: publicKey,
+// //     transactionData: transactionData,
+// //     signature: signature,
+// //     csrfmiddlewaretoken: '{{ csrf_token }}'
+// //     };
+// // alert('2')
+// // alert(dict)
+//     $.ajax({
+//     type:'POST',
+//     url:'/verify-registration/',
+//     data: dict,
+//       success:function(verificationResp){
+//         // alert(verificationResp)
+//       },
+// });
+
+
+// const hexToByte = (hex) => {
+//   const key = '0123456789abcdef'
+//   let newBytes = []
+//   let currentChar = 0
+//   let currentByte = 0
+//   for (let i=0; i<hex.length; i++) {   // Go over two 4-bit hex chars to convert into one 8-bit byte
+//     currentChar = key.indexOf(hex[i])
+//     if (i%2===0) { // First hex char
+//       currentByte = (currentChar << 4) // Get 4-bits from first hex char
+//     }
+//     if (i%2===1) { // Second hex char
+//       currentByte += (currentChar)     // Concat 4-bits from second hex char
+//       newBytes.push(currentByte)       // Add byte
+//     }
+//   }
+//   return new Uint8Array(newBytes)
+// }
+
+
+
+
+
+// async function signTransaction(privateKey, transactionData) {
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(transactionData);
+
+//   const key = await crypto.subtle.importKey(
+//     'pkcs8',
+//     Buffer.from(privateKey, 'hex'),
+//     { name: 'ECDSA', namedCurve: 'P-256' },
+//     false,
+//     ['sign']
+//   );
+
+//   const signature = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, data);
+//   return Buffer.from(signature).toString('hex');
+// }
+
+
+
+// async function signTransaction(privateKey, transactionData) {
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(transactionData);
+
+//   const key = await crypto.subtle.importKey(
+//     'pkcs8',
+//     Uint8Array.from(Buffer.from(privateKey, 'hex')),
+//     { name: 'ECDSA', namedCurve: 'P-256' },
+//     false,
+//     ['sign']
+//   );
+
+//   const signature = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, data);
+//   return Array.from(new Uint8Array(signature)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+// }
+
+
+
+// let ec = new elliptic.ec('secp256k1');
+
+// // let keyPair = ec.genKeyPair();
+// let keyPair = ec.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+// let privKey = keyPair.getPrivate("hex");
+// let pubKey = keyPair.getPublic();
+// let pubKeyHex = keyPair.getPublic('hex');
+// // Example usage
+// // const privateKeyModule = require('./your_private_key_module'); // Replace with your actual private key module path
+// // const privateKey = privateKeyModule.privateKey;
+// const msg = 'Message';
+
+// signTransaction(privKey, msg).then(signature => {
+//   console.log('Signature:', signature);
+
+
+  
+// const dict = {
+// //   signedData: {
+// //     r,
+// //     s,
+// //     v,
+// //   },
+// //   r: r,
+// //   s: s,
+// //   v: v,
+//     privateKey: privKey,
+//   signature: signature.toDER('hex'),
+//   transactionData: msg,
+//   publicKeyHex: pubKeyHex,
+//   csrfmiddlewaretoken: '{{ csrf_token }}'
+// };
+
+
+// // var dict = {
+// //     publicKeyHex: publicKey,
+// //     transactionData: transactionData,
+// //     signature: signature,
+// //     csrfmiddlewaretoken: '{{ csrf_token }}'
+// //     };
+// // alert('2')
+// // alert(dict.signature)
+//     $.ajax({
+//     type:'POST',
+//     url:'/verify-registration/',
+//     data: dict,
+//       success:function(verificationResp){
+//         // alert(verificationResp)
+//       },
+// });
+
+
+
+// });
+
+
+
+
+
+// async function hashMessage(message) {
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(message);
+
+//   const buffer = await crypto.subtle.digest('SHA-256', data);
+//   const hashArray = Array.from(new Uint8Array(buffer));
+//   const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+//   return hashHex;
+// }
+
+// async function hashMessage2(message) {
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(message);
+
+//   const buffer = await crypto.subtle.digest('SHA-1', data);
+//   const hashArray = Array.from(new Uint8Array(buffer));
+//   const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+//   return hashHex;
+// }
+// let ec = new elliptic.ec('secp256k1');
+
+// // let keyPair = ec.genKeyPair();
+// let keyPair = ec.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+// let privKey = keyPair.getPrivate("hex");
+// let pubKey = keyPair.getPublic();
+// let pubKeyHex = keyPair.getPublic('hex');
+// console.log(`Private key: ${privKey}`);
+// console.log("Public key :", pubKey.encode("hex").substr(2));
+// // console.log("Public key (compressed):",
+// //     pubKey.encodeCompressed("hex"));
+
+// let msg = 'Message';
+// // msgHash = await hashMessage(msg)
+// msgHash = await hashMessage2(msg)
+// // let msgHash = msg
+// console.log(`Msg: ${msg}`);
+// console.log(`Msg hash: ${msgHash}`);
+// // let signature = ec.sign(msgHash, privKey, "hex");
+// let signature = ec.sign(msgHash, privKey, { canonical: true });
+// console.log("Signature:", signature);
+
+// let hexToDecimal = (x) => ec.keyFromPrivate(x, "hex").getPrivate().toString(10);
+// let pubKeyRecovered = ec.recoverPubKey(
+//     hexToDecimal(msg), signature, signature.recoveryParam, "hex");
+// console.log("Recovered pubKey:", pubKeyRecovered.encodeCompressed("hex"));
+
+// let validSig = ec.verify(msg, signature, pubKeyRecovered);
+// console.log("Signature:", signature.toDER('hex'));
+// console.log("Signature valid?", validSig);
+
+// // const r = signature.r.toString('hex');
+// // const s = signature.s.toString('hex');
+// // const v = signature.recoveryParam;
+
+// const dict = {
+// //   r: r,
+// //   s: s,
+// //   v: v,
+//     privateKey: privKey,
+//   signature: signature.toDER('hex'),
+//   transactionData: msg,
+//   publicKeyHex: pubKeyRecovered.encodeCompressed("hex"),
+//   csrfmiddlewaretoken: '{{ csrf_token }}'
+// };
+// // dict.signature = Array.from(signature.toDER()).map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+//     $.ajax({
+//     type:'POST',
+//     url:'/verify-registration/',
+//     data: dict,
+//       success:function(verificationResp){
+//         // alert(verificationResp)
+//       },
+// });
+
+
+
+
+
+
+
+
+}
+go()
+
+
+// const crypto = window.crypto.subtle;
+
+// function generateDeterministicKeyPair(seed) {
+//   const hashedSeed = window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(seed));
+
+//   // Use the hashedSeed as input to your key generation logic (replace with actual logic)
+//   // ... (This part would depend on your specific key generation library/algorithm)
+
+//   // Example (assuming a hypothetical function that takes hashedSeed and generates keys):
+//   const { publicKey, privateKey } = generateKeysFromHashedSeed(hashedSeed);
+
+//   return { publicKey, privateKey };
+// }
+
+// const seedValue = "mySecretSeed";
+// const keyPair = generateDeterministicKeyPair(seedValue);
+
+// console.log("Public Key:", keyPair.publicKey); // This will always be the same for "mySecretSeed"
+// console.log("Private Key:", keyPair.privateKey); // This will always be the same for "mySecretSeed"
+
+
+
+
+
+
+
+
+
+    // const crypto = require('node-forge');
+    // // const crypto = require('crypto');
+    // // alert('a')
+    // // Replace 'your_starting_key' with your actual starting key
+    // const startingKey = 'your_starting_key';
+
+    // // Derive a key using PBKDF2
+    // const salt = '1234';
+    // const iterations = 1000000;
+    // alert(startingKey);
+    // alert(salt);
+    // alert(iterations);
+    // const derivedKey = crypto.pbkdf2Sync(startingKey, salt, iterations, 32, 'sha256');
+    // alert('2')
+    // // Generate RSA key pair
+    // const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+    // modulusLength: 2048,
+    // publicExponent: 65537,
+    // privateKeyEncoding: {
+    //     type: 'pkcs8',
+    //     format: 'pem',
+    //     cipher: 'aes-256-cbc',
+    //     passphrase: derivedKey.toString('base64')
+    // }
+    // });
+    // console.log('Private Key:\n', privateKey);
+    // console.log('\nPublic Key:\n', publicKey);
+    // alert('done')
+//     $.ajax({
+//     url: '/verify-registration/',
+    
+// })
+    // alert('1')
+    // if (window.crypto && window.crypto.subtle) {
+
+    //     alert('supported')
+
+    // } else {
+    //     // The Web Crypto API is not supported
+    //     alert('Web Crypto API is not supported in this browser.');
+    // }
+    // alert('2')
+    // import { startRegistration } from '@simplewebauthn/browser';
+    // alert('start');
+    // generating the secret key from password and salt
+    // async function deriveKeyFromPassword(password, salt) {
+    //     alert(password);
+    // const encoder = new TextEncoder();
+    // const passwordBuffer = encoder.encode(password);
+    // const saltBuffer = new Uint8Array(salt);
+
+    // const derivedKeyBuffer = await crypto.subtle.importKey(
+    //     'raw',
+    //     passwordBuffer,
+    //     { name: 'PBKDF2' },
+    //     false,
+    //     ['deriveBits']
+    // );
+
+    // const key = await crypto.subtle.deriveBits(
+    //     {
+    //     name: 'PBKDF2',
+    //     salt: saltBuffer,
+    //     iterations: 100000,
+    //     hash: 'SHA-256',
+    //     },
+    //     derivedKeyBuffer,
+    //     256  // Length of the derived key in bits
+    // );
+    // // alert(key);
+    // return new Uint8Array(key);
+    // }
+
+    // async function generateKeyPair(customSecretKey) {
+    // alert(customSecretKey);
+    // let private_key;
+    
+    // if (customSecretKey) {
+    //     alert('0a')
+    //     const keyBuffer = await crypto.subtle.importKey(
+    //     'raw',
+    //     customSecretKey,
+    //     { name: 'ECDH', namedCurve: 'P-256' },
+    //     true,
+    //     []
+    //     );
+    //     alert('1')
+    //     private_key = await crypto.subtle.generateKey(
+    //     { name: 'ECDH', namedCurve: 'P-256' },
+    //     true,
+    //     ['deriveBits']
+    //     );
+    //     alert('1a')
+    //     await crypto.subtle.deriveBits(
+    //     { name: 'ECDH', namedCurve: 'P-256' },
+    //     keyBuffer,
+    //     256  // Length of the derived key in bits
+    //     );
+    // } else {
+    //     private_key = await crypto.subtle.generateKey(
+    //     { name: 'ECDH', namedCurve: 'P-256' },
+    //     true,
+    //     ['deriveBits']
+    //     );
+    // }
+    // alert('2');
+    // const publicKeyBuffer = await crypto.subtle.exportKey('spki', private_key.publicKey);
+    // // alert(private_key);
+    // return {
+    //     privateKey: private_key,
+    //     publicKey: new Uint8Array(publicKeyBuffer),
+    // };
+    // }
+
+    // crypto.getRandomValues(new Uint8Array(16))
+
+    // function register(){
+    //     // alert('runfunc')
+    //     let password = '123456';
+    //     // deriveKeyFromPassword(password, '123456').then(customSecretKey => {
+    //     //     alert(customSecretKey);
+    //     //     alert('2')
+    //     //     generateKeyPair(customSecretKey).then(privateKey, publicKey => {
+    //     //         alert(privateKey, publicKey)
+    //     //     });
+    //     // });
+
+    //     keys = generateDerivedKey(password)
+    //             alert(keys)
+            
+        
+    //     // alert(keys)
+    //     // encryptAndStore(password, keys);
+    //     // data['options']['public_key'] = key[publicKey]
+
+        
+    //         var dict = {
+    //             privatekey: privateKey,
+    //             publicKey: publicKey,
+    //             csrfmiddlewaretoken: '{{ csrf_token }}'
+    //             };
+    //         alert('done1')
+    //         // alert('2')
+    //         // alert(dict)
+    //             $.ajax({
+    //             type:'POST',
+    //             url:'/verify-registration/',
+    //             data: dict,
+    //             // data:{
+    //             //     date:$('#post-form').serialize(),
+    //             //     csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+    //             //     action: 'post'
+    //             // },
+    //             success:function(verificationResp){
+    //                 alert(verificationResp)
+    //             },
+    //         //       error : function(xhr,errmsg,err) {
+    //         //         alert(err)
+    //         //     //   console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+    //         //   }
+    //         });
+        
+
+    // }
+    // function encryptAndStore(key, data) {
+    //     const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
+    //     localStorage.setItem('encryptedData', encryptedData);
+    // }
+
+
+    // function register(user_data, options_data) {
+    //     username = document.getElementById('username'); 
+    //     email = document.getElementById('email'); 
+    //     password = document.getElementById('password'); 
+    //     confirm_password = document.getElementById('confirm_password'); 
+    //     if (username == '') {
+    //         alert('Please enter a username')
+    //     } else if (email == '') {
+    //         alert('Please enter an email')
+    //     }else if (password != '') {
+    //         alert('Please enter a password')
+    //     } else if (password == confirm_password){
+    //         const data = {'user' : user_data, 'options' : options_data};
+    //         data['user']['username'] = username
+    //         data['options']['email'] = email
+
+    //         customSecretKey = deriveKeyFromPassword(password, crypto.getRandomValues(new Uint8Array(16)))
+    //         keys = generateKeyPair(customSecretKey)
+    //         encryptAndStore(password, keys);
+    //         data['options']['public_key'] = key[publicKey]
+
+    //     }
+
+    // }
+
+
+
+
+
+    // document.getElementById('registerBtn').addEventListener('click', async () => {
+    //     try {
+    //         const credential = await navigator.credentials.create({
+    //             publicKey: {
+    //                 challenge: new TextEncoder().encode('12345'),
+    //                 rp: { name: 'SoVote' },
+    //                 user: {
+    //                     id: new TextEncoder().encode('12345'),
+    //                     name: 'bob1',
+    //                     displayName: 'bobbo'
+    //                 },
+    //                 pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+    //                 timeout: 60000
+    //             }
+    //         });
+    //         alert(JSON.stringify({ credential }))
+    //         var dict = {
+    //         content: JSON.stringify({ credential }),
+    //         csrfmiddlewaretoken: '{{ csrf_token }}'
+    //         };
+    //         // Send the credential to the server for verification
+    //         $.ajax({
+    //         type:'POST',
+    //         url:'/verify-registration/',
+    //         data: dict,
+    //         // data:{
+    //         //     date:$('#post-form').serialize(),
+    //         //     csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+    //         //     action: 'post'
+    //         // },
+    //           success:function(verificationResp){
+    //             alert(verificationResp)
+    //           },
+    //     //       error : function(xhr,errmsg,err) {
+    //     //         alert(err)
+    //     //     //   console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+    //     //   }
+    //     });
+    // //         await fetch('/verify-registration/', {
+    // //             method: 'POST',
+    // //             headers: { 'Content-Type': 'application/json' },
+    // //             body: dict,
+    // //         });
+
+    // //         alert('Registration successful!');
+    //     } catch (error) {
+    //         console.error('Registration error:', error);
+    //     }
+    // }
+    // );
+
+
+
+
+
+    
+
+    // document.getElementById('loginBtn').addEventListener('click', async () => {
+    //     try {
+    //         const credential = await navigator.credentials.get({
+    //             publicKey: {
+    //                 challenge: new TextEncoder().encode('random_challenge'),
+    //                 timeout: 60000
+    //             }
+    //         });
+
+    //         // Send the credential to the server for verification
+    //         await fetch('/login', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ credential })
+    //         });
+
+    //         alert('Login successful!');
+    //     } catch (error) {
+    //         console.error('Login error:', error);
+    //     }
+    // });
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+

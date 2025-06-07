@@ -1,0 +1,128 @@
+{% load static %}
+<div class='card bill' id='b-{{ bill.id }}'>
+    {% include 'utils/person.html' %}
+    
+    <div class='cardContent'>
+    <div class='Info'>
+        <div class='Code'>
+            <h2><a href='{{ bill.get_absolute_url }}'>{% if bill.Government_obj.gov_level != 'Federal' %}{{ bill.Region_obj.Name }}{% endif %} Bill {{ bill.NumberCode }}</a></h2>
+            <div class='Parl'>
+                <div>{{ bill.Government_obj.GovernmentNumber|get_ordinal }} {{ bill.Government_obj.gov_type|short_gov }} {{ bill.Government_obj.SessionNumber|get_ordinal }} Sess.</div>
+                {% comment %}<div>{{ bill.Started|date:"F j, Y" }}</div>  {% endcomment %}
+                <div>{{ post.DateTime|date:"F j, Y" }}</div>  
+            </div>
+        </div>
+        <div class='Details'>
+            {% if isMobile and cards == 'bills_list' %}
+                {% if bill.Title %}
+                    <div class='title shorten2'><a href='{{ bill.get_absolute_url }}' >{{ bill.Title }}</a></div>
+                {% else %}
+                    <div class='title'><a href='{{ bill.get_absolute_url }}' >{{ bill.ShortTitle }}</a></div>
+                {% endif %}
+            {% else %}
+                {% if bill.Title %}
+                    <div class='title'><a href='{{ bill.get_absolute_url }}' >{{ bill.Title }}</a></div>
+                {% else %}
+                    <div class='title'><a href='{{ bill.get_absolute_url }}' >{{ bill.ShortTitle }}</a></div>
+                {% endif %}
+
+            {% endif %}
+            <ul>
+                {% if billUpdate %}
+                    {% with subs=billUpdate|get_updated_field:'subjects'|get_count:"2" %}
+                    {% with subs.0 as terms %}
+                    {% with subs.1 as more %}
+                    {% for s in terms %}
+                        <li class='subtitle2 shorten1' style='display:inline-block; margin-right: 2px;'><span>{{ s }},</span></li>
+                    {% endfor %}
+                    {% if more %}
+                        <li title="{% for s in billUpdate|get_updated_field:'subjects' %}{{s}}, {% endfor %}" class='subtitle2 shorten1' style='display:inline-block; cursor: pointer; margin-right: 2px;'>+{{ more }} more</li>
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                {% endif %}
+            </ul>
+            <ul>
+                {% comment %}
+                {% if updatedV and not isMobile %}<li class='subtitle' style='display:inline-block; margin-right:20px;'>{{ updatedV|get_updated_field:'Version' }}</li>{% endif %}
+                {% endcomment %}
+                {% if billUpdate %}
+                <li class='subtitle shorten1' style='display:inline-block; margin-right: 10px; font-style: italic;'><span>{% if billUpdate|get_updated_field:'LatestBillEvent' %}({{ billUpdate|get_updated_field:'LatestBillEventDateTime'|dt_object|date:"M/j/y" }}) {{ billUpdate|get_updated_field:'LatestBillEvent' }}{% else %}{{ billUpdate|get_updated_field:'LatestCompletedMajorStageNameWithChamberSuffix' }}{% endif %}</span></li>
+                {% endif %}
+                {% comment %}
+                <li class='subtitle2' style='display:inline-block;'><a href='{{ bill.get_absolute_url }}?view=Text'>Read Bill</a> &nbsp;|&nbsp;</li>
+                {% endcomment %}
+                
+                {% if billUpdate %}
+                    {% if billUpdate|get_updated_field:'has_text' == True %}
+                        <li class='subtitle2' style='display:inline-block;'>&nbsp;-&nbsp;&nbsp;<a href='{{ bill.get_absolute_url }}?view=Text' style="text-decoration: underline;">Read Bill</a></li>
+                        <li class='subtitle2' style='display:inline-block; '>&nbsp;|&nbsp;&nbsp;<a href={{ bill.LegisLink }} style="text-decoration: underline;" target="_blank">Government Page</a></li>
+                    {% else %}
+                        <li class='subtitle2' style='display:inline-block; '>&nbsp;-&nbsp;&nbsp;<a href={{ bill.LegisLink }} style="text-decoration: underline;" target="_blank">Government Page</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+        
+        <div class='TextContent'>
+            <ul class='Text'>
+                {% comment %}
+                {% with sum=bill.hasSummarySpren %}
+                {% if sum %}
+                    <li {% if request.user_agent.is_mobile %}style='white-space: pre-wrap; line-height:128% !important;'{% endif %}>{{ sum.content }}</li>
+                    {% endwith %}
+                {% endcomment %}
+                {% if billUpdate %}
+                    {% if billUpdate|get_updated_field:'Summary' %}
+                        <li {% if request.user_agent.is_mobile %}style='line-height:128% !important;'{% endif %}>{{ billUpdate|get_updated_field:'Summary'|safe }}</li>
+                    {% elif billUpdate|get_updated_field:'has_text' == True %}
+                        <li {% if request.user_agent.is_mobile %}style='line-height:128% !important;'{% else %}style='margin-top:15px;'{% endif %}>Summary not yet available.</li>
+                    {% else %}
+                        <li {% if request.user_agent.is_mobile %}style='line-height:128% !important;'{% else %}style='margin-top:15px;'{% endif %}>Text not yet available.</li>
+                    {% endif %}
+                {% endif %}
+                
+            </ul>
+           
+
+            <!-- <a href='/bill/{{ bill.ParliamentNumber }}/{{ bill.SessionNumber }}/{{ bill.NumberCode }}'>More Info</a> -->
+        </div>
+        <div class='billProgress'>
+        {% if bill.Government_obj.Region_obj.Name == 'Canada' %}
+        <ul>
+            <li title="House of Commons First Reading {{ billUpdate|get_updated_field:'PassedFirstChamberFirstReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedFirstChamberFirstReadingDateTime' %}class='houseComplete'{% endif %}>H1</li>
+            <li title="House of Commons Second Reading {{ billUpdate|get_updated_field:'PassedFirstChamberSecondReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedFirstChamberSecondReadingDateTime' %}class='houseComplete'{% endif %}>H2</li>
+            <li title="House of Commons Third Reading {{ billUpdate|get_updated_field:'PassedFirstChamberThirdReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedFirstChamberThirdReadingDateTime' %}class='houseComplete'{% endif %}>H3</li>
+            {% if bill.has_senate %}
+            <li title="Senate First Reading {{ billUpdate|get_updated_field:'PassedSecondChamberFirstReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedSecondChamberFirstReadingDateTime' %}class='senateComplete'{% endif %}>S1</li>
+            <li title="Senate Second Reading {{ billUpdate|get_updated_field:'PassedSecondChamberSecondReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedSecondChamberSecondReadingDateTime' %}class='senateComplete'{% endif %}>S2</li>
+            <li title="Senate Third Reading {{ billUpdate|get_updated_field:'PassedSecondChamberThirdReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedSecondChamberThirdReadingDateTime' %}class='senateComplete'{% endif %}>S3</li>
+            {% endif %}
+            <li title="Royal Assent {{ billUpdate|get_updated_field:'ReceivedRoyalAssentDateTime' }}" {% if billUpdate|get_updated_field:'ReceivedRoyalAssent' == 'true' %}class='assentComplete'{% endif %}>RA</li>
+        </ul>
+        {% else %}
+
+        {% if billUpdate and billUpdate|get_updated_field:'billVersions' %}
+        <a href='{{ bill.get_absolute_url }}?view=LatestText'>
+            <ul>
+                {% for v in billUpdate|get_updated_field:'billVersions' %}
+                    <li {% if v|get_item:'status' or v|get_item:'started_dt' %}class="{% if 'House' in v|get_item:'version' %}house{% elif 'Senate' in v|get_item:'version' %}senate{% elif 'Assent' in v|get_item:'version' or 'Law' in v|get_item:'version' %}assent{% elif 'President' in v|get_item:'version' %}president{% else %}other{% endif %} complete"{% endif %} >{{ v|get_item:'version' }}</li>
+                {% endfor %}
+                {% comment %}
+                <li title="House of Commons First Reading {{ billUpdate|get_updated_field:'PassedFirstChamberFirstReadingDateTime' }}" class='chamberComplete'>Introduced</li>
+                <li title="House of Commons Second Reading {{ billUpdate|get_updated_field:'PassedFirstChamberSecondReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedFirstChamberSecondReadingDateTime' %}class='chamberComplete'{% endif %}>House</li>
+                <li title="Senate First Reading {{ billUpdate|get_updated_field:'PassedSecondChamberFirstReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedSecondChamberFirstReadingDateTime' %}class='chamberComplete'{% endif %}>Senate</li>
+                <li title="Senate Second Reading {{ billUpdate|get_updated_field:'PassedSecondChamberSecondReadingDateTime' }}" {% if billUpdate|get_updated_field:'PassedSecondChamberSecondReadingDateTime' %}class='chamberComplete'{% endif %}>President</li>
+                <li title="Royal Assent {{ billUpdate|get_updated_field:'ReceivedRoyalAssentDateTime' }}" {% if billUpdate|get_updated_field:'ReceivedRoyalAssent' == 'true' %}class='assentComplete'{% endif %}>Law</li>
+                {% endcomment %}
+            </ul>
+        </a>
+        {% endif %}
+        {% endif %}
+        </div>
+    </div>
+    </div>
+
+</div>
+    {% include 'utils/reaction_bar.html' %}

@@ -1,0 +1,71 @@
+{% load static %}
+
+<head>
+    <style>
+        .getApp div {
+            width: 100%;
+        }
+        .getApp a {
+            position: relative;
+            /* width: 80%; */
+            margin: auto;
+        }
+        .getApp #storeText {
+            position: relative;
+            display: None;
+            width: 80%;
+            margin: auto;
+            /* border: 1px solid red; */
+        }
+        .getApp #storeText.show1 {
+            display: block;
+        }
+        .getApp img {
+            width:200px;
+        }
+    </style>
+    {% if isMobile %}
+    <style>
+        .getApp p {
+            font-size: 150% !important;
+        }
+        .getApp img {
+            width:500px;
+        }
+    </style>
+    {% endif %}
+</head>
+<script>
+    function appStoreText() {
+        text = document.getElementById('storeText');
+        text.classList.toggle('show1');
+
+    };
+</script>
+<div class='card getApp'>
+    <div style="margin-top: 20px;">
+        <a href="https://play.google.com/store/apps/details?id=ca.sovote.sovoteapp"><img src={% static 'img/getOnPlay.png' %}></a>
+        <div>
+            {% comment %}
+        <a><p style="padding-left:20px" onclick="appStoreText()">Why not Apple?</p></a>
+        <br>
+        <div id='storeText' class="">
+            <p>Let me tell you about Apple. 
+            </p>
+            <p>Apple charges an annual subscription to develop on their platform, not distribute, develop. 
+            After needing to buy a newish MacBook and iPhone of course. Then if you distribute and make any money Apple takes 30%, forever. 
+            What I live on for a full year Apple makes every 7 seconds, yet they do this to every small indie developer. Google does not. 
+            </p>
+            <p>
+            So even despite this I decided to make an app, I learned a new language and spent a lot of time building something I was reasonably happy with, you can get it for free in the above stores. 
+            Apple however, rejected it. They made numerous major demands for changes which would have given me significantly more development and maintenance and resulted in something I wasn't happy with. It was too far for me. 
+            At this time, maintaining an Apple app store presence is not in my means.
+        </p><p>
+        
+            Things like this happen because people give thousands of dollars to a trillion dollar, authoritarian corporation when there are alternatives available. 
+            </p>
+            {% endcomment %}
+        </div>
+        </div>
+    </div>
+</div>

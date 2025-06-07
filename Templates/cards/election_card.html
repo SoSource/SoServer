@@ -1,0 +1,26 @@
+{% load static %}
+
+<div class='card election highlight{% if e.district == request.user.district or e.riding == request.user.riding %}highlight{% endif %}'>
+
+<div class='sponsor'>
+    {% if e.province %}
+    <img class='sponsorPic' src={{ e.province.logo_link }}>
+    {% else %}
+    <img class='sponsorPic' src={% static 'img/house_coat_of_arms.png' %}>
+    {% endif %}
+</div>
+<div class='cardContent'>
+    <div class='Details'>
+    <ul>
+        <li>{{ e.province.name }} {{ e.level }} {{ e.type }}</li>
+        <li>{{ e.end_date|date:"F d, Y"  }}</li>
+        <br>
+        <li>{{ e.district.name }}</li>
+        <br>
+        <li><a href={{ e.get_absolute_url }}>Candidates</a></li>
+
+    </ul>
+    </div>
+</div>
+</div>
+<div class='bottomDivider'></div>

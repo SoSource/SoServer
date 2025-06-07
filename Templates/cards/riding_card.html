@@ -1,0 +1,16 @@
+{% load static %}
+
+<div class='card mp'>
+    <p>riding</p>
+    {% if mp.logo %}
+        <a href={{ mp.get_absolute_url }}><img class='profilePic' src={{ mp.logo }}></a>
+    {% else %}
+        <img class='profilePic' style='height:100px; width:100px;' src={% static 'img/user-coloured.png' %}>
+    {% endif %}
+    <div class='profileInfo'>
+    <ul>
+
+    </ul>
+    </div>  
+</div>
+<div class='bottomDivider'></div>

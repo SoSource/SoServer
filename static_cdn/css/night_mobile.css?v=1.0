@@ -1,0 +1,85 @@
+
+
+
+body{
+  /* font-size: 27px !important; */
+  background: #222222;
+}
+.indexMobile, .searchMobile, .notificationsMobile{
+  background-color: #222222;
+  border: 1px solid #4f4e4e;
+}
+#mobileNavigation{
+  background-color: #222222;
+  border-left: 1px solid #565656;
+  border-right: 1px solid #565656;
+  border-top: 2px solid #565656;
+  border-radius: 40px;
+}
+#navBar {
+  box-shadow: 0px 1px 13px 1px #474646;
+}
+#navBar .shadow{
+    background: linear-gradient(to bottom, transparent, #474646);
+}
+#navBar > ul{
+  /* border: 1px solid #4f4e4e; */
+  background: linear-gradient(to bottom, #222222, rgb(56, 55, 55));
+}
+#navBar > ul > li{
+    border-right: 1px solid #4f4e4e;
+    background: linear-gradient(to bottom, #222222, rgb(56, 55, 55)) !important;
+  }
+#navBar li.active{
+  /* background: none; */
+  /* background: rgb(56, 55, 55); */
+  /* border-bottom: 0px solid #4f4e4e; */
+  background: linear-gradient(to top, #222222, rgb(56, 55, 55)) !important;
+  border-bottom: 4px solid #222222;
+}
+#navBar ul:has(.showForm){
+    border-bottom: 1px solid #4f4e4e !important;
+  background: #222222;
+}
+.feedTop{
+  border-left: 2px solid #222222;
+  border-right: 2px solid #222222;
+  border-top: 2px solid #222222;
+  background-color: #222222 !important;
+}
+#feed{
+    background-color: #222222;
+    border-left: 2px solid #565656 !important;
+    border-right: 2px solid #565656 !important;
+    border-top: 2px solid #565656 !important; 
+}
+.reactionBar{
+  border-bottom: 2px solid #565656 !important;
+}
+.bottomDivider{
+    border-bottom: 2px solid #565656 !important;
+}
+.reactionBar ul > li{
+  border: 2px solid #3a3939 !important;
+  background: linear-gradient(to top, transparent, #3a3939) !important;
+}
+.fadeOut{
+  background: linear-gradient(to top, #222222, RGBA(34, 34, 34, 0));
+}
+/* .indexMobile{
+    background-color: #222222;
+} */
+.pageDivider{
+  border-bottom: 2px solid #4f4e4e;
+}
+#bottomCard{
+  background-color: #222222;
+}
+#bottomNavBar > ul{
+    background-color: #222222;
+    box-shadow: 0px 0px 10px 2px #474646;
+}
+
+#bottomNavBar .shadow{
+  background: linear-gradient(to top, transparent, #474646);
+}

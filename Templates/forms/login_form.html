@@ -1,0 +1,254 @@
+{% comment %}
+{% load socialaccount %}
+{% endcomment %}
+{% load static %}
+<div class='form'>
+    <div>
+        {% comment %}
+        <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
+            <ul>
+                {% if userForm.errors %}
+                    <li>{{ userForm.errors }}</li>
+                {% endif %}
+                <span>Username:</span><li>{{ userForm.username }}</li>
+                <!-- <span>Email:</span><li>{{ optionsForm.email }}</li> -->
+                <span>Password:</span><li>{{ userForm.password }}</li>
+
+
+
+            <li><input type="submit" class='btn btn-default' value="Login" /></li>
+            <li>or</li>
+            <li><a href="{% provider_login_url 'google' %}" >Login with Google</a></li>
+            </ul>
+        </form>
+        {% endcomment %}
+        <ul>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+            <!-- <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br><br> -->
+            <label for="password">Password:</label><br>
+            <input type="text" id="password" name="password"><br><br>
+            <!-- <label for="confirm_password">Confirm Password:</label><br>
+            <input type="text" id="confirm_password" name="confirm_password"><br><br> -->
+            <!-- <input type="submit" value="Submit"> -->
+
+            <!-- <li><span>Username:</span><input type="'text"></li>
+            <li><span>Email:</span><input type="'email"></li>
+            <li><span>Password:</span><input type="'text"></li>
+            <li><span>Confirm Password:</span><input type="'text"></li> -->
+            <!-- <li onclick="register(user_dict, options_dict)">Submit</li> -->
+            <!-- <li>or</li> -->
+            <!-- <li id="tkn" value={{ csrf_token }}></li> -->
+            <!-- <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %} -->
+            <button id="btnLogin">Login with WebAuthn A</button>
+            <button onclick='tocNav("the cat jumped over the fox")'>create keys</button>
+        <!-- </form> -->
+
+            <span id="success"></span>
+            <span id="error"></span>
+
+            <!-- <button id="loginBtn">Login with WebAuthn</button> -->
+        </ul>
+    
+    </div>
+</div>
+<script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js" integrity="sha384-9+Bm5pUMP2324xMjhRahdomA9HaTxP6JcMhbl3tUAcV2+Jiohq8/T+dGj/rx/MaM" crossorigin="anonymous"></script>
+<script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+
+    <script src="{% static 'js/default.js' %}"></script>
+
+<script>
+    
+
+    // const curve = new elliptic.ec('secp256k1');
+    // Generate keys
+    // var key = curve.genKeyPair();
+
+
+    // let keyPair = ec.genKeyPair();
+    // let keyPaira = curve.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+    // let privKeya = keyPaira.getPrivate("hex");
+    // let pubKeya = keyPaira.getPublic();
+    // let pubKeyHexa = keyPaira.getPublic('hex');
+    // console.log(`Private keya: ${privKeya}`);
+    // console.log("Public keya :", pubKeya.encode("hex").substr(2));
+    // console.log("Public key (compressed):", pubKeya.encodeCompressed("hex"));
+
+
+// async function hashMessage(message) {
+//     const encoder = new TextEncoder();
+//     const data = encoder.encode(message);
+
+//     const buffer = await crypto.subtle.digest('SHA-256', data);
+//     const hashArray = Array.from(new Uint8Array(buffer));
+//     const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+//     return hashHex;
+//     }
+async function prog1(){
+    // let keyPair = ec.genKeyPair();
+    // let keyPair = curve.keyFromPrivate("97ddae0f3a25b92268175400149d65d6887b9cefaf28ea2c078e05cdc15a3c0a");
+    // const curve = new elliptic.ec('secp256k1');
+    // let keyPair = curve.keyFromPrivate("the cat jumped over the fox");
+    // let privKey = keyPair.getPrivate("hex");    
+    // console.log('privKey',privKey);
+    // const publicKey = keyPair.getPublic();
+    // const publicKeyHex = keyPair.getPublic().encode('hex');
+    // console.log("Public Key:", publicKeyHex);
+    // const data = "testmessage1111";
+    // hashed_data = await hashMessage(data)
+    // console.log('msg',hashed_data);
+    // const signature = keyPair.sign(hashed_data, { canonical: true });
+    // console.log("Signature:", signature.toDER('hex'));
+
+    // // const isSignatureValid = publicKey.verify(hashed_data, signature);
+    // // console.log("isSignatureValid:", isSignatureValid);
+
+    // const isVerified = curve.verify(hashed_data, signature, publicKey);     
+    // console.log("is valid:", isVerified);
+
+    // const publicKeyHex3 = '04215fdc1568795077dfa836cbecc98e94272c7bd881d00964633c100b50e494b3589f15122132e304fa17f7cb5d323708abb7492867ade51788c1e9a732c93093'; // Example hex string
+    // let importedPublicKey = curve.keyFromPublic(publicKeyHex3, 'hex')
+    // console.log("Public Keyhex:", importedPublicKey);
+    
+    // sig = '3044022076621b8c55f51cf571700ff184228ded82302f46b2ea17b994fdd3bf45a70d3b02204d50915652bb894b10c99053070b18cd7534454890b647dbaf48d88995255913'
+    // const importedVerified = curve.verify(hashed_data, sig, importedPublicKey);     
+    // console.log("is importedVerified:", importedVerified);
+    // // const r = signature.r.toString('hex');
+    // // const s = signature.s.toString('hex');
+    // // const v = signature.recoveryParam;
+    // // const sig = r+s
+    // // console.log("r:", r);
+    // // console.log("s:", s);
+    // // console.log("s+r:", sig);
+    // // console.log("v:", v);
+
+    // const dict = {
+    // //   r: r,
+    // //   s: s,
+    // //   v: v,
+    //     // privateKey: privKey,
+    // signature: signature.toDER('hex') ,
+    // transactionData: data,
+    // publicKeyHex: publicKeyHex,
+    // csrfmiddlewaretoken: '{{ csrf_token }}'
+    // };
+    // // dict.signature = Array.from(signature.toDER()).map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+    //     $.ajax({
+    //     type:'POST',
+    //     url:'/verify-authentication/',
+    //     data: dict,
+    //     success:function(verificationResp){
+    //         // alert(verificationResp)
+    //     },
+    // });
+    createKeys("the cat jumped over the fox")
+}
+// prog1()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//     const { startAuthentication } = SimpleWebAuthnBrowser;
+
+//   // <button>
+//   const elemBegina = document.getElementById('btnLogin');
+//   // <span>/<p>/etc...
+//   const elemSuccessa = document.getElementById('success');
+//   // <span>/<p>/etc...
+//   const elemErrora = document.getElementById('error');
+
+//   // Start authentication when the user clicks a button
+//   elemBegina.addEventListener('click', async () => {
+//     // Reset success/error messages
+//     elemSuccessa.innerHTML = '';
+//     elemErrora.innerHTML = '';
+
+//     // GET authentication options from the endpoint that calls
+//     // @simplewebauthn/server -> generateAuthenticationOptions()
+//     const resp = await fetch('/generate-authentication-options/');
+//     // await alert(resp.json())
+//     let asseResp;
+//     try {
+//       // Pass the options to the authenticator and wait for a response
+//       asseResp = await startAuthentication(await resp.json());
+//     } catch (error) {
+//       // Some basic error handling
+//       elemError.innerText = error;
+//       throw error;
+//     }
+//     // alert(asseResp)
+//     // // POST the response to the endpoint that calls
+//     // // @simplewebauthn/server -> verifyAuthenticationResponse()
+//     // const verificationResp = await fetch('/verify-authentication/', {
+//     //   method: 'POST',
+//     //   headers: {
+//     //     'Content-Type': 'application/json',
+//     //   },
+//     //   body: JSON.stringify(asseResp),
+//     // });
+
+
+
+//     var j = JSON.stringify(asseResp)
+
+//     alert(j)
+
+//     var dict = {
+//         content: JSON.stringify(asseResp),
+//         csrfmiddlewaretoken: '{{ csrf_token }}'
+//         };
+//     // alert('2')
+//     // alert(dict)
+//         $.ajax({
+//         type:'POST',
+//         url:'/verify-authentication/',
+//         data: dict,
+//         // data:{
+//         //     date:$('#post-form').serialize(),
+//         //     csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+//         //     action: 'post'
+//         // },
+//         success:function(verificationResp){
+//             alert(verificationResp)
+//         },
+//     //       error : function(xhr,errmsg,err) {
+//     //         alert(err)
+//     //     //   console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+//     //   }
+//     });
+
+
+//     // Wait for the results of verification
+//     const verificationJSON = await verificationResp.json();
+//     alert(verificationJSON)
+//     // Show UI appropriate for the `verified` status
+//     if (verificationJSON && verificationJSON.verified) {
+//       elemSuccessa.innerHTML = 'Success!';
+//     } else {
+//       elemErrora.innerHTML = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
+//         verificationJSON,
+//       )}</pre>`;
+//     }
+//   });
+
+
+</script>

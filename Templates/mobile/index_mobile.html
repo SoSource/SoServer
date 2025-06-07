@@ -1,0 +1,130 @@
+{% load static %}
+
+<div class='indexMobile'>
+
+
+
+{% if sonet %}
+<a href='/' class='navTop'>   
+    <div class='shadow'></div>
+    <ul>
+    {% if sonet.Title == 'SoVote' %}
+    <li><h1>&nbsp;&nbsp;So<span style='font-size:100%''>V</span>ote</h1> </li> 
+    {% else %}
+    <li><h1>&nbsp;&nbsp;{{ sonet.Title }}</h1> </li> 
+    {% endif %}
+    <li>&nbsp;{{ sonet.Subtitle }}</li>
+    </ul>
+    
+</a>
+{% else %}
+<a href='/' class='navTop'>   
+    
+    <div class='shadow'></div>
+    <ul>
+    <li><h1>&nbsp;&nbsp;So<span style='font-size:100%''>V</span>ote!</h1> </li> 
+    <li>&nbsp;Democracy Decentralized</li>
+    </ul>
+</a>
+{% endif %}
+
+<div id='mobileNavigation'>
+
+<!-- <ul class='userProfile'>
+    <li><img class='userPic' src={% static 'img/user-coloured.png' %}></li>
+    <li id='userName'>{% if request.user.is_authenticated %}<a href='{{ user.get_absolute_url }}'><span style='color:#b78e12'>V</span><span style='color:gray'>/</span>{{ user.display_name }}</a>{% else %}<span onclick="modalPopUp('Login / Signup', '/accounts/login-signup')">Login/Signup</span>{% endif %}</li>
+    <li class='settings'><span class="material-icons">settings</span></li>
+</ul> -->
+
+<div style="position: relative;margin-left: 55px; margin-top: 10px; margin-bottom: -10px; font-style:italic;">in development</div>
+<ul id='userProfile'>
+    <li><img id='userPic' src={% static 'img/user-coloured.png' %}></li>
+    <li id='userName'>{% if request.user.is_authenticated %}{{ request.user.get_userLink_html|safe }}{% else %}<span onclick="modalPopUp('Login / Signup', '/accounts/login-signup')">Login/Signup</span>{% endif %}</li>    
+</ul>
+
+
+<div class='container1'>
+<ul>
+    <li><a href='/{{ country.Name|lower }}/search'>Search</a></li>
+</ul>
+
+   
+<ul>
+    {% if request.user.is_authenticated %}
+    <li style='font-size:130%'><a href='/{{ country.lowerName }}/home'>Home</a></li>
+    <ul class='navSubmenu' id='home'>    
+        <li><a href='/{{ country.lowerName }}/region'>Region</a></li>
+        <li><a href='/{{ country.lowerName }}/following'>Following</a></li>
+    </ul>
+    {% else %}
+    <li style='font-size:130%'><a href='/{{ country.lowerName }}/home'>Home</a></li>
+    {% endif %}
+</ul>
+    
+<ul>
+    <li><a href='/'>Welcome</a></li>
+    <li><a href='/values'>Our Values</a></li>
+    {% if not xRequest %}
+    <li><a href='/get-the-app'>Get the App</a></li>
+    {% endif %}
+    <li><a href='/someta'>SoMeta</a></li>
+    {% if request.user.is_superuser %}
+    <li><a href='/utils/super'>SuperUser</a></li>
+    {% endif %}
+    <br>
+    {% if theme == 'night' %}
+    <li id='theme' onclick='themer()'>Night Theme</a></li>
+    {% else %}
+    <li id='theme' onclick='themer()'>Day Theme</a></li>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+    <li><a href='/logout'>Log Out</a></li>
+    {% endif %}
+
+</ul>
+
+</div>
+
+<div class='container2'>
+    <!-- <ul>
+        <li style='font-size:130%'><a href='/{{ country.lowerName }}/citizenry'>Citizenry</a></li>
+        <ul class='navSubmenu' id='citizenry'>    
+            <li><a href='/{{ country.lowerName }}/citizen-debates'>Debates</a></li>
+            <li><a href='/{{ country.lowerName }}/citizen_bills'>Bills</a></li>
+            <li><a href='/{{ country.lowerName }}/polls'>Polls</a></li>
+        </ul>
+    </ul> -->
+    
+    <ul>
+        <li style='font-size:130%'><a href='/{{ country.Name|lower }}/legislature'>Legislature</a></li>
+        <ul class='navSubmenu' id='legislature'>    
+            {% for i in country.menuItem_array %}
+            <li><a href='/{{ country.Name|lower }}/{{i|lower}}'>{{ i }}</a></li>
+            {% endfor %}
+        </ul>
+        <!-- <li style='font-size:130%'><a href='/{{ country.lowerName }}/legislature'>Legislature</a></li>
+        <ul class='navSubmenu' id='house'>    
+            <li><a href='/{{ country.lowerName }}/bills'>Bills</a></li>
+            <li><a href='/{{ country.lowerName }}/debates'>Debates</a></li>
+            <li><a href='/{{ country.lowerName }}/motions'>Motions</a></li>
+            <li><a href='/{{ country.lowerName }}/committees'>Committees</a></li>
+            <li><a href='/{{ country.lowerName }}/officials'>Officials</a></li>
+            <li><a href='/{{ country.lowerName }}/elections'>Elections</a></li>
+        </ul> -->
+    </ul>
+
+
+
+</div>
+<br>
+<br>
+<br>
+
+
+    
+    
+
+</div>
+
+
+</div>
