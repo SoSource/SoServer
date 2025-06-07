@@ -134,6 +134,8 @@ def is_debug():
         operatorData = get_operatorData()
         if operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'] == True:
             return True
+        else:
+            prnt('whats up debug:',operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'])
     except Exception as e:
         prnt('fial9593',str(e))
     return debugging    
@@ -1643,9 +1645,9 @@ def get_app_name(model_name=None, prefix=None, return_prefix=False, return_model
     }
     models = get_app_info()
     if model_name and not return_prefix and not am_i_model:
-        prnt('here1',model_name)
+        # prnt('here1',model_name)
         for app_name in models['apps']:
-            prnt('app_name',app_name)
+            # prnt('app_name',app_name)
             if model_name in models['apps'][app_name]:
                 return app_name
         # if model_name in models:
@@ -1668,7 +1670,7 @@ def get_app_name(model_name=None, prefix=None, return_prefix=False, return_model
         return models
     elif am_i_model and model_name in models['apps']:
         return model_name
-    prnt('None resp')
+    # prnt('None resp')
     return None
 
 def get_model(obj_type):
@@ -2907,12 +2909,15 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                             proceed = False
                             break
                 if proceed:
+                    prnt('proceed')
                     if has_field(i, 'Validator_obj') and i.Validator_obj:
                         if has_field(i, 'signature') and i.signature:
                             processed_data['hashes'][i.id] = sigData_to_hash(i)
                     elif has_field(i, 'validated') and i.validated:
                         if has_field(i, 'signature') and i.signature:
                             processed_data['hashes'][i.id] = sigData_to_hash(i)
+                    prnt('pro2')
+                    prnt('self_node',self_node)
                     i.func = 'super'
                     i.creatorNodeId = self_node.id
                     i.validatorNodeId = self_node.id
@@ -2937,6 +2942,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                             super(get_model(modded_obj.object_type), modded_obj).delete()
 
                     if not blockchain:
+                        prnt('get blockchain')
                         chainId = 'All'
                         if has_field(obj, 'blockchainType'):
                             # from utils.models import find_or_create_chain_from_object

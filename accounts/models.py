@@ -318,6 +318,7 @@ class User(AbstractUser):
         return wallet
 
     def initialize(self): # in preperation for new object
+        prnt('initialize user')
         self.modelVersion = self.latestModel
         if self.id == '0':
             from utils.locked import hash_obj_id

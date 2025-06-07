@@ -2883,7 +2883,7 @@ def generate_id(data=None, len=id_len):
 
     
 def hash_obj_id(obj, verify=False, specific_data=None, return_data=False, model=None, version=None, len=id_len):
-    # prnt('hash_obj_id')
+    prnt('hash_obj_id', obj)
     if not len:
         len = id_len
     from utils.models import has_method, has_field, get_model_prefix, get_model,sort_dict,prnt
@@ -2900,7 +2900,7 @@ def hash_obj_id(obj, verify=False, specific_data=None, return_data=False, model=
             err = 1
             if has_field(obj, 'iden_length'):
                 # len = obj.iden_length
-                len = model.get_version_fields(version=version)['iden_length']
+                len = obj.get_version_fields(version=version)['iden_length']
             if has_method(obj, 'get_hash_to_id'):
                 err = 2
                 for i in obj.get_hash_to_id(version=version):
