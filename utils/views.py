@@ -60,6 +60,7 @@ def set_object_data_view(request):
             objData = received_data.get('objData')
             x = 'x2'
             objData_json = json.loads(objData)
+            prnt('objData_json',objData_json)
             try:
                 extra_objData = received_data.get('extra_objData')
                 extra_objData_json = json.loads(extra_objData)
@@ -83,11 +84,14 @@ def set_object_data_view(request):
                             return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(obj)})
             elif assess_received_header(request.headers):
                 prntDebug('set super object..',x)
+                prnt('set super object..',x)
                 # from utils.models import get_superuser_keys
                 superKeys = get_superuser_keys(data=objData_json)
                 prntDebug('superKeys',superKeys)
+                prnt('superKeys',superKeys)
                 if objData_json['publicKey'] in superKeys:
                     prntDebug('is super')
+                    prnt('is super')
                     # prntDebug('objData_json',objData_json)
                     # prnt('---1')
                     # prnt(get_signing_data(objData_json))
@@ -100,9 +104,11 @@ def set_object_data_view(request):
                     x = obj
                     obj, valid_obj, updatedDB = sync_model(obj, objData_json)
                     prntDebug('synced:',updatedDB,'valid_obj',valid_obj)
+                    prnt('synced:',updatedDB,'valid_obj',valid_obj)
                     if valid_obj:
                         objs, good = super_share(obj, func='set_object', val_type='set_object', job_id=random.randint(1, 100))
                         prntDebug('obj-good',good)
+                        prnt('obj-good',good)
                         if good:
                             return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(objs[0])})
             return JsonResponse({'message' : 'A problem occured', 'obj':objData,  'err': f' -- is_good: {good} -- x: {x}'})

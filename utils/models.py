@@ -224,6 +224,8 @@ def prntDebug(*args):
         # print(f'p3:{msg}')
         logger.info(f'~:{msg}')
         # prnt('*',','.join(f"{i}" for i in args))
+    else:
+        prnt('not debug')
 
 def prntn(*args):
     # logger.info("This is a debug message")
