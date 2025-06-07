@@ -1254,7 +1254,7 @@ def receive_user_login_view(request):
                 except:
                     upkData = {}
                 try:
-                    nodeData = json.loads(received_data.get('nodeData'))
+                    nodeData = json.loads(request.POST.get('nodeData'))
                 except:
                     nodeData = {}
 

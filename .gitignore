@@ -41,3 +41,5 @@ pyenv
 .venv
 env/
 venv/
+.sync
+.vscode
