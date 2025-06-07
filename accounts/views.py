@@ -1243,9 +1243,10 @@ def receive_user_login_view(request):
                 except:
                     upkData = {}
                 try:
-                    nodeData = json.loads(request.POST.get('nodeData'))
+                    nodeData = json.loads(received_data.get('nodeData'))
                 except:
                     nodeData = {}
+                prnt('data',received_data)
             except Exception as e:
                 prnt('err 535',str(e))
                 userData = json.loads(request.POST.get('userData'))
@@ -1262,7 +1263,6 @@ def receive_user_login_view(request):
             # Access JSON values like:
             # userData = json.loads(received_data.get('userData'))
             # action = data.get('action')
-            prnt('data',received_data)
             # prnt('userData',userData)
             # userData = json.loads(request.POST.get('userData'))
             prnt('received-userData',userData)
