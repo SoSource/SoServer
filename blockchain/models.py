@@ -2502,7 +2502,7 @@ class Blockchain(models.Model):
 
 
     def add_item_to_queue(self, post, force_add=False):
-        prntDebug('--add_item_to_blockchain',self)
+        prntDebug('--add_item_to_blockchain',self,str(post)[:300])
         # logEvent(f'additem to queue', code='375', func='add_item_to_queue', region=None, extra={'chainId':self.id,'post':str(post)[:500]})
         # previous commits are checked at creation time
         try:
@@ -2617,6 +2617,7 @@ class Blockchain(models.Model):
                     self.save()
                     return True
         except Exception as e:
+            prnt('add_item_to_queue err 53254', str(e))
             logError(f'additem to queue {str(e)}', code='53254', func='add_item_to_queue', region=None, extra={'err':err,'chainId':self.id,'post':str(post)[:500]})
         return False
 
@@ -3114,6 +3115,7 @@ class Tidy:
         if dt.hour == 9:
             # from utils.cronjobs import clear_jold_obs
             try:
+                from utils.cronjobs import clear_jold_obs
                 queue = django_rq.get_queue('low')
                 queue.enqueue(clear_jold_obs, job_timeout=20)
             except Exception as e:

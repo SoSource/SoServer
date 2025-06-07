@@ -2974,7 +2974,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
             prnt('log6:',log)
             prnt('super next')
             if validator:
-                from posts.models import Post, Update
+                from posts.models import Post, Update, update_post
                 validator = sign_obj(validator, operatorData=operatorData)
                 if dataPacket:
                     processed_data['obj_ids'].append(validator.id)
@@ -3000,6 +3000,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                     else:
                         pointerIdens = []
                 updateIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix('Update'))]
+                prnt('updateIdens',updateIdens)
                 updates = Update.objects.filter(validated=False, id__in=updateIdens)
                 if testing():
                     for u in updates:
@@ -3014,6 +3015,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                     blockchain.add_item_to_queue(updates)
                 from accounts.models import Notification
                 notiIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix('Notification'))]
+                prnt('notiIdens',notiIdens)
                 notifications = Notification.objects.filter(validated=False, id__in=notiIdens)
                 for n in notifications:
                     n.validate(validator=validator)
@@ -3023,6 +3025,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                 from blockchain.models import script_created_modifiable_models
                 for m in script_created_modifiable_models:
                     mIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix(m))]
+                    prnt('mIdens',mIdens)
                     objs = get_dynamic_model(m, list=True, id__in=mIdens)
                     for o in objs:
                         chain, o, secondChain = find_or_create_chain_from_object(o)
