@@ -619,6 +619,7 @@ class DataPacket(models.Model):
             if save_all:
                 allPacket.save()
                 add_worker_job(allPacket)
+            prnt('donw send to all')
 
         if not self.data:
             self.data = {}
@@ -2520,8 +2521,9 @@ class Blockchain(models.Model):
                     err = err + '1'
                     self.queuedData = {}
                 def add_data(p):
-                    # prntDebug('add_data')
+                    prntDebug('add_data',str(p)[:250])
                     if has_field(p, 'is_valid') and not p.is_valid:
+                        prnt('not valid')
                         return
                     to_commit = None
                     if p.object_type == 'Region' and has_field(p, 'ParentRegion_obj'):
@@ -2561,6 +2563,7 @@ class Blockchain(models.Model):
                             prnt('-secondChain add_to',secondChain)
                             secondChain.add_item_to_queue(p)
                     if p.id not in self.queuedData:
+                        prnt('not in queue')
                         # if p.id == self.genesisId: # all genesis objects are modifiable
                         #     to_commit = {'genesis':p.id}
                         # else:
@@ -2568,6 +2571,7 @@ class Blockchain(models.Model):
                             # to_commit = get_commit_data(p)
                         self.queuedData[p.id] = to_commit
                         # prnt('added to chain queue',p)
+                    prnt('done add_data')
 
                 if not force_add and has_field(post, 'Block_obj') and post.Block_obj and post.Block_obj.Blockchain_obj == self and not has_field(post, 'is_modifiable'):
                     prntDebug('pass1', post.Block_obj.Blockchain_obj)
@@ -2627,6 +2631,7 @@ class Blockchain(models.Model):
         except Exception as e:
             prnt('add_item_to_queue err 53254', str(e))
             logError(f'additem to queue {str(e)}', code='53254', func='add_item_to_queue', region=None, extra={'err':err,'chainId':self.id,'post':str(post)[:500]})
+        prnt('done add to blockchain.queue')
         return False
 
 

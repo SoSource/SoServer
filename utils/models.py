@@ -2974,16 +2974,24 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
             prnt('log6:',log)
             prnt('super next')
             if validator:
+                prnt('log6.1')
                 from posts.models import Post, Update, update_post
                 validator = sign_obj(validator, operatorData=operatorData)
+                prnt('log6.2')
                 if dataPacket:
+                    prnt('log6.3')
                     processed_data['obj_ids'].append(validator.id)
                     processed_data['hashes'][validator.id] = sigData_to_hash(validator)
                     dataPacket.add_item_to_share(processed_data['hashes'])
+                    prnt('log6.4')
                 if blockchain:
+                    prnt('log6.5')
                     blockchain.add_item_to_queue(validator)
                     print('validate posts')
+                prnt('log6.6')
+                prnt("get_model_prefix('Update')",get_model_prefix('Update'),"get_model_prefix('Notification')",get_model_prefix('Notification'),"get_model_prefix('BillText')",get_model_prefix('BillText'))
                 pointerIdens = [i for i in processed_data['obj_ids'] if not i.startswith(get_model_prefix('Update')) and not i.startswith(get_model_prefix('Notification')) and not i.startswith(get_model_prefix('BillText'))]
+                prnt('pointerIdens',pointerIdens)
                 while pointerIdens:
                     posts = Post.all_objects.filter(pointerId__in=pointerIdens[:500]).exclude(validated=True)
                     if testing():
