@@ -111,9 +111,11 @@ def set_object_data_view(request):
                         prnt('obj-good',good)
                         if good:
                             return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(objs[0])})
+                    
             return JsonResponse({'message' : 'A problem occured', 'obj':objData,  'err': f' -- is_good: {good} -- x: {x}'})
     except Exception as e:
         prntDebug('fail38585', str(e))
+        prnt('fail38585', str(e))
         prntDebug('objData_json',objData_json)
         prntDebug('objData',objData)
         return JsonResponse({'message' : f'A problem occured', 'err': f'{str(e)} -- objData: {objData} -- objData_json: {objData_json} -- good: {good} -- x: {x}'})

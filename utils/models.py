@@ -225,7 +225,11 @@ def prntDebug(*args):
         logger.info(f'~:{msg}')
         # prnt('*',','.join(f"{i}" for i in args))
     else:
-        prnt('not debug')
+        msg = '#' + ','.join(str(i) for i in args)
+        # msg = '*,'.join(f"{i}" for i in args)
+        # print(f'p3:{msg}')
+        logger.info(f'~:{msg}')
+        prnt('not debug above:')
 
 def prntn(*args):
     # logger.info("This is a debug message")
@@ -2890,9 +2894,11 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
         prnt('log4:',log)
         if func == 'set_object' or func in approved_funcs:
             prnt('proceed to validate')
+            prnt('items',items)
             from utils.locked import sign_obj, convert_to_dict
             processed_data = {'obj_ids':[],'hashes':{}}
             for i in items:
+                prnt('i',i)
                 proceed = True
                 if has_method(i, 'required_for_validation'):
                     for c in i.required_for_validation():
