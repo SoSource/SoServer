@@ -6,14 +6,16 @@
 // const CryptoJS = require('crypto-js');
 
 // Function to encrypt and store data in localStorage
-function encryptAndStore(key, data) {
+async function encryptAndStore(key, data) {
   const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
-  localStorage.setItem('encryptedData', encryptedData);
+  await storeItem(encryptedData, 'encryptedData');
+  // localStorage.setItem('encryptedData', encryptedData);
 }
 
 // Function to retrieve and decrypt data from localStorage
-function retrieveAndDecrypt(key) {
-  const encryptedData = localStorage.getItem('encryptedData');
+async function retrieveAndDecrypt(key) {
+  
+  const encryptedData = await getItem('encryptedData');
   if (encryptedData) {
     const decryptedBytes = CryptoJS.AES.decrypt(encryptedData, key);
     const decryptedData = JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
@@ -56,8 +58,222 @@ function retrieveAndDecrypt(key) {
 // </body>
 // </html>
 
+async function connect_to_node2(url, payload = null) {
+  console.log('Connecting to node:', url);
+  try {
+    const options = {};
+
+    if (payload) {
+      options.method = 'POST';
+      options.headers = { 'Content-Type': 'application/json' };
+      options.body = JSON.stringify(payload);
+    }
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    // console.log('Response status:', response);
+    // Try JSON first, fall back to text
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      console.log('Connecting to node json:', response.json());
+      return await response.json();
+    } else {
+      console.log('Connecting to node json:', response.text());
+      return await response.text();
+    }
+
+  } catch (err) {
+    console.error('Connecting to node failed:', err);
+    throw err;  // rethrow so caller can handle
+  }
+}
+
+async function connect_to_node(url, payload = null) {
+  console.log('Connecting to node:', url, 'payload',payload);
+  try {
+    const options = {};
+
+    if (payload) {
+      options.method = 'POST';
+      options.headers = { 'Content-Type': 'application/json' };
+      options.body = JSON.stringify(payload);
+    }
+
+    const response = await fetch(url, options);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+    const contentType = response.headers.get('content-type') || '';
+
+    const body = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
+
+    return body;
+
+  } catch (err) {
+    console.error('Request failed:', err);
+    throw err;
+  }
+}
+
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('KeyDB', 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('keys')) {
+        db.createObjectStore('keys');
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
 
+function storeItem(value, key) {
+  console.log("Storing item:", key, value);
+  return openDatabase().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('keys', 'readwrite');
+      tx.objectStore('keys').put(value, key);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  });
+}
+
+function getItem(key) {
+  console.log("Retrieving item:", key);
+  return openDatabase().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('keys', 'readonly');
+      const getReq = tx.objectStore('keys').get(key);
+      getReq.onsuccess = () => resolve(getReq.result);
+      getReq.onerror = () => reject(getReq.error);
+    });
+  });
+}
+
+
+// function storeItem(key, name) {
+//   return new Promise((resolve, reject) => {
+//       const request = indexedDB.open('KeyDB', 1);
+//       request.onupgradeneeded = () => {
+//       request.result.createObjectStore('keys');
+//       };
+//       request.onsuccess = () => {
+//       const db = request.result;
+//       if (!db.objectStoreNames.contains('keys')) {
+//         db.createObjectStore('keys');
+//       }
+//       const tx = db.transaction('keys', 'readwrite');
+//       tx.objectStore('keys').put(key, name);
+//       tx.oncomplete = () => resolve();
+//       tx.onerror = () => reject(tx.error);
+//       };
+//       request.onerror = () => reject(request.error);
+//   });
+// }
+
+
+// function getItem(name) {
+//   return new Promise((resolve, reject) => {
+//       const request = indexedDB.open('KeyDB', 1);
+//       request.onsuccess = () => {
+//       const db = request.result;
+//       if (!db.objectStoreNames.contains('keys')) {
+//         db.createObjectStore('keys');
+//       }
+//       const tx = db.transaction('keys', 'readonly');
+//       const getRequest = tx.objectStore('keys').get(name);
+//       getRequest.onsuccess = () => resolve(getRequest.result);
+//       getRequest.onerror = () => reject(getRequest.error);
+//       };
+//       request.onerror = () => reject(request.error);
+//   });
+// }
+
+function generate_mnemonic_new() {
+  // import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
+  // import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
+
+  const strength = 256; // 24-word mnemonic
+  const mnemonic = generateMnemonic(wordlist, strength);
+  console.log("Mnemonic (24 words):", mnemonic);
+  return mnemonic
+}
+
+
+function deriveKey(user_id, user_pass) {
+  const saltHex = CryptoJS.SHA256(user_pass + ":" + user_id).toString(CryptoJS.enc.Hex);
+  console.log("saltHex:", saltHex);
+  const saltBytes = Uint8Array.from(saltHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+  return new Promise((resolve, reject) => {
+      scrypt(user_pass, saltBytes, {
+      N: 262144,
+      r: 8,
+      p: 1,
+      dkLen: 32,
+      encoding: 'hex'
+      }, function (derivedKeyHex) {
+      resolve(derivedKeyHex);
+      });
+  })
+}
+
+async function getKeyPair(user_id, user_pass) {
+
+  const seedHex = await deriveKey(user_id, user_pass);
+  console.log("Derived Seed (Hex):", seedHex);
+
+  const ec = new elliptic.ec('secp256k1');
+  const keyPair = ec.keyFromPrivate(seedHex);
+
+  const privKeyHex = keyPair.getPrivate("hex");
+  const pubKeyHex = keyPair.getPublic().encode("hex"); // uncompressed
+
+  console.log("Private Key:", privKeyHex);
+  console.log("Public Key:", pubKeyHex);
+  
+  // await storeKey(privKeyHex, 'private');
+  // await storeKey(pubKeyHex, 'public');
+
+  // encrypt/decrypt
+  // const message = {'test_dict':'this is a test'};
+  // const encryptedData = encryptMessage(pubKeyHex, keyPair, JSON.stringify(message));
+  // const jx = JSON.stringify(encryptedData)
+  // console.log('Encrypted Data:', jx);
+
+  // const decryptedMessage = decryptMessage(privKeyHex, pubKeyHex, JSON.parse(jx));
+  // console.log('Decrypted Message:', decryptedMessage);
+  
+  return [privKeyHex, pubKeyHex];
+}
+
+async function sign_new2(data, privKeyHex=null) {
+  if (privKeyHex == null) {
+    const privKeyHex = await getKey('private');
+  }
+
+  hashed_data = await hashMessage(data)
+  // const hashed_data = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
+  console.log('hashed_data',hashed_data)
+  const curve = new elliptic.ec('secp256k1');
+  let keys = curve.keyFromPrivate(privKeyHex);
+  const signature = keys.sign(hashed_data, { canonical: true });
+  const sig = signature.toDER('hex');
+  console.log("Signature:", sig);
+  return sig
+}
+
+
+    
 async function react(item, iden, code=null, button=null){
   console.log('react', code)
   
@@ -357,7 +573,7 @@ async function signReturnInteraction({ response, item }) {
 
 
 
-  data = await sign(data)
+  data = await sign_data(data)
   // userData = await sign(userData)
   // console.log(JSON.stringify(userData))
   const postData = {};
@@ -916,97 +1132,135 @@ function login() {
     // } 
   });
 }
-function logout(target) {
-  console.log('logout')
+async function logout(target) {
+  console.log('logout',target)
   // console.log(target)
   // userData, userArrayData = get_stored_userData()
   // console.log(userData.must_rename)
-
-  $.ajax({
-    url: target,
-    success: function (data) {
-      localStorage.setItem('bioPrivKey', null);
-      localStorage.setItem('bioPubKey', null);
-      localStorage.setItem('passPrivKey', null);
-      localStorage.setItem('passPubKey', null);
-      localStorage.setItem('username', null);
-      localStorage.setItem('userData', null);
-      localStorage.setItem('pass', null);
-      localStorage.setItem('display_name', null);
-      localStorage.setItem('user_id', null);
-      // localStorage.setItem('userData', null);
-      location.reload()
-      // index = document.getElementById('index');
-      // index.outerHTML = data;
-      // console.log('logout2')
-      // var dom = document.getElementById('userName');
-      // console.log(dom)
-      // dom.innerHTML = `<span onclick="modalPopUp('Authenticate', '/accounts/authenticate')">Authenticate</span>`;
       
-      // console.log('logout3')
-      // var settingsLink = document.getElementById('settingsLink')
-      // settingsLink.innerHTML = ""
-      // console.log('logout4')
-      // var logoutLink = document.getElementById('logoutLink')
-      // logoutLink.innerHTML = ""
-    },
-    error: function (xhr, ajaxOptions, thrownError) {
-      alert('Failed to reach server');
-    } 
-  });
+  const resp = await connect_to_node(target);
+  console.log('modal response:', resp);
+  if (resp) {
+    // maybe use this:
+    // indexedDB.deleteDatabase('KeyDB');
+
+      await storeItem(null, 'PrivKey');
+      await storeItem(null, 'PubKey');
+      await storeItem(null, 'username');
+      await storeItem(null, 'userData');
+      await storeItem(null, 'password');
+      await storeItem(null, 'display_name');
+      await storeItem(null, 'user_id');
+      location.reload()
+
+  } else {
+    alert('Failed to reach server');
+  }
+  // $.ajax({
+  //   url: target,
+  //   success: async function (data) {
+  //     await storeItem(null, 'PrivKey');
+  //     await storeItem(null, 'PubKey');
+  //     await storeItem(null, 'username');
+  //     await storeItem(null, 'userData');
+  //     await storeItem(null, 'password');
+  //     await storeItem(null, 'display_name');
+  //     await storeItem(null, 'user_id');
+  //     // localStorage.setItem('bioPrivKey', null);
+  //     // localStorage.setItem('bioPubKey', null);
+  //     // localStorage.setItem('passPrivKey', null);
+  //     // localStorage.setItem('passPubKey', null);
+  //     // localStorage.setItem('username', null);
+  //     // localStorage.setItem('userData', null);
+  //     // localStorage.setItem('pass', null);
+  //     // localStorage.setItem('display_name', null);
+  //     // localStorage.setItem('user_id', null);
+  //     // localStorage.setItem('userData', null);
+  //     location.reload()
+  //     // index = document.getElementById('index');
+  //     // index.outerHTML = data;
+  //     // console.log('logout2')
+  //     // var dom = document.getElementById('userName');
+  //     // console.log(dom)
+  //     // dom.innerHTML = `<span onclick="modalPopUp('Authenticate', '/accounts/authenticate')">Authenticate</span>`;
+      
+  //     // console.log('logout3')
+  //     // var settingsLink = document.getElementById('settingsLink')
+  //     // settingsLink.innerHTML = ""
+  //     // console.log('logout4')
+  //     // var logoutLink = document.getElementById('logoutLink')
+  //     // logoutLink.innerHTML = ""
+  //   },
+  //   error: function (xhr, ajaxOptions, thrownError) {
+  //     alert('Failed to reach server');
+  //   } 
+  // });
 }
-function clearLocalUserData(pass) {
+async function clearLocalUserData(pass) {
   console.log('clearLocalUserData')
   console.log(pass)
   // console.log(JSON.parse(pass))
-  if (pass == localStorage.getItem("pass")) {
-    localStorage.setItem('bioPrivKey', null);
-    localStorage.setItem('bioPubKey', null);
-    localStorage.setItem('passPrivKey', null);
-    localStorage.setItem('passPubKey', null);
-    localStorage.setItem('username', null);
-    localStorage.setItem('userData', null);
-    localStorage.setItem('pass', null);
-    localStorage.setItem('display_name', null);
+  if (pass == await getItem("password")) {
+    await storeItem(null, 'PrivKey');
+    await storeItem(null, 'PubKey');
+    await storeItem(null, 'username');
+    await storeItem(null, 'userData');
+    await storeItem(null, 'password');
+    await storeItem(null, 'display_name');
+    await storeItem(null, 'user_id');
+
+    // localStorage.setItem('bioPrivKey', null);
+    // localStorage.setItem('bioPubKey', null);
+    // localStorage.setItem('passPrivKey', null);
+    // localStorage.setItem('passPubKey', null);
+    // localStorage.setItem('username', null);
+    // localStorage.setItem('userData', null);
+    // localStorage.setItem('pass', null);
+    // localStorage.setItem('display_name', null);
     var field4 = document.getElementById('field4');
     field4.innerHTML = 'Cleared';
   }
   
 
 }
-function generatePassword() {
-  // var length = 20,
-  //     charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&",
-  //     retVal = "";
-  // for (var i = 0, n = charset.length; i < length; ++i) {
-  //     retVal += charset.charAt(Math.floor(Math.random() * n));
-  // }
-  var length = 32;
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const numbers = '0123456789';
-    const specialCharacters = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+function generatePassword2() {
+  // // var length = 20,
+  // //     charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&",
+  // //     retVal = "";
+  // // for (var i = 0, n = charset.length; i < length; ++i) {
+  // //     retVal += charset.charAt(Math.floor(Math.random() * n));
+  // // }
+  // var length = 32;
+  // const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  //   const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  //   const numbers = '0123456789';
+  //   const specialCharacters = '!@#$%^&*()-_=+[]{}|;:,.<>?';
 
-    // Combine all characters into a single string
-    const allCharacters = uppercase + lowercase + numbers + specialCharacters;
+  //   // Combine all characters into a single string
+  //   const allCharacters = uppercase + lowercase + numbers + specialCharacters;
 
-    let password = '';
+  //   let password = '';
 
-    // Ensure at least one character from each group is in the password
-    password += uppercase[Math.floor(Math.random() * uppercase.length)];
-    password += lowercase[Math.floor(Math.random() * lowercase.length)];
-    password += numbers[Math.floor(Math.random() * numbers.length)];
-    password += specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+  //   // Ensure at least one character from each group is in the password
+  //   password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  //   password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  //   password += numbers[Math.floor(Math.random() * numbers.length)];
+  //   password += specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
 
-    // Fill the rest of the password length with random characters
-    for (let i = password.length; i < length; i++) {
-        password += allCharacters[Math.floor(Math.random() * allCharacters.length)];
-    }
+  //   // Fill the rest of the password length with random characters
+  //   for (let i = password.length; i < length; i++) {
+  //       password += allCharacters[Math.floor(Math.random() * allCharacters.length)];
+  //   }
 
-    // Shuffle the password to ensure the first four characters aren't predictable
-    password = password.split('').sort(() => Math.random() - 0.5).join('');
-    console.log(password)
-    // return password;
+  //   // Shuffle the password to ensure the first four characters aren't predictable
+  //   password = password.split('').sort(() => Math.random() - 0.5).join('');
+  //   console.log(password)
+  //   // return password;
+  
+  const strength = 256; // 24-word mnemonic
+  const password = generateMnemonic(wordlist, strength);
+  console.log("Mnemonic (24 words):", mnemonic);
+
   var form = document.getElementById("modalForm");
   form.elements["password"].value = password;
 }
@@ -1029,7 +1283,7 @@ function modalPopPointer(value){
   console.log(items)
   modalPopUp(items[0].replace(/"/g, ''), items[1].replace(/"/g, ''))
 }
-function modalPopUp(title, target){
+async function modalPopUp(title, target){
   // console.log('popup',target)
   // closeModal()
   var isMobile = document.getElementById('isMobile').name;
@@ -1065,30 +1319,45 @@ function modalPopUp(title, target){
       target = '/utils/default_modal/' + target
     }
     try {
-      userData = JSON.parse(localStorage.getItem('userData'))
+      userData = JSON.parse(await getItem('userData'))
       target = target + '?userId=' + userData['id']
     } catch(err) {}
     // console.log(target)
-    $.ajax({
-      url: target,
-      success: function (data) {
-        // var head = document.getElementsByTagName('head')[0],
-        //     script = document.createElement('script');
-        // script.src = 'https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js';
-        // head.appendChild(script);
-        // parsedData = $.parseHTML(data);
-        // var new_cards =  $(parsedData);
+    
+    const data = await connect_to_node(target);
+    // console.log('modal response:', data);
+    if (data) {
+      console.log('data received')
         var html = $('<html>').html(data);
         var new_title = html.find('title').text();
         m.querySelector("#modalTitle").innerHTML = new_title;
         var instruction = html.find('#instruction').attr('value');
         m.querySelector("#modalContent").innerHTML = data;
         enact_user_instruction(instruction, {})
-      },
-      error: function (xhr, ajaxOptions, thrownError) {
-        m.querySelector("#modalContent").innerHTML = 'Failed to reach server';
-      } 
-    });
+
+    } else {
+      m.querySelector("#modalContent").innerHTML = 'Failed to reach server';
+    }
+    // $.ajax({
+    //   url: target,
+    //   success: function (data) {
+        // var head = document.getElementsByTagName('head')[0],
+        //     script = document.createElement('script');
+        // script.src = 'https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js';
+        // head.appendChild(script);
+        // parsedData = $.parseHTML(data);
+        // var new_cards =  $(parsedData);
+    //     var html = $('<html>').html(data);
+    //     var new_title = html.find('title').text();
+    //     m.querySelector("#modalTitle").innerHTML = new_title;
+    //     var instruction = html.find('#instruction').attr('value');
+    //     m.querySelector("#modalContent").innerHTML = data;
+    //     enact_user_instruction(instruction, {})
+    //   },
+    //   error: function (xhr, ajaxOptions, thrownError) {
+    //     m.querySelector("#modalContent").innerHTML = 'Failed to reach server';
+    //   } 
+    // });
   }
   
 }
@@ -1262,39 +1531,43 @@ function sortForSign_maybe_try_me(data) {
 //   return Object.fromEntries([...startEntries, ...Object.entries(sortedObject)]);
 // }
 async function hashMessage(message) {
-  const hashHex = CryptoJS.SHA256(message+' ').toString(CryptoJS.enc.Hex);
+  const hashHex = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
   return hashHex;
-  // const encoder = new TextEncoder();
-  // const data = encoder.encode(message+' ');
-
-  // const buffer = await crypto.subtle.digest('SHA-256', data);
-  // const hashArray = Array.from(new Uint8Array(buffer));
-  // const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-
-  // return hashHex;
 }
 
-async function sign(data, privKey=null, pubKey=null) {
+async function sign_data(data, privKey=null, pubKey=null) {
   // receives parsed data
   console.log('signing...',data)
-    // console.log(pubKey)
-  if (pubKey == null || privKey == 'null') {
-    var pubKey = localStorage.getItem("passPubKey");
-    // console.log('pubKey11aaa',pubKey)
+
+  if (pubKey == null) {
+    const pubKey = await getKey('pubKey');
   }
-  // console.log('privKey11aaa',privKey)
+    if (privKey == null) {
+    const privKey = await getKey('privKey');
+  }
   if (privKey == null || privKey == 'null') {
-    var privKey = localStorage.getItem("passPrivKey");
-    // console.log('privKey11',privKey)
-    if (privKey == null || privKey == 'null') {
-      var privKey = localStorage.getItem("bioPrivKey");
-      // console.log('privKey1122',privKey)
-    if (privKey == null || privKey == 'null') {
-        console.log('privKey nuill')
-        return null;
-      }
-    }
+    console.log('privKey nuill')
+    return null;
   }
+
+  //   // console.log(pubKey)
+  // if (pubKey == null || pubKey == 'null') {
+  //   var pubKey = localStorage.getItem("passPubKey");
+  //   // console.log('pubKey11aaa',pubKey)
+  // }
+  // // console.log('privKey11aaa',privKey)
+  // if (privKey == null || privKey == 'null') {
+  //   var privKey = localStorage.getItem("passPrivKey");
+  //   // console.log('privKey11',privKey)
+  //   if (privKey == null || privKey == 'null') {
+  //     var privKey = localStorage.getItem("bioPrivKey");
+  //     // console.log('privKey1122',privKey)
+  //   if (privKey == null || privKey == 'null') {
+  //       console.log('privKey nuill')
+  //       return null;
+  //     }
+  //   }
+  // }
   if ('last_updated' in data) {
     data.last_updated = get_current_time()
   }
@@ -1310,15 +1583,26 @@ async function sign(data, privKey=null, pubKey=null) {
   data = JSON.stringify(data)
   console.log('siging_data',data)
   // console.log('privKey',privKey)
-  hashed_data1 = await hashMessage(data)
-  console.log('hashed1',hashed_data1)
+
+  // hashed_data1 = await hashMessage(data)
+  // console.log('hashed1',hashed_data1)
   // hashed_data2 = await hashMessage(data+' ')
   // console.log('hashed2',hashed_data2)
+  // const curve = new elliptic.ec('secp256k1');
+  // let keyPair = curve.keyFromPrivate(privKey);
+  // const signature = keyPair.sign(hashed_data1, { canonical: true });
+  // const sig = signature.toDER('hex');
+
+  hashed_data = await hashMessage(data+'5uHPEF0DPaI4egus4sa6AX')
+  // const hashed_data = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
+  console.log('hashed_data',hashed_data)
   const curve = new elliptic.ec('secp256k1');
   let keyPair = curve.keyFromPrivate(privKey);
-  const signature = keyPair.sign(hashed_data1, { canonical: true });
+  const signature = keyPair.sign(hashed_data, { canonical: true });
   const sig = signature.toDER('hex');
-  
+  console.log("Signature:", sig);
+  // return sig
+
   parsedData = JSON.parse(data)
   // console.log('next')
   parsedData.signature = sig
@@ -1332,7 +1616,8 @@ async function verify(data, signature, pubKey) {
   const curve = new elliptic.ec('secp256k1');
   let importedPublicKey = curve.keyFromPublic(pubKey, 'hex')
   console.log('importedPublicKey',importedPublicKey)
-  hashed_data = await hashMessage(data)
+  hashed_data = await hashMessage(data+'5uHPEF0DPaI4egus4sa6AX')
+  // const hashed_data = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
   const isVerified = curve.verify(hashed_data, signature, importedPublicKey);   
   console.log('isVerified',isVerified)  
   return isVerified;
@@ -1340,7 +1625,7 @@ async function verify(data, signature, pubKey) {
 
 async function verifyUserData(userData, localData=false) {
   // receives json.stringify(data)
-  x = localStorage.getItem('userData')
+  x = await getItem('userData')
   console.log('x',x)
   console.log('verify userData')
   console.log('receivedUserData',userData)
@@ -1354,13 +1639,13 @@ async function verifyUserData(userData, localData=false) {
     console.log('return1')
     return false
   }
-  var localPubKey = localStorage.getItem("passPubKey");
+  var localPubKey = await getItem("PubKey");
   if (receivedPubKey != localPubKey) {
-    var localPubKey = localStorage.getItem("bioPrivKey");
-    if (receivedPubKey != localPubKey) {
-      console.log('return2')
+    // var localPubKey = localStorage.getItem("bioPrivKey");
+    // if (receivedPubKey != localPubKey) {
+    //   console.log('return2')
       return false;
-    }
+    // }
   }
 
   userData.must_rename = false
@@ -1397,7 +1682,7 @@ async function stringTo64CharHash(inputString) {
   return hashHex;
 }
 
-async function getKeyPair(seed) {
+async function getKeyPair_old(seed) {
     console.log('get keypair')
     console.log("seed:", seed);
     const curve = new elliptic.ec('secp256k1');
@@ -1480,9 +1765,9 @@ async function handleLoginResponse({ response, item }) {
       // receivedUserArrayData = d[1]
       receivedUserData = JSON.parse(response['userData'])
       // console.log('2222')
-      seed = await hashMessage(password + receivedUserData['id'])
-      console.log(seed)
-      keyPair = await getKeyPair(seed)
+      // seed = await hashMessage(receivedUserData['id'] + password + receivedUserData['id'] + password + receivedUserData['id'])
+      // console.log(seed)
+      keyPair = await getKeyPair(receivedUserData['id'], password)
       privKey = keyPair[0]
       pubKey = keyPair[1]
 
@@ -1501,7 +1786,7 @@ async function handleLoginResponse({ response, item }) {
         upkData = JSON.parse(response['upkData']);
         upkData['created'] = get_current_time()
         upkData['User_obj'] = receivedUserData['id']
-        upkData = await sign(upkData, privKey=keyPair[0], pubKey=keyPair[1])
+        upkData = await sign_data(upkData, privKey=keyPair[0], pubKey=keyPair[1])
         // upkData.signature = upkSignature
         console.log('signed upkData',upkData)
 
@@ -1524,14 +1809,14 @@ async function handleLoginResponse({ response, item }) {
         // get_userData_for_sign_return(userData, userArrayData)
         // verify recevied userData against locally stored userdata
         // processedReceivedUserData = get_userData_for_sign_return(receivedUserData, receivedUserArrayData)
-        console.log('receivedUserData:',response['userData'])
+        console.log('receivedUserData:',response['userData']);
         stored_userData = get_stored_userData();
         // if () {
 
           console.log('stored data', stored_userData)
           if (stored_userData != null && stored_userData != 'null' && stored_userData['id'] == receivedUserData['id'] && stored_userData['display_name'] == receivedUserData['display_name']) {
             // if () {
-            is_valid = await verifyUserData(response['userData'])
+            is_valid = await verifyUserData(response['userData']);
             console.log('userdata verify:', is_valid)
             if (Date(userData['last_updated']) < Date(receivedUserData['last_updated'])) {
               if (is_valid) {
@@ -1561,7 +1846,7 @@ async function handleLoginResponse({ response, item }) {
         // sign_userData(userData, userArrayData)
         postData['publicKey'] = keyPair[1];
         console.log('sign sign_userData', userData)
-        userData = await sign(userData, privKey=privKey, pubKey=pubKey)
+        userData = await sign_data(userData, privKey=privKey, pubKey=pubKey)
       }
       // console.log(postData['publicKey'])
       // console.log('go')
@@ -1586,51 +1871,115 @@ async function handleLoginResponse({ response, item }) {
       postData['userData'] = JSON.stringify(userData);
       console.log('send to receive user')
       console.log('user_postData',JSON.stringify(userData))
-      $.ajax({
-        type:'POST',
-        url:'/accounts/receive_user_login',
-        data: postData,
-        success:function(response){
-          console.log(response)
-          if (response['message'] == 'Invalid Password') {
-              field3.innerHTML = 'Username does not match password'
-          } else if (response['message'] == 'Valid Username and Password'||response['message'] == 'User Created') {
+      // field3.innerHTML = 'Username does not match password';
+      
+      const resp = await connect_to_node('/accounts/receive_user_login', postData);
+      console.log('modal response:', resp);
+      if (resp) {
+        console.log('data received')
+        console.log(resp)
+          if (resp['message'] == 'Invalid Password') {
+              field3.innerHTML = 'Username does not match password';
+          } else if (resp['message'] == 'Valid Username and Password'||resp['message'] == 'User Created') {
             console.log('proceed to login')
             // console.log(JSON.stringify(response['userData']))
-            localStorage.setItem('passPrivKey', keyPair[0]);
-            localStorage.setItem('passPubKey', keyPair[1]);
-            localStorage.setItem('pass', password);
-            localStorage.setItem('display_name', JSON.parse(response['userData'])['display_name']);
-            localStorage.setItem('user_id', JSON.parse(response['userData'])['id']);
-            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            await storeItem(keyPair[0], 'PrivKey');
+            await storeItem(keyPair[1], 'PubKey');
+            await storeItem(password, 'password');
+            await storeItem(JSON.parse(resp['userData'])['display_name'], 'display_name');
+            await storeItem(JSON.parse(resp['userData'])['id'], 'user_id');
+            await storeItem(JSON.stringify(userData), 'userData');
+            field3.innerHTML = '';
+            // localStorage.setItem('passPrivKey', keyPair[0]);
+            // localStorage.setItem('passPubKey', keyPair[1]);
+            // localStorage.setItem('pass', password);
+            // localStorage.setItem('display_name', JSON.parse(response['userData'])['display_name']);
+            // localStorage.setItem('user_id', JSON.parse(response['userData'])['id']);
+            // localStorage.setItem('userData', JSON.stringify(userData));
             login()
             // modalPopUp('Select Region', '/accounts/get_country_modal')
           } else {
-            field3.innerHTML = response['message']
+            field3.innerHTML = resp['message']
             // if (response['message'] != 'Valid Username and Password' && response['message'] != 'User Created') {
             // if (response['message'] == 'Verification failed') {
             try {
-              display_name = localStorage.getItem("display_name")
-              pass = localStorage.getItem("pass")
+              display_name = await getItem("display_name")
+              pass = await getItem("password")
               if (display_name != 'null' && display_name != null) {
                 console.log('create clear button')
                 var str_pass = JSON.stringify(pass)
                 console.log(str_pass)
                 var field4 = document.getElementById('field4');
                 field4.innerHTML = `<button id="clearUser" style="color: black;" type="submit" onclick='clearLocalUserData(`+str_pass+`)'>Clear Local User Data</button>`
+                
+                var field5 = document.getElementById('field5');
+                field5.style.display = '';
               }
             } catch(err) {}
             // }
           }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
+      } else {
+        
           console.log('prob2')
           field3.innerHTML = 'Failed to reach server';
-        } 
-      });
+          var field5 = document.getElementById('field5');
+          field5.style.display = '';
+      }
+      
+      // $.ajax({
+      //   type:'POST',
+      //   url:'/accounts/receive_user_login',
+      //   data: postData,
+      //   success: async function(response){
+          // console.log(response)
+          // if (response['message'] == 'Invalid Password') {
+          //     field3.innerHTML = 'Username does not match password'
+          // } else if (response['message'] == 'Valid Username and Password'||response['message'] == 'User Created') {
+          //   console.log('proceed to login')
+          //   // console.log(JSON.stringify(response['userData']))
+            
+          //   await storeItem(keyPair[0], 'PrivKey');
+          //   await storeItem(keyPair[1], 'PubKey');
+          //   await storeItem(password, 'password');
+          //   await storeItem(JSON.parse(response['userData'])['display_name'], 'display_name');
+          //   await storeItem(JSON.parse(response['userData'])['id'], 'user_id');
+          //   await storeItem(JSON.stringify(userData), 'userData');
+
+          //   // localStorage.setItem('passPrivKey', keyPair[0]);
+          //   // localStorage.setItem('passPubKey', keyPair[1]);
+          //   // localStorage.setItem('pass', password);
+          //   // localStorage.setItem('display_name', JSON.parse(response['userData'])['display_name']);
+          //   // localStorage.setItem('user_id', JSON.parse(response['userData'])['id']);
+          //   // localStorage.setItem('userData', JSON.stringify(userData));
+          //   login()
+          //   // modalPopUp('Select Region', '/accounts/get_country_modal')
+          // } else {
+          //   field3.innerHTML = response['message']
+          //   // if (response['message'] != 'Valid Username and Password' && response['message'] != 'User Created') {
+          //   // if (response['message'] == 'Verification failed') {
+          //   try {
+          //     display_name = await getItem("display_name")
+          //     pass = await getItem("password")
+          //     if (display_name != 'null' && display_name != null) {
+          //       console.log('create clear button')
+          //       var str_pass = JSON.stringify(pass)
+          //       console.log(str_pass)
+          //       var field4 = document.getElementById('field4');
+          //       field4.innerHTML = `<button id="clearUser" style="color: black;" type="submit" onclick='clearLocalUserData(`+str_pass+`)'>Clear Local User Data</button>`
+          //     }
+          //   } catch(err) {}
+          //   // }
+          // }
+        // },
+        // error: function (xhr, ajaxOptions, thrownError) {
+        //   console.log('prob2')
+        //   field3.innerHTML = 'Failed to reach server';
+        // } 
+      // });
       
 }
-async function passwordAuthenticate(user_data, wallet_data, upk_data, csrf) {
+async function loginAuthenticate(user_data, wallet_data, upk_data, csrf) {
   // console.log(csrf)
   // logout()
   // const json_data = JSON.stringify(user_data)
@@ -1646,10 +1995,18 @@ async function passwordAuthenticate(user_data, wallet_data, upk_data, csrf) {
       field0.innerHTML = 'Please enter a username'
   }else if (password == '') {
       field0.innerHTML = 'Please enter a password'
-  } else if (password.length < 10) {
-    field3.innerHTML = 'Please enter at least 10 characters in password</br>Use a mix of upper/lowercase, numbers/letters and special characters'
+  // } else if (password.length < 20) {
+  //   field0.innerHTML = 'Please enter at least 20 characters in password.'
   } else {
     field3.innerHTML = 'Checking...';
+
+    
+    // code = '<div class="lds-dual-ring"></div>'
+    // field3.innerHTML = '<div class="lds-dual-ring"></div>';
+    // m.querySelector("#modalContent").innerHTML = code;
+    var field5 = document.getElementById('field5');
+    // field5.innerHTML = '<div class="lds-dual-ring"></div>';
+    field5.style.display = 'none';
 
     const data = user_data;
     data['display_name'] = username
@@ -1683,7 +2040,7 @@ async function renameUser() {
     userData.display_name = username
     userData.must_rename = false
     userData = get_userData_for_sign_return(userData, userArrayData)
-    signedData = await sign(userData)
+    signedData = await sign_data(userData)
     const data = {};
     // data['display_name'] = username
     // data['must_rename'] = 'False'
@@ -1694,7 +2051,7 @@ async function renameUser() {
       type:'POST',
       url:'/accounts/receive_rename',
       data: postData,
-      success:function(response){
+      success: async function(response){
         console.log(response)
         if (response['message'] == 'Username taken') {
             field2.innerHTML = 'Username not available'
@@ -1705,8 +2062,10 @@ async function renameUser() {
           // console.log(JSON.stringify(response['userData']))
           // localStorage.setItem('passPrivKey', keyPair[0]);
           // localStorage.setItem('passPubKey', keyPair[1]);
-          localStorage.setItem('display_name', username);
-          localStorage.setItem('userData', JSON.stringify(signedData));
+          await storeItem(username, 'display_name');
+          await storeItem(JSON.stringify(signedData), 'userData');
+          // localStorage.setItem('display_name', username);
+          // localStorage.setItem('userData', JSON.stringify(signedData));
           // login()
           location.reload()
           // modalPopUp('Select Region', '/accounts/get_country_modal')
@@ -1737,7 +2096,7 @@ async function handleSigningResponse(userData) {
   if (userData) {
     // console.log(userData)
       parsedData = JSON.parse(userData)
-      parsedData = await sign(parsedData)
+      parsedData = await sign_data(parsedData)
       // console.log('passed sig')
       // parsedData.signature = signature
       result = JSON.stringify(parsedData)
@@ -1759,13 +2118,14 @@ async function handleSetRegionResponse(userData) {
     type:'POST',
     url:'/accounts/set_user_data',
     data: data,
-    success:function(response){
+    success: async function(response){
       if (response['message'] == 'Success') {
         // console.log('success')
         // localStorage.setItem('passPrivKey', passKey);
         // localStorage.setItem('passPubKey', pubKey);
         // localStorage.setItem('username', data['username']);
-        localStorage.setItem('userData', userData);
+        await storeItem(userData, 'userData');
+        // localStorage.setItem('userData', userData);
         if (window.location.href.indexOf("/region") > -1) {
           // window.location.href = `/region?${queryString}`;
           location.reload()
@@ -2251,11 +2611,11 @@ async function sign_userData(userData, privKey=null, pubKey=null) {
 
   // json_data = JSON.parse(userData)
   // console.log('2222', userData)
-  if (privKey && pubKey) {
-    userData = await sign(userData, privKey=privKey, pubKey=pubKey)
-  } else {
-    userData = await sign(userData)
-  }
+  // if (privKey && pubKey) {
+  userData = await sign_data(userData, privKey=privKey, pubKey=pubKey)
+  // } else {
+  //   userData = await sign(userData)
+  // }
   
   // return_signed_userData(userData)
   console.log('userData222',JSON.stringify(userData))
@@ -2273,7 +2633,7 @@ function return_signed_userData(userData) {
         type:'POST',
         url:'/accounts/set_user_data',
         data: data,
-        success:function(response){
+        success: async function(response){
           console.log(response)
           if (response['message'].toLowerCase() == 'success') {
             console.log('return signed data response 1 success')
@@ -2282,7 +2642,8 @@ function return_signed_userData(userData) {
             // localStorage.setItem('passPrivKey', passKey);
             // localStorage.setItem('passPubKey', pubKey);
             // localStorage.setItem('username', data['username']);
-            localStorage.setItem('userData', JSON.stringify(userData));
+            await storeItem(JSON.stringify(userData), 'userData');
+            // localStorage.setItem('userData', JSON.stringify(userData));
             // if (window.location.href.indexOf("/region") > -1) {
             //   // window.location.href = `/region?${queryString}`;
             //   location.reload()
@@ -2308,9 +2669,9 @@ function return_signed_userData(userData) {
   
   
 }
-function get_stored_userData() {
+async function get_stored_userData() {
   // console.log('get stored userdata')
-  var userData = JSON.parse(localStorage.getItem("userData"));
+  var userData = JSON.parse(await getItem("userData"));
   return userData
   // console.log(localStorage.getItem("userData"))
   // console.log(JSON.stringify(userData))
@@ -2380,7 +2741,7 @@ async function update_userData(receivedUserData) {
   try {
     delete parsedReceivedUserData.must_rename
   } catch(err) {}
-  var localUserModelVersion = localStorage.getItem("localUserModelVersion");
+  var localUserModelVersion = await getItem("localUserModelVersion");
   // console.log('localUserModelVersion',localUserModelVersion)
   // console.log('parsedReceivedUserData.latestModel',parsedReceivedUserData.latestModel)
   if (latestModelVersion != localUserModelVersion) {
@@ -2406,9 +2767,12 @@ async function update_userData(receivedUserData) {
       do_save_data = true
     }
     if (do_save_data) {
-      localStorage.setItem('localUserModelVersion', latestModelVersion); 
-      localStorage.setItem('prev_userData', JSON.stringify(fromModel)); 
-      localStorage.setItem('userData', JSON.stringify(toModel));   
+      await storeItem(latestModelVersion, 'localUserModelVersion');
+      await storeItem(JSON.stringify(fromModel), 'prev_userData');
+      await storeItem(JSON.stringify(userData), 'userData');
+      // localStorage.setItem('localUserModelVersion', latestModelVersion); 
+      // localStorage.setItem('prev_userData', JSON.stringify(fromModel)); 
+      // localStorage.setItem('userData', JSON.stringify(toModel));   
 
     } 
   }
@@ -2429,8 +2793,10 @@ async function update_userData(receivedUserData) {
       if (Date(userData.last_updated) > Date(parsedReceivedUserData.last_updated)) {
         await migrate_userData(userData, newUserModel)
       } else {
-        localStorage.setItem('userData', JSON.stringify(parsedReceivedUserData));   
-        localStorage.setItem('localUserModelVersion', latestModelVersion); 
+        await storeItem(latestModelVersion, 'localUserModelVersion');
+        await storeItem(JSON.stringify(parsedReceivedUserData), 'userData');
+        // localStorage.setItem('userData', JSON.stringify(parsedReceivedUserData));   
+        // localStorage.setItem('localUserModelVersion', latestModelVersion); 
         console.log('userData updated from server 2') 
       }
     }
@@ -2439,7 +2805,8 @@ async function update_userData(receivedUserData) {
   } else if (is_valid) {
     var userData = get_stored_userData();
     if (Date(userData.last_updated) < Date(parsedReceivedUserData.last_updated)) {
-      localStorage.setItem('userData', JSON.stringify(parsedReceivedUserData));   
+      await storeItem(JSON.stringify(parsedReceivedUserData), 'userData');
+      // localStorage.setItem('userData', JSON.stringify(parsedReceivedUserData));   
       console.log('userData updated from server') 
     } else if (Date(userData.last_updated) > Date(parsedReceivedUserData.last_updated)) {
       return_signed_userData(userData);
@@ -2484,8 +2851,8 @@ async function enact_user_instruction(instruction){
     } else if (command == 'get_stored_user_login_data') {
       // console.log('enact get_stored_user_login_data')
       try {
-        display_name = localStorage.getItem("display_name")
-        pass = localStorage.getItem("pass")
+        display_name = await getItem("display_name")
+        pass = await getItem("password")
         var form = document.getElementById("modalForm");
         if (display_name != 'null' && display_name != null) {
           form.elements["username"].value = display_name;
@@ -2604,7 +2971,7 @@ function edit_user_array(array_type, new_keyword, direction){
   //   resolve(result)
   // });
 }
-function formatDateToDjango(isoString) {
+function formatDateToDjango_old(isoString) {
   const date = new Date(isoString);
 
   function pad(number, length = 2) {
@@ -3177,94 +3544,146 @@ async function load_queue() {
 }
 
 
-function get_assignment(iden=null, DateTime=null, nodeIds=[], relevantNodes={}, region='All') {
-  console.log('get_assignment')
-  function hashToInt(hashString, length) {
-      let filteredHash = hashString.replace(/[^a-fA-F0-9]/g, '');
-      let hashInt = parseInt(filteredHash, 16);
-      return length === 0 ? 0 : hashInt % length;
+function formatDateToDjango(isoString) {
+  const date = isoString instanceof Date ? isoString : new Date(isoString);
+  function pad(number, length = 2) {
+      return String(number).padStart(length, '0');
   }
-  function dateToInt(date, startingDate) {
-      if (typeof date === 'string') {
-          date = new Date(date);
-      }
-      // let startDt = myStartingDate;
-      let timeDifference = (date - startingDate) / (1000 * 60 * 60);
-      console.log('timeDifference',timeDifference)
-      return Math.floor(timeDifference);
-  }
-  function getPeerNodes(broadcaster, position, nodeIds, checkedNodeList) { // peer nodes not needed by user, but it affects list order. needs to match what nodes create
-      // console.log('getPeerNodes',broadcaster,position, nodeIds);
-      if (!broadcastList.hasOwnProperty(broadcaster)) {
-          if (!orderOfNodes.includes(broadcaster)) {
-            orderOfNodes.push(broadcaster);
-          }
-          let index = nodeIds.indexOf(broadcaster);
-          // console.log('nodeIdsx0', nodeIds)
-          if (index !== -1) {
-            // console.log('splice',index)
-              nodeIds.splice(index, 1);
-          }
-          // console.log('nodeIdsx1', nodeIds)
-          let broadcasterHashedInt = hashToInt(broadcaster, nodeIds.length);
-          
-          function run(position, nodeIds) {
-            // console.log('run',nodeIds)
-              position += (broadcasterHashedInt + dateInt);
-              position = position % nodeIds.length;
-              // console.log('new posi',position)
-              let newNodeId = nodeIds.splice(position, 1)[0];
-              return { newNodeId, position, nodeIds };
-          }
+  const year = date.getUTCFullYear();
+  const month = pad(date.getUTCMonth() + 1);
+  const day = pad(date.getUTCDate());
+  const hours = pad(date.getUTCHours());
+  const minutes = pad(date.getUTCMinutes());
+  const seconds = pad(date.getUTCSeconds());
+  const milliseconds = pad(date.getUTCMilliseconds(), 3);
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+}
 
-          let peers = [];
-          while (peers.length < numberOfPeers && nodeIds.length > 0) {
-            // console.log('whle again', nodeIds)
-              let { newNodeId, position: newPosition, nodeIds: newNodeIds } = run(position, nodeIds);
-              if (!(newNodeId in orderOfNodes)) {
-                // peers.push(relevantNodes[newNodeId]);
-                orderOfNodes.push(newNodeId);
-              }
-              if (newNodeId !== broadcaster) {
-                  peers.push(relevantNodes[newNodeId]);
-                  // orderOfNodes.push(newNodeId);
-              }
-              nodeIds = newNodeIds;
-              position = newPosition;
-              // console.log('whle again end',nodeIds)
-          }
-          broadcastList[broadcaster] = peers;
-      }
-      return { broadcastList, orderOfNodes, nodeIds };
-  }
-  function process(broadcaster, position, nodeIds, orderOfNodes, broadcastList) {
-      // console.log('process',broadcaster,position,nodeIds);
-      let result = getPeerNodes(broadcaster, position, nodeIds, orderOfNodes);
-      broadcastList = result.broadcastList;
-      orderOfNodes = result.orderOfNodes;
-      nodeIds = result.nodeIds;
-      // console.log('end process: orderOfNodes',orderOfNodes,'requiredValidators',requiredValidators,'nodeIds',nodeIds)
+async function browser_shuffle(text_input, dt, node_ids) {
+    // console.log('browser_shuffle');=
+    async function sha256Hex(input) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(input);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer))
+                  .map(b => b.toString(16).padStart(2, '0'))
+                  .join('');
+    }
+    
+    const dt_str = formatDateToDjango(dt);
+    // console.log('dt_str', dt_str);
+    // `${text_input}_${dt_str}_${item}`
+    const seed_input = `${text_input}_${dt_str}`;
+    // console.log('seed_input', seed_input);
+    // console.log('seed_inputEE', seed_input + node_ids[0]);
+    const hashes = await Promise.all(node_ids.map(async item => {
+        const hash = await sha256Hex(seed_input + item);
+        return { item, hash };
+    }));
+    hashes.sort((a, b) => a.hash.localeCompare(b.hash));
+    return hashes.map(obj => obj.item);
+}
+
+
+
+
+
+async function get_assignment(obj=null, iden=null, DateTime=null, nodeIds=[], relevantNodes={}, region='All') {
+  console.log('get_assignment')
+  // function hashToInt(hashString, length) {
+  //     let filteredHash = hashString.replace(/[^a-fA-F0-9]/g, '');
+  //     let hashInt = parseInt(filteredHash, 16);
+  //     return length === 0 ? 0 : hashInt % length;
+  // }
+  // function dateToInt(date, startingDate) {
+  //     if (typeof date === 'string') {
+  //         date = new Date(date);
+  //     }
+  //     // let startDt = myStartingDate;
+  //     let timeDifference = (date - startingDate) / (1000 * 60 * 60);
+  //     console.log('timeDifference',timeDifference)
+  //     return Math.floor(timeDifference);
+  // }
+  // function getPeerNodes(broadcaster, position, nodeIds, checkedNodeList) { // peer nodes not needed by user, but it affects list order. needs to match what nodes create
+  //     // console.log('getPeerNodes',broadcaster,position, nodeIds);
+  //     if (!broadcastList.hasOwnProperty(broadcaster)) {
+  //         if (!orderOfNodes.includes(broadcaster)) {
+  //           orderOfNodes.push(broadcaster);
+  //         }
+  //         let index = nodeIds.indexOf(broadcaster);
+  //         // console.log('nodeIdsx0', nodeIds)
+  //         if (index !== -1) {
+  //           // console.log('splice',index)
+  //             nodeIds.splice(index, 1);
+  //         }
+  //         // console.log('nodeIdsx1', nodeIds)
+  //         let broadcasterHashedInt = hashToInt(broadcaster, nodeIds.length);
+          
+  //         function run(position, nodeIds) {
+  //           // console.log('run',nodeIds)
+  //             position += (broadcasterHashedInt + dateInt);
+  //             position = position % nodeIds.length;
+  //             // console.log('new posi',position)
+  //             let newNodeId = nodeIds.splice(position, 1)[0];
+  //             return { newNodeId, position, nodeIds };
+  //         }
+
+  //         let peers = [];
+  //         while (peers.length < numberOfPeers && nodeIds.length > 0) {
+  //           // console.log('whle again', nodeIds)
+  //             let { newNodeId, position: newPosition, nodeIds: newNodeIds } = run(position, nodeIds);
+  //             if (!(newNodeId in orderOfNodes)) {
+  //               // peers.push(relevantNodes[newNodeId]);
+  //               orderOfNodes.push(newNodeId);
+  //             }
+  //             if (newNodeId !== broadcaster) {
+  //                 peers.push(relevantNodes[newNodeId]);
+  //                 // orderOfNodes.push(newNodeId);
+  //             }
+  //             nodeIds = newNodeIds;
+  //             position = newPosition;
+  //             // console.log('whle again end',nodeIds)
+  //         }
+  //         broadcastList[broadcaster] = peers;
+  //     }
+  //     return { broadcastList, orderOfNodes, nodeIds };
+  // }
+  // function process(broadcaster, position, nodeIds, orderOfNodes, broadcastList) {
+  //     // console.log('process',broadcaster,position,nodeIds);
+  //     let result = getPeerNodes(broadcaster, position, nodeIds, orderOfNodes);
+  //     broadcastList = result.broadcastList;
+  //     orderOfNodes = result.orderOfNodes;
+  //     nodeIds = result.nodeIds;
+  //     // console.log('end process: orderOfNodes',orderOfNodes,'requiredValidators',requiredValidators,'nodeIds',nodeIds)
       
-      if (!orderOfNodes.includes(broadcaster)) {
-        orderOfNodes.push(broadcaster);
-      }
-      // if (func && scraperList.length < requiredScrapers && broadcaster !== validatorNode && !scraperList.includes(broadcaster)) {
-      //     scraperList.push(broadcaster);
-      // }
-      return { broadcastList, orderOfNodes, nodeIds };
-  }
+  //     if (!orderOfNodes.includes(broadcaster)) {
+  //       orderOfNodes.push(broadcaster);
+  //     }
+  //     // if (func && scraperList.length < requiredScrapers && broadcaster !== validatorNode && !scraperList.includes(broadcaster)) {
+  //     //     scraperList.push(broadcaster);
+  //     // }
+  //     return { broadcastList, orderOfNodes, nodeIds };
+  // }
 
 
   // id = 'usrSo93jd85hd7ydbh39j3'
   // DateTime = get_current_time()
   // nodeIds = ['nodSo4958fj47dh4', 'nodSo93jd74yhb49f4n', 'nodSod83nnf84u394je49fu4']
   // relevantNodes = {'nodSo4958fj47dh4':'127.0.0.1', 'nodSo93jd74yhb49f4n':'10.0.0.51', 'nodSod83nnf84u394je49fu4':'10.0.0.97'}
+  if (obj != null) {
+    if (DateTime == null) {
+      var DateTime = obj.DateTime;
+    }
+    if (iden == null) {
+    var iden = obj.iden;
+    }
+  }
   if (DateTime == null) {
     DateTime = new Date()
   }
   console.log('datetime:',DateTime)
   if (iden == null) {
-    var iden = localStorage.getItem("user_id");
+    var iden = await getItem("user_id");
     console.log('user iden',iden);
     if (!iden) {
       // let uuidHex = crypto.randomUUID().replace(/-/g, "");
@@ -3273,13 +3692,14 @@ function get_assignment(iden=null, DateTime=null, nodeIds=[], relevantNodes={}, 
       // console.log('temp user iden',iden);
       // localStorage.setItem('user_id', iden);
       
-      var iden = localStorage.getItem('anonId')
+      var iden = await getItem('anonId')
       if (!iden || iden == '0') {
         
         var anonId = document.getElementById("anonId")
         if (anonId.getAttribute("value")) {
           iden = anonId.getAttribute("value");
-          localStorage.setItem('anonId', iden);
+          // localStorage.setItem('anonId', iden);
+          await storeItem(iden, 'anonId');
         } else {
           iden = '0'
         }
@@ -3290,9 +3710,9 @@ function get_assignment(iden=null, DateTime=null, nodeIds=[], relevantNodes={}, 
   }
   if (nodeIds.length === 0 || Object.keys(relevantNodes).length === 0 ) {
     // console.log('get ids and r_nodes')
-    var saved_nodeData = localStorage.getItem("nodeData");
+    var saved_nodeData = await getItem("nodeData");
     // console.log('saved_nodeData',saved_nodeData)
-    parsed_nodeData = JSON.parse(saved_nodeData)
+    var parsed_nodeData = JSON.parse(saved_nodeData);
 
     // var nodeIds = parsed_nodeData.id_data;
     var relevantNodes = parsed_nodeData.addresses
@@ -3311,70 +3731,74 @@ function get_assignment(iden=null, DateTime=null, nodeIds=[], relevantNodes={}, 
   }
   console.log('relevantNodes',relevantNodes)
   console.log('nodeIds',nodeIds)
-  const sonetInitializedDatetime = new Date(localStorage.getItem('sonetInitializedDatetime'));
-  // let sonetInitializedDatetime = localStorage.getItem('sonetInitializedDatetime');
-  console.log('sonetInitializedDatetime',sonetInitializedDatetime)
+  const sorted = await browser_shuffle(iden, DateTime, node_ids);
+  console.log('sorted',sorted)
+  return sorted;
+
+  // const sonetInitializedDatetime = new Date(getItem('sonetInitializedDatetime'));
+  // // let sonetInitializedDatetime = localStorage.getItem('sonetInitializedDatetime');
+  // console.log('sonetInitializedDatetime',sonetInitializedDatetime)
 
 
-  // var scraperList = []
-  var orderOfNodes = []
-  var broadcastList = {}
-  var validatorNodes = [] // for transactions only i think
-  // let requiredScrapers = 0
-  let requiredValidators = 500
-  let numberOfPeers = 2
+  // // var scraperList = []
+  // var orderOfNodes = []
+  // var broadcastList = {}
+  // var validatorNodes = [] // for transactions only i think
+  // // let requiredScrapers = 0
+  // let requiredValidators = 500
+  // let numberOfPeers = 2
 
-  dateInt = dateToInt(DateTime, sonetInitializedDatetime);
-  // console.log('dateInt',dateInt)
-  startingPosition = hashToInt(iden, nodeIds.length) + dateInt;
-  // console.log('startingPosition',startingPosition)
+  // dateInt = dateToInt(DateTime, sonetInitializedDatetime);
+  // // console.log('dateInt',dateInt)
+  // startingPosition = hashToInt(iden, nodeIds.length) + dateInt;
+  // // console.log('startingPosition',startingPosition)
 
-  function reducePos(pos) {
-    // console.log('reduce',pos)
-      return pos % nodeIds.length;
-  }
+  // function reducePos(pos) {
+  //   // console.log('reduce',pos)
+  //     return pos % nodeIds.length;
+  // }
 
-  let x = reducePos(startingPosition);
-  // checkedNodeList = validatorNodes.map(n => n.id);
-  // console.log('checkedNodeList',checkedNodeList)
+  // let x = reducePos(startingPosition);
+  // // checkedNodeList = validatorNodes.map(n => n.id);
+  // // console.log('checkedNodeList',checkedNodeList)
 
-  // x = 0;
-  let run = true;
-  let targetNode = nodeIds[x];
+  // // x = 0;
+  // let run = true;
+  // let targetNode = nodeIds[x];
 
-  while (orderOfNodes.length < requiredValidators && orderOfNodes.length < nodeIds.length && run) {
-    // console.log('while',x)
-      try {
-          let result = process(targetNode, startingPosition, nodeIds, orderOfNodes, broadcastList);
-          broadcastList = result.broadcastList;
-          orderOfNodes = result.orderOfNodes;
-          nodeIds = result.nodeIds;
-          // console.log('r x orderOfNodes',x,orderOfNodes)
-          // console.log('orderOfNodes.length',orderOfNodes.length)
-          // console.log('nodeIds.length',nodeIds.length)
-          // console.log('requiredValidators',requiredValidators)
+  // while (orderOfNodes.length < requiredValidators && orderOfNodes.length < nodeIds.length && run) {
+  //   // console.log('while',x)
+  //     try {
+  //         let result = process(targetNode, startingPosition, nodeIds, orderOfNodes, broadcastList);
+  //         broadcastList = result.broadcastList;
+  //         orderOfNodes = result.orderOfNodes;
+  //         nodeIds = result.nodeIds;
+  //         // console.log('r x orderOfNodes',x,orderOfNodes)
+  //         // console.log('orderOfNodes.length',orderOfNodes.length)
+  //         // console.log('nodeIds.length',nodeIds.length)
+  //         // console.log('requiredValidators',requiredValidators)
 
-          // if (func && scrapersOnly) {
-          //     if (scraperList.length >= requiredScrapers || nodeIds.length === 0) {
-          //         run = false;
-          //     }
-          // }
-          // if (!broadcastList.hasOwnProperty(targetNode)) {
-          //     run = false;
-          // }
-          x++;
-          targetNode = orderOfNodes[x];
-      } catch (e) {
-        console.log('while err 532',e)
-          run = false;
-      }
-  }
-  var addresses = {}
-  for (let i=0; i<orderOfNodes.length; i++) {
-    addresses[orderOfNodes[i]] = relevantNodes[orderOfNodes[i]];
-  }
-  console.log('return assignment: orderOfNodes',orderOfNodes,'addresses',addresses)
-  return { orderOfNodes, addresses };
+  //         // if (func && scrapersOnly) {
+  //         //     if (scraperList.length >= requiredScrapers || nodeIds.length === 0) {
+  //         //         run = false;
+  //         //     }
+  //         // }
+  //         // if (!broadcastList.hasOwnProperty(targetNode)) {
+  //         //     run = false;
+  //         // }
+  //         x++;
+  //         targetNode = orderOfNodes[x];
+  //     } catch (e) {
+  //       console.log('while err 532',e)
+  //         run = false;
+  //     }
+  // }
+  // var addresses = {}
+  // for (let i=0; i<orderOfNodes.length; i++) {
+  //   addresses[orderOfNodes[i]] = relevantNodes[orderOfNodes[i]];
+  // }
+  // console.log('return assignment: orderOfNodes',orderOfNodes,'addresses',addresses)
+  // return { orderOfNodes, addresses };
 }
 
 async function check_for_node_updates(document) {
@@ -3385,24 +3809,27 @@ async function check_for_node_updates(document) {
     parsed_nodeData = JSON.parse(nodeData.getAttribute("value"))
     // console.log('save node data0')
     // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
-    var saved_nodeData = JSON.parse(localStorage.getItem("nodeData"));
+    var saved_nodeData = JSON.parse(await getItem("nodeData"));
     // console.log('saved node data0', saved_nodeData)
     // console.log('saved node dt', JSON.parse(saved_nodeData)['blockDatetime'])
     if (!saved_nodeData) {
       // console.log('save node data1')
-      localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
+      await storeItem(JSON.stringify(parsed_nodeData), 'nodeData');
+      // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
     } else if (formatDateToDjango(saved_nodeData['blockDatetime']) < formatDateToDjango(parsed_nodeData['blockDatetime'])) {
       // console.log('save node data2')
-      localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
+      await storeItem(JSON.stringify(parsed_nodeData), 'nodeData');
+      // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
     // } else {
     //   console.log('no save node data')
     //   console.log('d1',formatDateToDjango(saved_nodeData['blockDatetime']))
     //   console.log('d2',formatDateToDjango(parsed_nodeData['blockDatetime']))
     }
-    localStorage.setItem('sonetInitializedDatetime', parsed_nodeData['sonetInitializedDatetime']);
+    await storeItem(parsed_nodeData['sonetInitializedDatetime'], 'sonetInitializedDatetime');
+    // localStorage.setItem('sonetInitializedDatetime', parsed_nodeData['sonetInitializedDatetime']);
 
   }
-  // console.log('done check nodes ')
+  console.log('done check nodes ')
   // return new Promise((resolve) => setTimeout(resolve, 650));
 }
 
@@ -3616,6 +4043,7 @@ $(document).ready(
     function(){
       console.log('document ready start');
       initialize_page(document)
+
       // try{
       //   var rePosition = document.getElementsByClassName('moveToHere')[0];
       //   // alert(rePosition)
@@ -3681,6 +4109,7 @@ $(document).ready(
     //     adjustNavBar($navbar)
     //   }
     console.log('document ready done');
+    my_test();
   }
 )
 
@@ -3840,3 +4269,100 @@ function searchMobileSwitch(tab){
   }
 
 }
+
+
+async function my_test() {
+  console.log('running my test');
+  await key_test();
+  console.log('done my test');
+}
+
+
+async function key_test() {
+  console.log('runnign key_test');
+  // indexedDB.deleteDatabase('KeyDB');
+  await storeItem('testme2', 'tester');
+  resp = await getItem("PrivKey")
+  console.log('PrivKey',resp);
+  user_id = await getItem("user_id")
+  console.log('user_id',user_id);
+
+  const result1 = await connect_to_node('/utils/is_sonet');
+  console.log('Logout response:', result1);
+
+  // const result2 = await connect_to_node('/submit', { user: 'bob', action: 'save' });
+  // console.log('Submit response:', result2);
+
+
+  //     const user_id = "fj8D3h75Hnbe8u";
+  //     const user_pass = "jtVE5u8bT&s#";
+  //     const message = "hello world";
+
+  //     // Step 1: Generate password and salt
+  //     const password = new TextEncoder().encode(user_id + user_pass);
+  //     const salt = new TextEncoder().encode(user_id);
+
+  //     // Step 2: Derive private key seed using scrypt
+  //     const N = 16384, r = 8, p = 1, dkLen = 32;
+  //     const seed = await scrypt(password, salt, N, r, p, dkLen);
+  //     const seedHex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
+  //     console.log("Private key seed (hex):", seedHex);
+
+  //     // Step 3: Create secp256k1 keypair
+  //     const ec = new elliptic.ec('secp256k1');
+  //     const keyPair = ec.keyFromPrivate(seedHex);
+
+  //     const privateKeyHex = keyPair.getPrivate("hex");
+  //     const publicKeyHex = keyPair.getPublic().encode("hex"); // uncompressed
+  //     console.log("Private Key (hex):", privateKeyHex);
+  //     console.log("Public Key (hex, uncompressed):", publicKeyHex);
+
+  //     // Step 4: Sign message with SHA-256 hash
+  //     const msgHash = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
+  //     const signature = keyPair.sign(msgHash, { canonical: true });
+  //     const signatureDERHex = signature.toDER("hex");
+
+  //     console.log("Message:", message);
+  //     console.log("Message Hash (SHA-256, hex):", msgHash);
+  //     console.log("Signature (DER, hex):", signatureDERHex);
+  console.log('done key_test');
+}
+
+
+
+// import { scrypt } from 'scrypt-js';
+// import elliptic from 'elliptic';
+// async function create_key() {
+//   console.log('create_key');
+
+
+//   const user_id = 'fj8D3h75Hnbe8u';
+//   const user_pass = 'jtVE5u8bT&s#';
+
+//   // Step 1: Prepare password and salt
+//   const password = new TextEncoder().encode(user_id + user_pass);
+//   const salt = new TextEncoder().encode(user_id); // Deterministic salt
+
+//   console.log("Password (text):", user_id + user_pass);
+//   console.log("Password (bytes):", Array.from(password));
+//   console.log("Salt (text):", user_id);
+//   console.log("Salt (bytes):", Array.from(salt));
+
+//   // Step 2: Derive a 32-byte seed using scrypt
+//   const N = 16384, r = 8, p = 1, dkLen = 32;
+
+//   scrypt(password, salt, N, r, p, dkLen).then(seed => {
+//     const seedHex = Buffer.from(seed).toString('hex');
+//     console.log("Derived Seed (hex):", seedHex);
+
+//     // Step 3: Generate keypair from seed
+//     const curve = new elliptic.ec('secp256k1');
+//     const keyPair = curve.keyFromPrivate(seed);
+//     const privKeyHex = keyPair.getPrivate('hex');
+//     const pubKeyHex = keyPair.getPublic().encode('hex');
+
+//     console.log("Private Key:", privKeyHex);
+//     console.log("Public Key:", pubKeyHex);
+  
+//   });
+// }

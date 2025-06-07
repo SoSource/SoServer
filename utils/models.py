@@ -1511,6 +1511,8 @@ def get_model_fields(obj=None):
                 objFields['blockchainType'] = obj.blockchainType
             if has_field(model,'secondChainType'):
                 objFields['secondChainType'] = obj.secondChainType
+            if has_field(model,'iden_length'):
+                objFields['iden_length'] = obj.iden_length
             from django.forms.models import model_to_dict
             objFields.update(model_to_dict(obj))
             # prnt('obj',obj)
