@@ -106,7 +106,7 @@ class User(AbstractUser):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'User', 'is_modifiable': True, 'blockchainType': 'User', 'secondChainType': 'Sonet', 'password': '', 'last_login': None, 'is_superuser': False, 'username': '', 'is_staff': False, 'is_active': True, 'date_joined': None, 'id': '0', 'modelVersion': 1, 'created': None, 'last_updated': None, 'nodeCreatorId': '0', 'signature': '', 'publicKey': '', 'validation_error': False, 'display_name': '', 'must_rename': None, 'first_name': None, 'last_name': None, 'email': None, 'timezone': 'US/Eastern', 'UserData_obj': None, 'receiveNotifications': True, 'isVerified': False, 'groups': [], 'user_permissions': []}
+            return {'object_type': 'User', 'is_modifiable': True, 'blockchainType': 'User', 'secondChainType': 'Sonet', 'password': '', 'last_login': None, 'is_superuser': False, 'username': '', 'is_staff': False, 'is_active': True, 'date_joined': None, 'id': '0', 'modelVersion': 1, 'created': None, 'last_updated': None, 'nodeCreatorId': '0', 'signature': '', 'publicKey': '', 'validation_error': False, 'display_name': '', 'must_rename': None, 'first_name': None, 'last_name': None, 'email': None, 'timezone': 'US/Eastern', 'UserData_obj': None, 'receiveNotifications': True, 'isVerified': False, 'groups': [], 'user_permissions': [], 'iden_length':11}
 
     def commit_data(self, version=None):
         if not version:
@@ -770,7 +770,7 @@ class UserNotification(models.Model):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'UserNotification', 'modelVersion': 1, 'id': '0', 'created': None, 'last_updated': None, 'Notification_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'DateTime': None, 'User_obj': None, 'new': True}
+            return {'object_type': 'UserNotification', 'modelVersion': 1, 'id': '0', 'created': None, 'last_updated': None, 'Notification_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'DateTime': None, 'User_obj': None, 'new': True, 'iden_length':20}
             # return {'object_type': 'UserNotification', 'modelVersion': 1, 'id': '0', 'created': None, 'added': None, 'last_updated': None, 'Notification_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'DateTime': None, 'User_obj': None, 'new': True}
         
     def get_hash_to_id(self, version=None):
@@ -1011,7 +1011,7 @@ class UserVote(BaseAccountModel):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'UserVote', 'blockchainType': 'Region', 'id': '0', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'blockchainId': '', 'Block_obj': None, 'postId': '0', 'pointerId': '', 'User_obj': None, 'District_obj': None, 'voteValue': ''}
+            return {'object_type': 'UserVote', 'blockchainType': 'Region', 'id': '0', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'blockchainId': '', 'Block_obj': None, 'postId': '0', 'pointerId': '', 'User_obj': None, 'District_obj': None, 'voteValue': '', 'iden_length':20}
         
     def commit_data(self, version=None):
         if not version:
