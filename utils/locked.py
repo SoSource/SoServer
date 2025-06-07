@@ -2883,10 +2883,10 @@ def generate_id(data=None, len=id_len):
 
     
 def hash_obj_id(obj, verify=False, specific_data=None, return_data=False, model=None, version=None, len=id_len):
+    from utils.models import has_method, has_field, get_model_prefix, get_model,sort_dict,prnt
     prnt('hash_obj_id', obj)
     if not len:
         len = id_len
-    from utils.models import has_method, has_field, get_model_prefix, get_model,sort_dict,prnt
     if specific_data:
         # prnt('specific_data',specific_data)
         # return get_model_prefix(obj) + 'So' + str(hashlib.md5(str(specific_data).encode('utf-8')).hexdigest())

@@ -123,6 +123,7 @@ def set_object_data_view(request):
 @csrf_exempt
 def get_object_data_view(request, obj_type='Region'):
     prnt('--get_object_data_view')
+    err = 0
     try:
         if request.method == 'POST':
             err = 1
