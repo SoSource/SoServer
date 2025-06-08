@@ -364,7 +364,7 @@ class Plugin(models.Model):
             # elif not self.Block_obj:
                 # add to commit queue
                 # save
-        super(Sonet, self).save(*args, **kwargs)
+        super(Plugin, self).save(*args, **kwargs)
     
     def boot(self):
         blockchain, self, secondChain = find_or_create_chain_from_object(self)
