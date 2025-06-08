@@ -1062,8 +1062,6 @@ def sigData_to_hash(obj):
     data = get_signing_data(obj)
     text_bytes = str(data).encode('utf-8')
     hashed = hashlib.sha256(text_bytes).hexdigest()
-    
-    # hashed = hashlib.shake_256(text_bytes).hexdigest(64) # Get a 64-byte (512-bit) hash — change 64 to get longer/shorter hashes
     return hashed
 
 
@@ -2461,7 +2459,7 @@ def super_sync(target, received_data, do_save=False, skip_fields=['latestModel']
 
 
 def find_or_create_chain_from_object(obj, recheck_chain=False):
-    # prntDebug('-find_or_create_chain_from_object',obj)
+    prntDebug('-find_or_create_chain_from_object',obj)
     if isinstance(obj, dict):
         obj_is_model = False
     else:
@@ -2608,7 +2606,7 @@ def find_or_create_chain_from_object(obj, recheck_chain=False):
                         secondChain = Blockchain(genesisId=sonet.id, genesisType='Sonet', genesisName='Sonet', created=sonet.created)
                         secondChain.save()
                 
-    # prntDebug('done find chain', blockchain, obj, secondChain)
+    prntDebug('done find chain', blockchain, obj, secondChain)
     return blockchain, obj, secondChain
 
 def get_data(items_list, include_related=False, return_model=False, verify_data=True, result_as_dict=False, include_deletions=False, special_request={}):
@@ -3040,15 +3038,17 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                 chains = {}
                 from blockchain.models import script_created_modifiable_models
                 for m in script_created_modifiable_models:
-                    mIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix(m))]
-                    prnt('mIdens',mIdens)
-                    objs = get_dynamic_model(m, list=True, id__in=mIdens)
-                    for o in objs:
-                        chain, o, secondChain = find_or_create_chain_from_object(o)
-                        if chain:
-                            if chain not in chains:
-                                chains[chain] = []
-                            chains[chain].append(o)
+                    prefix = get_model_prefix(m)
+                    if prefix:
+                        mIdens = [u for u in processed_data['obj_ids'] if u.startswith(prefix)]
+                        prnt('mIdens',mIdens)
+                        objs = get_dynamic_model(m, list=True, id__in=mIdens)
+                        for o in objs:
+                            chain, o, secondChain = find_or_create_chain_from_object(o)
+                            if chain:
+                                if chain not in chains:
+                                    chains[chain] = []
+                                chains[chain].append(o)
                 if chains:
                     for chain in chains:
                         chain.add_item_to_queue(chains[chain])
