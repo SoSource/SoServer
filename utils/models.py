@@ -2564,6 +2564,9 @@ def find_or_create_chain_from_object(obj, recheck_chain=False):
                 sonet = Sonet.objects.first()
                 blockchain = Blockchain(genesisId=NodeChain_genesisId, genesisType='Nodes', genesisName='Nodes', created=sonet.created)
                 blockchain.save()
+        # elif obj_is_model and obj.blockchainType in ChainTypes or not obj_is_model and 'blockchainType' in obj and obj['blockchainType'] in ChainTypes:
+        #     ...
+
         
         
     if obj_is_model and has_field(obj, 'secondChainType') or not obj_is_model and 'secondChainType' in obj:
@@ -2963,7 +2966,10 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                         prnt('get validator')
                         validator = Validator.objects.filter(data__has_key=obj.id, CreatorNode_obj=self_node, func='super', is_valid=True).first()
                         if not validator:
-                            validator = Validator(blockchainType=blockchain.genesisType, jobId=job_id, blockchainId=blockchain.id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
+                            validator = Validator(jobId=job_id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
+                            if blockchain:
+                                validator.blockchainType=blockchain.genesisType
+                                validator.blockchainId=blockchain.id
                             validator.save()
                             # validator = Validator.objects.create(blockchainType=blockchain.genesisType, blockchainId=blockchain.id, CreatorNode_obj=self_node, validatorType='scraper', func='super', is_valid=True)
                     processed_data['obj_ids'].append(obj.id)

@@ -245,7 +245,7 @@ class Plugin(models.Model):
     created = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     added = models.DateTimeField(auto_now=False, auto_now_add=True, blank=True, null=True)
     updated_on_node = models.DateTimeField(auto_now=True, auto_now_add=False, blank=True, null=True)
-    # blockchainId = models.CharField(max_length=50, default="", blank=True)
+    blockchainId = models.CharField(max_length=50, default="", blank=True)
     Block_obj = models.ForeignKey('blockchain.Block', blank=True, null=True, on_delete=models.PROTECT)
     publicKey = models.CharField(max_length=200, default="", blank=True)
     signature = models.CharField(max_length=200, default="", blank=True)
@@ -271,7 +271,7 @@ class Plugin(models.Model):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'Plugin', 'is_modifiable': True, 'blockchainType': 'Sonet', 'modelVersion': 1, 'id': '0', 'created': None, 'Block_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'User_obj': None, 'Title': 'x', 'Subtitle': None, 'Description': None, 'data': None, 'app_name': 'x', 'app_dir': '../', 'plugin_prefix': None, 'model_prefixes': None}
+            return {'object_type': 'Plugin', 'is_modifiable': True, 'blockchainType': 'Sonet', 'modelVersion': 1, 'id': '0', 'created': None, 'blockchainId':'', 'Block_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'User_obj': None, 'Title': 'x', 'Subtitle': None, 'Description': None, 'data': None, 'app_name': 'x', 'app_dir': '../', 'plugin_prefix': None, 'model_prefixes': None}
 
     def commit_data(self, version=None):
         if not version:
@@ -320,6 +320,7 @@ class Plugin(models.Model):
         if self.id == '0':
             self.id = hash_obj_id(self)
             self.created = now_utc()
+            self.blockchainId = Blockchain.objects.filter(genesisType='Sonet').first().id
 
             if not self.model_prefixes:
                 import importlib
