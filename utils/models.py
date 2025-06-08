@@ -2993,7 +2993,11 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                     print('validate posts')
                 prnt('log6.6')
                 prnt("get_model_prefix('Update')",get_model_prefix('Update'),"get_model_prefix('Notification')",get_model_prefix('Notification'),"get_model_prefix('BillText')",get_model_prefix('BillText'))
-                pointerIdens = [i for i in processed_data['obj_ids'] if not i.startswith(get_model_prefix('Update')) and not i.startswith(get_model_prefix('Notification')) and not i.startswith(get_model_prefix('BillText'))]
+                prefixes = [get_model_prefix('Update'),get_model_prefix('Notification')]
+                btxt = get_model_prefix('BillText')
+                if btxt:
+                    prefixes.append(btxt)
+                pointerIdens = [i for i in processed_data['obj_ids'] if not i.startswith(tuple(prefixes))]
                 prnt('pointerIdens',pointerIdens)
                 while pointerIdens:
                     posts = Post.all_objects.filter(pointerId__in=pointerIdens[:500]).exclude(validated=True)
