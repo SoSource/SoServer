@@ -3077,34 +3077,34 @@ def sort_for_sign(data):
 _super_id = None
 
 def super_id(iden=None, net=None):
-    from utils.models import prntDev, prnt
-    prntDev('super_id()')
+    from utils.models import prntDev, prnt, prntDebug
+    prnt('super_id()',iden)
     global _super_id
     if _super_id is None:
         from blockchain.models import Sonet
         sonet = Sonet.objects.first()
-        prntDev('sonet',sonet)
+        prntDebug('sonet',sonet)
         if not sonet and net:
             sonet = net
         if sonet:
             if isinstance(sonet, dict):
-                iden = sonet['id']
-                created_dt = sonet['created']
+                net_iden = sonet['id']
+                net_created_dt = sonet['created']
             else:
-                iden = sonet.id
-                created_dt = sonet.created
-            if iden == 'ohSo4ysURHSGh2i8QYsceeS4yI':
+                net_iden = sonet.id
+                net_created_dt = sonet.created
+            if net_iden == 'ohSo4ysURHSGh2i8QYsceeS4yI':
                 # _super_id = 'usrSo7vmfyZc7GoAq4ky8skiiif'
                 _super_id = 'usrSoXra8XFCgMwu4ucc0GsY0g'
-                prntDev('_super_id1',_super_id)
-            elif created_dt:
-                prntDev('sonet.created',created_dt)
-                if net and isinstance(created_dt, str):
-                    c_dt = created_dt
+                prntDebug('_super_id1',_super_id)
+            elif net_created_dt:
+                prntDebug('sonet.created',net_created_dt)
+                if net and isinstance(net_created_dt, str):
+                    c_dt = net_created_dt
                 else:
-                    c_dt = dt_to_string(created_dt)
+                    c_dt = dt_to_string(net_created_dt)
                 _super_id = 'usrSo' + generate_id(f'ShardHolder-{c_dt}',len=14)
-                prntDev('_super_id2',_super_id)
+                prntDebug('_super_id2',_super_id)
         else:
             return True
         
