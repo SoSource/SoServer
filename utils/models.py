@@ -799,7 +799,8 @@ def load_key():
     elif system in ('Linux', 'Darwin'):  # Darwin is macOS
         file_path = "../.data/.soSecret.key"
     try:
-        return open(file_path, "rb").read()
+        with open(file_path, "rb") as f:
+            return f.read()
     except Exception as e:
         prnt('fail583650',str(e))
 
