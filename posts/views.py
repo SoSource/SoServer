@@ -542,10 +542,10 @@ def render_view(request, context, country=None, feed=False):
             pass
         
         ctx = get_cookies(request,context,country=country)
-        ctx = {}
-        prnt('ctx')
+        # ctx = {}
+        # prnt('ctx')
         response = render(request, "home.html", ctx)
-        prnt('render 1')
+        # prnt('render 1')
         width = request.GET.get('width', '')
         if width:
             response.set_cookie(key='deviceWidth', value=width, expires=datetime.datetime.today()+datetime.timedelta(days=3650))
@@ -553,7 +553,7 @@ def render_view(request, context, country=None, feed=False):
             response.set_cookie(key='fcmDeviceId', value=fcmDeviceId, expires=datetime.datetime.today()+datetime.timedelta(days=3650))
         # if appToken:
         #     response.set_cookie(key='appToken', value=appToken, expires=datetime.datetime.today()+datetime.timedelta(days=3650))
-        prnt('passed render')
+        # prnt('passed render')
         # if userToken:
         #     response.set_cookie(key='userToken', value=userToken, expires=datetime.datetime.today()+datetime.timedelta(days=3650))
         prnt('rendering')
