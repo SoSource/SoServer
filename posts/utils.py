@@ -364,7 +364,7 @@ def get_cookies(request, c, country=None):
     else:
         nodeData['sonetInitializedDatetime'] = dt_to_string(sonet.created)
 
-    # prnt('sonet', sonet)
+    prnt('sonet', sonet)
     context = {
         "sonet": sonet,
         "userData": userData,
