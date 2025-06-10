@@ -1470,9 +1470,9 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             prnt("node_block.data['All']",node_block.data['All'])
             node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
             prnt('node_idsA',node_ids)
-            prnt('node_idsB sort',node_ids.sort())
+            prnt('node_idsB sort',sorted(node_ids))
             if node_ids_only:
-                return node_ids.sort()
+                return sorted(node_ids)
             if strings_only and 'addresses' in node_block.notes:
                 prnt('path1')
                 relevant_nodes = {iden:node_block.notes['addresses'][iden] for iden in node_ids}
@@ -1505,7 +1505,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             else:
                 node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
             if node_ids_only:
-                return node_ids.sort()
+                return sorted(node_ids)
             # else:
             #     node_ids = []
             
@@ -1537,7 +1537,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
                                         node_ids.append(node_iden)
             prnt('node_ids',node_ids)
             if node_ids_only:
-                return node_ids.sort()
+                return sorted(node_ids)
             if strings_only and 'addresses' in node_block.notes:
                 relevant_nodes = {iden:node_block.notes['addresses'][iden] for iden in node_ids}
             elif strings_only:
@@ -1549,7 +1549,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             prnt('else')
             node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
             if node_ids_only:
-                return node_ids.sort()
+                return sorted(node_ids)
             if strings_only and 'addresses' in node_block.notes:
                 relevant_nodes = {iden:node_block.notes['addresses'][iden] for iden in node_ids}
             elif strings_only:
@@ -1571,7 +1571,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
         all_nodes = Node.objects.all().order_by('created')[:1]
         node_ids = [n.id for n in all_nodes if n.id not in exclude_list]
         if node_ids_only:
-            return node_ids.sort()
+            return sorted(node_ids)
         if strings_only:
             relevant_nodes = {n.id:n.return_address() for n in Node.objects.filter(id__in=node_ids)}
         else:
