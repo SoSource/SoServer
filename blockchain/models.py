@@ -2490,6 +2490,7 @@ class Blockchain(models.Model):
                 reward = sign_obj(reward)
                 new_block.data[reward.id] = get_commit_data(reward)
             new_block = sign_obj(new_block)
+            from utils.locked import verify_obj_to_data
             prnt('verify_obj_to_data(new_block, new_block)',verify_obj_to_data(new_block, new_block))
             prnt('-block created')
             if not self.queuedData:
