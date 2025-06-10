@@ -139,6 +139,8 @@ script_created_modifiable_models = ['Region','District','Party']
 unshared_models = ['Post','UserAction','UserNotification','Wallet','Blockchain','EventLog','Keyphrase','KeyphraseTrend']
 
 model_prefixes = {'Sonet':'oh','Plugin':'plg','DataPacket':'dat','Node':'nod','NodeReview':'nrev','Block':'blk','Validator':'val','Blockchain':'chn','EventLog':'elog',}
+'blkSo2IxsWvivAke4EE'
+'blcSo2IxsWvivAke4EE'
 
 def default_coin_info():
     return {'name': 'Token', 'plural': 'Tokens', 'pronunciation': 'toe-ken'}

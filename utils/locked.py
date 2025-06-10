@@ -1697,7 +1697,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                 required_validators = get_required_validator_count(obj=obj, node_ids=node_ids)
             
             creator_nodes = shuffled_nodes[:available_creators]
-            validator_nodes = reversed(shuffled_nodes[-required_validators:])
+            validator_nodes = list(reversed(shuffled_nodes[-required_validators:]))
             return creator_nodes, validator_nodes
 
 
@@ -1734,7 +1734,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                 available_creators, required_validators = get_required_validator_count(obj=obj, node_ids=node_ids, include_initializers=True)
 
             creator_nodes = shuffled_nodes[:available_creators]
-            validator_nodes = reversed(shuffled_nodes[-required_validators:])
+            validator_nodes = list(reversed(shuffled_nodes[-required_validators:]))
             return creator_nodes, validator_nodes
 
 
@@ -1843,7 +1843,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         shuffled_nodes = shuffle_nodes(func, dt, node_ids)
 
         required_scrapers, required_validators = get_required_validator_count(dt=dt, func=func, node_ids=node_ids, include_initializers=True)
-        return shuffled_nodes[:required_scrapers], reversed(shuffled_nodes[-required_validators:]) # validator_node should maybe be [validator_node] for consistency
+        return shuffled_nodes[:required_scrapers], list(reversed(shuffled_nodes[-required_validators:])) # validator_node should maybe be [validator_node] for consistency
 
     # prnt('--starting_position11',starting_position,'dt::',dt,'date_int:',date_int,'len(node_ids)',len(node_ids),'available_creators',available_creators)
     # prntDebug('relevant_nodes',relevant_nodes)
