@@ -1470,6 +1470,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             prnt("node_block.data['All']",node_block.data['All'])
             node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
             prnt('node_idsA',node_ids)
+            prnt('node_idsB sort',node_ids.sort())
             if node_ids_only:
                 return node_ids.sort()
             if strings_only and 'addresses' in node_block.notes:
@@ -1631,7 +1632,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         elif isinstance(dt, str):
             dt_str = dt
         else:
-            raise ValueError("dt must be a datetime or ISO string")
+            raise ValueError("dt must be a datetime or ISO string", dt)
         # seed_input = f"{text_input}_{dt_str}"
         return sorted(node_ids, key=lambda item: hashlib.sha256((f"{text_input}_{dt_str}_{item}").encode('utf-8')).hexdigest())
 
