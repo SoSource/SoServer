@@ -1557,12 +1557,13 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             else:
                 relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
 
-        prnt('1 node_ids',node_ids, 'peers_count',peers_count, 'relevant_nodes',relevant_nodes)
+        prnt('1 node_ids',node_ids, 'relevant_nodes',relevant_nodes)
         if include_peers:
             if node_block.number_of_peers > len(node_ids):
                 peers_count = len(node_ids)
             else:
                 peers_count = node_block.number_of_peers
+            prnt('peers_count',peers_count)
             return dict(sorted(relevant_nodes.items())), peers_count
         else:
             return dict(sorted(relevant_nodes.items()))
