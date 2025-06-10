@@ -470,7 +470,7 @@ class DataPacket(models.Model):
                     logEvent('removing datapacket content - no broadcast_list', code='3463', extra=self.data)
                 self.data = {}
                 self.queued_dt = None
-                self.notes[dt_to_string(now_utc())]['fail3'] = 'no broadcast_list'
+                self.notes[dt_to_string(now_utc())] = {'fail3': 'no broadcast_list'}
                 self.save()
                 return True
             elif not self.data:
