@@ -1289,8 +1289,8 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
     prnt('rturn False', err)
     return False
 
-def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_nodes=[], important_nodes=[], excluded_nodes=[], loop=False):
-    # from blockchain.models import 
+def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_nodes=[], important_nodes=[], excluded_nodes=[], peer_count=None, loop=False):
+    # some inputs not utilized here
     from django.db import models
     from utils.models import is_id, get_dynamic_model, round_time, now_utc, dt_to_string,prnt
 
