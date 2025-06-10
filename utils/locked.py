@@ -786,7 +786,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
                     is_valid, validator, is_new_validation = validate_block(block, creator_nodes=creator_nodes)
                 if is_new_validation:
                     validator_list = validator_list + creator_nodes + new_validator_list
-                    broadcast_block(block, broadcast_list=broadcast_list, validator_list=validator_list, validations=[convert_to_dict(validator)], validators_only=True, target_node_id=None)
+                    block.broadcast(broadcast_list=broadcast_list, validator_list=validator_list, validations=[convert_to_dict(validator)], validators_only=True, target_node_id=None)
                 else:
                     prnt('else23456-a')
                     is_valid_vals += [v for v in new_validations if v.is_valid and v not in is_valid_vals and verify_obj_to_data(v, v)]
@@ -2118,7 +2118,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
     
 
 def check_block_contents(block, retrieve_missing=True, log_missing=True, downstream_worker=True, return_missing=False, input_data=[]):
-    from utils.models import chunk_dict, get_timeData, has_field, get_dynamic_model, sigData_to_hash, exists_in_worker, get_data, now_utc, prnt
+    from utils.models import chunk_dict, get_timeData, has_field, get_dynamic_model, sigData_to_hash, exists_in_worker, get_data, now_utc, prnt, string_to_dt
     prnt('check_block_contents now_utc:', now_utc( ),block.id, block.index, input_data)
     from blockchain.models import Validator, logEvent, request_items, logMissing, logError, max_commit_window
     # from posts.models import 
@@ -2132,13 +2132,13 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
     #     prnt('no input_data')
     #     data = self.data
     if 'content_dt' in block.notes:
-        content_dt = dt_to_string(block.notes['content_dt'])
+        content_dt = string_to_dt(block.notes['content_dt'])
     elif 'created_dt' in block.notes:
-        content_dt = dt_to_string(block.notes['created_dt'])
+        content_dt = string_to_dt(block.notes['created_dt'])
     else:
         content_dt = block.created
     if not isinstance(block.DateTime, datetime.datetime):
-        self_dt = dt_to_string(block.DateTime)
+        self_dt = string_to_dt(block.DateTime)
     else:
         self_dt = block.DateTime
     total_found = 0
