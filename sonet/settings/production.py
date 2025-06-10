@@ -374,10 +374,10 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static_cdn')
 
 
-STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, 'static_cdn'),
-    # os.path.join(PROJECT_ROOT, 'static'),
-)
+# STATICFILES_DIRS = (
+#     # os.path.join(PROJECT_ROOT, 'static_cdn'),
+#     os.path.join(PROJECT_ROOT, 'static'),
+# )
 
 
 # Default primary key field type
