@@ -1392,13 +1392,13 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
 
             if seed.object_type == 'Block' and not seed.Transaction_obj or seed.object_type == 'Block' and 'BlockReward' in seed.Transaction_obj.regarding and seed.Transaction_obj.regarding['BlockReward'] == seed.id:
                 relevant_nodes, peer_count = get_relevant_nodes_from_block(dt=seed.DateTime, obj=seed, genesisId=seed.Blockchain_obj.genesisId, include_peers=True)
-                seed_nodes, important_nodes = get_node_assignment(chainId=region_id, func=seed, dt=dt)
+                seed_nodes, important_nodes = get_node_assignment(chainId=region_id, obj=seed, dt=dt)
             else:
                 if seed.object_type == 'Block' and seed.Transaction_obj:
                     seed = seed.Transaction_obj
                 dt = round_time(dt=seed.created, dir='down', amount='evenhour')
                 relevant_nodes, peer_count = get_relevant_nodes_from_block(dt=dt, obj=seed, include_peers=True)
-                seed_nodes, important_nodes = get_node_assignment(chainId=region_id, func=seed, dt=dt)
+                seed_nodes, important_nodes = get_node_assignment(chainId=region_id, obj=seed, dt=dt)
 
         elif seed.object_type == 'DataPacket':
             dt = round_time(dt=seed.created, dir='down', amount='10mins')
