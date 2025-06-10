@@ -375,7 +375,8 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static_cdn')
 
 
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, 'static'),
+    os.path.join(PROJECT_ROOT, 'static_cdn'),
+    # os.path.join(PROJECT_ROOT, 'static'),
 )
 
 

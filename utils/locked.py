@@ -1679,11 +1679,11 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             
             if not valid_node_ids_received:
                 node_ids = get_relevant_nodes_from_block(dt=obj.DateTime, obj=obj, genesisId=obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
-            if sender_transaction:
-                if sender_transaction: # retrieves ReceiverBlock assignment
-                    shuffle_seed = obj.Transaction_obj.id
-                else:
-                    shuffle_seed = obj.id
+            # if sender_transaction:
+            if sender_transaction: # retrieves ReceiverBlock assignment
+                shuffle_seed = obj.Transaction_obj.id
+            else:
+                shuffle_seed = obj.id
             shuffled_nodes = shuffle_nodes(shuffle_seed, dt, node_ids)
             if full_validator_list:
                 required_validators = len(node_ids)
