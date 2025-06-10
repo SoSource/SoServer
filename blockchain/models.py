@@ -1561,6 +1561,9 @@ class Block(models.Model):
             elif self_node.id in self.validators and json.loads(self.validators[self_node.id])['is_valid']: # self_node created validator, doesnt need to process contents again
                 proceed = True
 
+            if self.Blockchain_obj.genesisId != NodeChain_genesisId:
+                self.nodeBlockId = Block.objects.filter(Blockchain_obj__genesisId=NodeChain_genesisId, DateTime__lte=self.DateTime, validated=True).order_by('-index', 'created').first().id
+
             if not proceed:
                 obj_idens, problem_idens = check_block_contents(self, retrieve_missing=True, return_missing=True, downstream_worker=downstream_worker)
                 proceed = True
@@ -1636,8 +1639,6 @@ class Block(models.Model):
             if not proceed:
                 return False
             self.validated = True
-            if self.Blockchain_obj.genesisId != NodeChain_genesisId:
-                self.nodeBlockId = Block.objects.filter(Blockchain_obj__genesisId=NodeChain_genesisId, DateTime__lte=self.DateTime, validated=True).order_by('-index', 'created').first().id
             if self.is_latest():
                 if self.blockchainType == NodeChain_genesisId:
                     self.adjust_settings()
@@ -4335,6 +4336,7 @@ def tasker(dt, test=False):
                 last_dt = nodeChain.last_block_datetime
             else:
                 last_dt = nodeChain.created
+            prnt('last_dt',last_dt)
             updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
             prnt('updated_nodes',updated_nodes)
             if updated_nodes:
