@@ -1551,7 +1551,12 @@ def username_avail_view(request):
     # sort = request.GET.get('sort', 'Newest')
 
     username = request.GET.get('username', '').strip()
-    exists = User.objects.filter(display_name__iexact=username).exists()
+    prnt(username)
+    if len(username) >= 4:
+        exists = User.objects.filter(display_name__iexact=username).exists()
+    else:
+        exists = True
+    prnt(exists)
     return JsonResponse({'available': not exists})
 
     # keyword = request.GET.get('keyword', keyword)

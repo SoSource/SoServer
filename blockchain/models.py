@@ -2124,14 +2124,7 @@ class Blockchain(models.Model):
             # updated_nodes = Node.objects.filter(last_updated__gte=self.last_block_datetime).count()
 
             if not updated_nodes:
-                if self.data_added_datetime and self.last_block_datetime:
-                    if self.data_added_datetime > self.last_block_datetime:
-                        last_dt = self.data_added_datetime
-                    else:
-                        last_dt = self.last_block_datetime
-                elif self.data_added_datetime:
-                    last_dt = self.data_added_datetime
-                elif self.last_block_datetime:
+                if self.last_block_datetime:
                     last_dt = self.last_block_datetime
                 else:
                     last_dt = self.created
@@ -4357,13 +4350,6 @@ def tasker(dt, test=False):
         prnt('delay',block_time_delay(NodeChain_genesisId))
         if nodeChain:
             prnt('nodeChain2',nodeChain)
-            # if nodeChain.data_added_datetime and nodeChain.last_block_datetime:
-            #     if nodeChain.data_added_datetime > nodeChain.last_block_datetime:
-            #         last_dt = nodeChain.data_added_datetime
-            #     else:
-            #         last_dt = nodeChain.last_block_datetime
-            # elif nodeChain.data_added_datetime:
-            #     last_dt = nodeChain.data_added_datetime
             if nodeChain.last_block_datetime:
                 last_dt = nodeChain.last_block_datetime
             else:
