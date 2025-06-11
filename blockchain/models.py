@@ -1550,9 +1550,24 @@ class Block(models.Model):
         self.Blockchain_obj.save()
         logEvent(f'Block is_not_valid: note:{note}, index:{self.index} - chain:{str(self.Blockchain_obj.genesisName)}, id:{self.id}')
         if self.Blockchain_obj.queuedData:
-            if self.Blockchain_obj.genesisId == NodeChain_genesisId or self.Blockchain_obj.genesisId != NodeChain_genesisId and now.minute >= 50:
+            if now.minute >= 50:
                 if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)):
                     self.Blockchain_obj.new_block_candidate(self_node=self_node)
+        elif self.Blockchain_obj.genesisId == NodeChain_genesisId:
+            nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=now_utc() - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
+            prnt('nodeChain',nodeChain)
+            if nodeChain:
+                prnt('nodeChain2',nodeChain)
+                if nodeChain.last_block_datetime:
+                    last_dt = nodeChain.last_block_datetime
+                else:
+                    last_dt = nodeChain.created
+                prnt('last_dt',last_dt)
+                updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
+                prnt('updated_nodes',updated_nodes)
+                if updated_nodes:
+                    block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=now_utc(), updated_nodes=updated_nodes)
+                    prnt('block_assigned',block_assigned)
 
         # if previously validated Node block becomes invalid, all data past that block_dt must be rechecked
 
@@ -2027,10 +2042,7 @@ class Blockchain(models.Model):
         if self.queuedData != {} or self.genesisType == 'Nodes':
             last_block = self.get_last_block()
             prnt('last_block',last_block)
-            prnt('now_utc()',now_utc())
-            prnt('block_time_delay(self)-0.1',block_time_delay(self)-0.1)
-            prnt('now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1)',now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1))
-            if not last_block or last_block.object_type == 'Blockchain' or last_block.validated or last_block.DateTime <= now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1):
+            if not last_block or last_block.object_type == 'Blockchain' or last_block.validated:
                 dummy_block = self.create_dummy_block(now=dt) # dummy block needed to assign creator
                 if self.genesisType == 'Nodes':
                     dummy_block.data = self.get_new_node_block_data(dt=dt)
