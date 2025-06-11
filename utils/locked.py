@@ -1767,6 +1767,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         if not valid_node_ids_received:
             node_ids = get_relevant_nodes_from_block(dt=dt, blockchain=obj.chainId, strings_only=strings_only, node_ids_only=True)
         shuffled_nodes = shuffle_nodes(obj.id, dt, node_ids)
+        return shuffled_nodes, []
 
         # creator_nodes = shuffled_nodes[:available_creators]
         # validator_nodes = shuffled_nodes[-required_validators]
@@ -1782,6 +1783,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         # starting_position = hash_to_int(obj.id, len(node_ids))
 
         shuffled_nodes = shuffle_nodes(obj.id, dt, node_ids)
+        return shuffled_nodes, []
 
         
     elif obj and obj.object_type == 'Node':
@@ -1797,6 +1799,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         if not valid_node_ids_received:
             node_ids = get_relevant_nodes_from_block(dt=dt, strings_only=strings_only, node_ids_only=True)
         shuffled_nodes = shuffle_nodes(obj.id, dt, node_ids)
+        return shuffled_nodes, []
     
     elif obj and obj.object_type == 'User':
         # return a simple ordered list of nodes for user to connect to
@@ -1825,6 +1828,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             node_ids = get_relevant_nodes_from_block(dt=dt, blockchain=chainId, strings_only=strings_only, node_ids_only=True, sublist='servers')
         # shuffled_nodes = shuffle_nodes(obj.id, dt)
         shuffled_nodes = browser_shuffle(obj.id, dt, node_ids)
+        return shuffled_nodes, []
         
     elif obj:
         dt = round_time(dt=obj.created, dir='down', amount='10mins')
@@ -1838,6 +1842,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         if not valid_node_ids_received:
             node_ids = get_relevant_nodes_from_block(dt=dt, obj=obj, strings_only=strings_only, node_ids_only=True)
         shuffled_nodes = shuffle_nodes(obj.id, dt, node_ids)
+        return shuffled_nodes, []
     
     elif func:
         # prnt('is func',func,'chainId',chainId)
