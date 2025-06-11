@@ -4325,14 +4325,14 @@ def tasker(dt, test=False):
         prnt('delay',block_time_delay(NodeChain_genesisId))
         if nodeChain:
             prnt('nodeChain2',nodeChain)
-            if nodeChain.data_added_datetime and nodeChain.last_block_datetime:
-                if nodeChain.data_added_datetime > nodeChain.last_block_datetime:
-                    last_dt = nodeChain.data_added_datetime
-                else:
-                    last_dt = nodeChain.last_block_datetime
-            elif nodeChain.data_added_datetime:
-                last_dt = nodeChain.data_added_datetime
-            elif nodeChain.last_block_datetime:
+            # if nodeChain.data_added_datetime and nodeChain.last_block_datetime:
+            #     if nodeChain.data_added_datetime > nodeChain.last_block_datetime:
+            #         last_dt = nodeChain.data_added_datetime
+            #     else:
+            #         last_dt = nodeChain.last_block_datetime
+            # elif nodeChain.data_added_datetime:
+            #     last_dt = nodeChain.data_added_datetime
+            if nodeChain.last_block_datetime:
                 last_dt = nodeChain.last_block_datetime
             else:
                 last_dt = nodeChain.created

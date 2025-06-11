@@ -1568,23 +1568,29 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
         else:
             return dict(sorted(relevant_nodes.items()))
     else:
-        from blockchain.models import Node, number_of_peers
-        all_nodes = Node.objects.all().order_by('created')[:1]
-        node_ids = [n.id for n in all_nodes if n.id not in exclude_list]
-        if node_ids_only:
-            return sorted(node_ids)
-        if strings_only:
-            relevant_nodes = {n.id:n.return_address() for n in Node.objects.filter(id__in=node_ids)}
-        else:
-            relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
-        if include_peers:
-            if number_of_peers > len(node_ids):
-                peers_count = len(node_ids)
+        from django.db import models
+        from blockchain.models import Node, number_of_peers, NodeChain_genesisId
+        if obj and isinstance(obj, models.Model) and obj.object_type == 'Block' and obj.Blockchain_obj.genesisId == NodeChain_genesisId:
+            all_nodes = Node.objects.all().order_by('created')[:1]
+            node_ids = [n.id for n in all_nodes if n.id not in exclude_list]
+            if node_ids_only:
+                return sorted(node_ids)
+            if strings_only:
+                relevant_nodes = {n.id:n.return_address() for n in Node.objects.filter(id__in=node_ids)}
             else:
-                peers_count = number_of_peers
-            return dict(sorted(relevant_nodes.items())), peers_count
-        else:
-            return dict(sorted(relevant_nodes.items()))
+                relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
+            if include_peers:
+                if number_of_peers > len(node_ids):
+                    peers_count = len(node_ids)
+                else:
+                    peers_count = number_of_peers
+                return dict(sorted(relevant_nodes.items())), peers_count
+            else:
+                return dict(sorted(relevant_nodes.items()))
+    if include_peers:
+        return {}, 0
+    else:
+        return {}
 
 
 def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_transaction=False, full_validator_list=False, strings_only=False, node_block_data={}):
