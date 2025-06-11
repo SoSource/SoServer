@@ -1318,7 +1318,7 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
         return seed_nodes + important_nodes + remaining_nodes
 
     def get_broadcast_map(func_name, dt, nodes, seed_nodes, important_nodes, peer_count=2, excluded_nodes=[], loop=False):
-        prnt('get_broadcast_map',node_ids)
+        prnt('get_broadcast_map',nodes,'important_nodes',important_nodes)
         node_ids = list(nodes.keys())
         ordered_ids = get_deterministic_broadcast_order(func_name, dt, node_ids, seed_nodes, important_nodes, excluded_nodes=excluded_nodes)
         broadcast_map = {}
