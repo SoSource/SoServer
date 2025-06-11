@@ -2027,6 +2027,9 @@ class Blockchain(models.Model):
         if self.queuedData != {} or self.genesisType == 'Nodes':
             last_block = self.get_last_block()
             prnt('last_block',last_block)
+            prnt('now_utc()',now_utc())
+            prnt('block_time_delay(self)-0.1',block_time_delay(self)-0.1)
+            prnt('now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1)',now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1))
             if not last_block or last_block.object_type == 'Blockchain' or last_block.validated or last_block.DateTime <= now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1):
                 dummy_block = self.create_dummy_block(now=dt) # dummy block needed to assign creator
                 if self.genesisType == 'Nodes':
