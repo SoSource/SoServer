@@ -647,9 +647,9 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     prntDebug('prev_block',prev_block)
 
     if prev_block and prev_block.hash != block.previous_hash or sigData_to_hash(block) != block.hash:
-        prnt(f'block.hash:{prev_block.hash if prev_block else '0'}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}')
+        prnt(f'block.hash:{prev_block.hash if prev_block else "0"}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}')
         carry_on = False
-        logEvent(f'block.hash:{prev_block.hash if prev_block else '0'}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}, handle_discrepancies:{handle_discrepancies}, prev_block.index:{prev_block.index if prev_block else 'x'}, block.index:{block.index}')
+        logEvent(f'block.hash:{prev_block.hash if prev_block else "0"}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}, handle_discrepancies:{handle_discrepancies}, prev_block.index:{prev_block.index if prev_block else "x"}, block.index:{block.index}')
         if handle_discrepancies and prev_block:
             if int(prev_block.index) == int(block.index):
                 winning_block, validations = resolve_block_differences(block)
