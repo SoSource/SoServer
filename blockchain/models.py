@@ -1390,7 +1390,7 @@ class Block(models.Model):
                     prnt('2')
                     from utils.locked import get_node_assignment
                     creator_nodes, validator_list = get_node_assignment(self)
-                lst = {self_node.id:[broadcast_list[v] for v in validator_list]}
+                lst = {self_node.id:validator_list}
             else:
                 prnt('3')
                 lst = broadcast_list
@@ -1402,6 +1402,8 @@ class Block(models.Model):
                 if not lst[self_node.id]:
                     prnt('b')
                     lst[self_node.id].append(self_node.return_address())
+                else:
+                    prnt('c')
             prnt('lst2',lst)
             if not validations:
                 from utils.locked import verify_obj_to_data
