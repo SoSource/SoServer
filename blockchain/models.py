@@ -2612,9 +2612,9 @@ class Blockchain(models.Model):
                 if isinstance(post, models.Model) and post.object_type == 'Node':
                     err = err + '2'
                     if post.activated_dt:
-                        self.queuedData[post.id] = {'is_active':dt_to_string(post.activated_dt)}
+                        self.queuedData[post.id] = dt_to_string(post.activated_dt)
                     else:
-                        self.queuedData[post.id] = {'is_active':dt_to_string(post.last_updated)}
+                        self.queuedData[post.id] = dt_to_string(post.last_updated)
                     if not self.data_added_datetime:
                         self.data_added_datetime = now_utc()
                     self.save()
