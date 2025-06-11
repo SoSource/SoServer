@@ -1390,6 +1390,8 @@ class Block(models.Model):
                 lst = {self_node.id:[broadcast_list[v] for v in validator_list]}
             else:
                 lst = broadcast_list
+            if len(lst) == 1:
+                skip_self = False
             if not validations:
                 from utils.locked import verify_obj_to_data
                 validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=self.id) if verify_obj_to_data(v, v)]
@@ -2018,6 +2020,7 @@ class Blockchain(models.Model):
                 if self.genesisType == 'Nodes':
                     dummy_block.data = self.get_new_node_block_data(dt=dt)
                     dummy_block.number_of_peers = number_of_peers
+                prnt('dummy_block',dummy_block)
                 if not Block.objects.filter(id=dummy_block.id).first():
                     from utils.locked import get_node_assignment
                     creator_nodes, validator_nodes = get_node_assignment(dummy_block)

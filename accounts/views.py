@@ -1533,6 +1533,132 @@ def receive_user_login_view(request):
     return JsonResponse({'message' : 'success'})
 
 
+def username_avail_view(request, keyword):
+    # style = request.GET.get('style', 'index')
+    # sort = request.GET.get('sort', 'recent')
+    # view = request.GET.get('view', '')
+    # sort = request.GET.get('sort', 'Newest')
+    keyword = request.GET.get('keyword', keyword)
+    keyword = keyword.lower()
+    response = User.objects.filter(display_name__iexact=keyword).first()
+    return render(request, "utils/dummy.html", {"result": response})
+    
+    # page = request.GET.get('page', 1)
+    # search = request.POST.get('post_type', '')
+    # autoComplete = request.GET.get('search')
+    # follow = request.GET.get('follow', '')
+    # cards = 'home_list'
+    # ordering = get_sort_order(sort)
+    # title = 'Search: %s' %(search)    
+    # # province, region = get_region(request)
+    # user_data, user = get_user_data(request)
+    # country, provState, county, city = get_regions(request, None, user)
+    # chambers, current_chamber, all_chambers, gov_levels = get_chambers(request, country, provState, county, city)
+    # options = {'Chamber: %s' %(Chamber): 'Chamber'}
+    # nav_options = [nav_item('button', f'Chamber:{Chamber}', 'subNavWidget("chamberForm")')]
+    searchform = SearchForm(initial={'post_type': search})
+    subtitle = ''
+    if follow and follow != 'following' and follow != 'follow':
+        # if request.user.is_authenticated:
+        #     user = request.user
+        # else:
+        #     try:
+        #         userToken = request.COOKIES['userToken']
+        #         user = User.objects.filter(userToken=userToken)[0]
+        #     except:
+        #         pass
+        if user:
+            fList = user.get_follow_topics()
+            topic = follow
+            if topic in fList:
+                fList.remove(topic)
+                response = 'Unfollow "%s"' %(topic)
+                user = set_keywords(user, 'remove', topic)
+            elif topic not in fList:
+                fList.append(topic)
+                response = 'Following "%s"' %(topic)
+                user = set_keywords(user, 'add', topic)
+            user.set_follow_topics(fList)
+            user.save()
+        else:
+            response = 'Please login'
+        return render(request, "utils/dummy.html", {"result": response})
+    if keyword:
+        title = 'Search: %s' %(keyword)
+        # options['follow'] = '%s' %(keyword)
+        nav_options.append(nav_item('button', 'follow', f'react("follow2", "{keyword}")'))
+        posts = Post.objects.filter(keyword_array__icontains=keyword).exclude(date_time=None).order_by(ordering,'-date_time')
+        if posts.count() == 0:
+            posts = Archive.objects.filter(keyword_array__icontains=keyword).exclude(date_time=None).order_by(ordering,'-date_time')
+        if posts.count() == 1:
+            response = redirect(posts[0].get_absolute_url())
+            return response
+    elif autoComplete:
+        keyphrases = Keyphrase.objects.filter(Chamber__iexact__in=Chambers).filter(key__icontains=autoComplete)[:500]
+        # if Chamber == 'All':
+        # else:
+        #     keyphrases = Keyphrase.objects.filter(Chamber__iexact=Chamber).filter(text__icontains=autoComplete)[:500]
+
+        # if Chamber == 'All':
+        #     if 
+        #     keyphrases = Keyphrase.objects.filter(text__icontains=autoComplete)[:500]
+        #     # prnt(keyphrases)
+        # elif Chamber == 'House':
+        #     keyphrases = Keyphrase.objects.filter(Chamber__iexact=Chamber).filter(text__icontains=autoComplete)[:500]
+        # elif Chamber == 'Senate':
+        #     keyphrases = Keyphrase.objects.filter(organization='Senate').filter(text__icontains=autoComplete)[:500]
+        # elif Chamber == 'Assembly':
+        #     # org = get_province_name
+        #     keyphrases = Keyphrase.objects.filter(organization='%s-Assembly'%(region)).filter(text__icontains=autoComplete)[:500]
+        data = []
+        for k in keyphrases:
+            if k.key not in data:
+                data.append(k.key)
+        return JsonResponse({'status':200, 'data':data})
+    else:
+        posts = {}
+    try:
+        setlist = paginate(posts, page, request)
+    except:
+        setlist = []
+    # useractions = get_useractions(request, setlist) 
+    try:
+        isApp = request.COOKIES['fcmDeviceId']
+    except:
+        isApp = None 
+    # my_rep = getMyRepVotes(request, setlist) 
+    # options = {'Chamber: %s' %(Chamber): 'Chamber', 'Page: %s' %(page): '?page=1', 'Sort: %s'%(sort): sort, 'Search': 'search', 'Date': 'date'}
+    nav_options = [nav_item('button', f'Chamber:{Chamber}', 'subNavWidget', 'chamberForm'), 
+                   nav_item('button', 'Page: %s' %(page), 'subNavWidget', 'pageForm'),
+            # nav_item('link', 'Page: %s' %(page), '?view=%s&page=' %(view)), 
+            nav_item('button', 'Sort: %s'%(sort), 'subNavWidget', 'sortForm'), 
+            # nav_item('link', 'Current', '?view=Current'), 
+            # nav_item('link', 'Upcoming', '?view=Upcoming'),
+            nav_item('button', 'Search', 'subNavWidget', 'searchForm'), 
+            nav_item('button', 'Date', 'subNavWidget', 'datePickerForm')]
+    context = {
+        'isApp': isApp,
+        'title': title,
+        'subtitle': subtitle,
+        'nav_bar': nav_options,
+        'sort': sort,
+        'sortOptions': ['OLdest','Newest','Loudest','Random'],
+        'keyword': keyword,
+        'view': view,
+        # 'region': region,
+        'searchForm': searchform,
+        'cards': cards,
+        'feed_list':setlist,
+        'useractions': get_useractions(user, setlist),
+        # 'updates': get_updates(setlist),
+        'myRepVotes': getMyRepVotes(user, setlist),
+        'topicList': [keyword],
+        # 'myRepVotes': my_rep,
+        # 'country': Country.objects.all()[0],
+    }
+    return render_view(request, context, country=country)
+
+
 # not currently used
 def login_verify_view(request):
     prnt('login verify')

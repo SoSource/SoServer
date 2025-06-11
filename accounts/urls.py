@@ -22,6 +22,7 @@ urlpatterns = [
     path('receive_interaction_data', account_views.receive_interaction_data_view),
     re_path('reaction/(?P<iden>[\w-]+)/(?P<item>[\w-]+)', account_views.reaction_view),
     re_path('get_region/(?P<country>(.*))', account_views.get_region_modal_view),
+    re_path('username_avail/(?P<keyword>(.*))', account_views.username_avail_view),
 
     path('verify_superuser', account_views.verify_superuser_view),
     path('set_sonet', account_views.set_sonet_view),
