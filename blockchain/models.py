@@ -4347,6 +4347,7 @@ def tasker(dt, test=False):
             low_queue.enqueue(check_validation_consensus, block, job_timeout=300, result_ttl=3600)
 
         # new node block every 10 mins if new data
+        # shuold find a better way so it doesnt have to query nodes every 10 minutes as it currently does. did this because it wasnt reliably showing node changes in chain.queue
         # currently, if a new block (any block) is failing to validate, it will be discarded after its block_delay_time. A new block should immediatly be created, but chainQueue is not registering data here because previous block gets invalidated moments after this check. somehow should check for pending blocks and take appropriate action after 10 mins (or 60 mins)
         nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
         prnt('nodeChain',nodeChain)

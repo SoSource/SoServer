@@ -178,7 +178,7 @@ class UserTransaction(models.Model):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'UserTransaction', 'blockchainType': 'Wallet', 'secondChainType': 'Wallet', 'modelVersion': 1, 'id': '0', 'created': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'SenderBlock_obj': None, 'ReceiverBlock_obj': None, 'ReceiverWallet_obj': None, 'SenderWallet_obj': None, 'token_value': '0', 'regarding': None, 'validated': None, 'enact_dt': None, 'enacted': None}
+            return {'object_type': 'UserTransaction', 'blockchainType': 'Wallet', 'secondChainType': 'Wallet', 'modelVersion': 1, 'id': '0', 'created': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'SenderBlock_obj': None, 'ReceiverBlock_obj': None, 'ReceiverWallet_obj': None, 'SenderWallet_obj': None, 'token_value': '0', 'regarding': None, 'validated': None, 'enact_dt': None, 'enacted': None, 'iden_length':20}
         
     def commit_data(self, version=None):
         if not version:
