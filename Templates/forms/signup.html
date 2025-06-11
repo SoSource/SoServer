@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Restore User</title>
+    <title>Create User</title>
 </head>
   <script type="module">
     import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
@@ -16,6 +16,39 @@
       var form = document.getElementById("modalForm");
       form.elements["password"].value = password;
     }
+    document.addEventListener("DOMContentLoaded", function () {
+        const usernameInput = document.getElementById("username");
+        const statusSpan = document.getElementById("username-status");
+        let timeout = null;
+
+        usernameInput.addEventListener("input", function () {
+            clearTimeout(timeout);
+            const username = usernameInput.value;
+
+            if (username.length === 0) {
+                statusSpan.textContent = "";
+                return;
+            }
+
+            timeout = setTimeout(() => {
+                fetch(`/username_avail/?username=${encodeURIComponent(username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            statusSpan.textContent = "✓ Available";
+                            statusSpan.style.color = "green";
+                        } else {
+                            statusSpan.textContent = "✗ Taken";
+                            statusSpan.style.color = "red";
+                        }
+                    })
+                    .catch(error => {
+                        statusSpan.textContent = "Error checking";
+                        statusSpan.style.color = "gray";
+                    });
+            }, 300); // 300ms debounce
+        });
+    });
   </script>
 <body>
 
@@ -27,15 +60,18 @@
             <span id="field1">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username">
+            <span id="username-status"></span>
             </span><br>
             <span id="field2">
             <label for="password"> Passphrase:</label>
+            <!-- <span id="passphrase"></span> -->
+
             <input  type="password" id="password" name="password">
             <span onclick="displayPassword()" id="passwordVisibility" class="material-icons">visibility_off</span>
             </span>
-            <!-- <br>
+            <!-- <br> -->
             <br>
-            <button style='color: black;' onclick="generatePassword()">Generate Password</button> -->
+            <button style='color: black;' onclick="generatePassword()">New Passphrase</button>
 
             <br>
             <br>
@@ -46,7 +82,7 @@
             <br>
             <br>
             <span id="field5">
-            <button style='color: black; margin-right: 7px;' type="submit" onclick=generatePassword>New User</button><button style='color: black;; margin-left: 7px;' type="submit" onclick="loginAuthenticate({{ user_dict }}, '{{ csrf_token }}')">Continue</button>
+            <button style='color: black; margin-right: 7px;' type="submit" onclick="modalPopUp('Login', '/accounts/login-signup')">Back</button><button style='color: black;; margin-left: 7px;' type="submit" onclick="loginAuthenticate({{ user_dict }}, '{{ csrf_token }}')">Continue</button>
             </span>
             <!-- <br>
             <br>

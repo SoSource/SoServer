@@ -1384,16 +1384,24 @@ class Block(models.Model):
                 broadcast_list = get_broadcast_list(self)
             self_node = get_self_node()
             if validators_only:
+                prnt('1')
                 if not validator_list:
+                    prnt('2')
                     from utils.locked import get_node_assignment
                     creator_nodes, validator_list = get_node_assignment(self)
                 lst = {self_node.id:[broadcast_list[v] for v in validator_list]}
             else:
+                prnt('3')
                 lst = broadcast_list
+            prnt('lst1',lst)
+            prnt('self_node',self_node)
             if len(lst) == 1 and self_node.id in lst:
+                prnt('a')
                 skip_self = False
                 if not lst[self_node.id]:
+                    prnt('b')
                     lst[self_node.id].append(self_node.return_address())
+            prnt('lst2',lst)
             if not validations:
                 from utils.locked import verify_obj_to_data
                 validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=self.id) if verify_obj_to_data(v, v)]
@@ -2018,7 +2026,7 @@ class Blockchain(models.Model):
         if self.queuedData != {} or self.genesisType == 'Nodes':
             last_block = self.get_last_block()
             prnt('last_block',last_block)
-            if not last_block or last_block.object_type == 'Blockchain' or last_block.validated:
+            if not last_block or last_block.object_type == 'Blockchain' or last_block.validated or last_block.DateTime <= now_utc() - datetime.timedelta(minutes=block_time_delay(self)-0.1):
                 dummy_block = self.create_dummy_block(now=dt) # dummy block needed to assign creator
                 if self.genesisType == 'Nodes':
                     dummy_block.data = self.get_new_node_block_data(dt=dt)

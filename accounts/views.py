@@ -104,6 +104,17 @@ def story_view(request):
     }
     return render_view(request, context)
 
+def signup_view(request):
+    prnt('signup view')
+    user_obj = User()
+    user_obj.initialize()
+    context = {
+        'title': 'Login',
+        'user_dict': get_signing_data(user_obj),
+    }
+    return render(request, "forms/signup.html", context)
+
+
 # step 1 user login/signup
 def login_signup_view(request):
     prnt('login signup view')
@@ -1533,15 +1544,20 @@ def receive_user_login_view(request):
     return JsonResponse({'message' : 'success'})
 
 
-def username_avail_view(request, keyword):
+def username_avail_view(request):
     # style = request.GET.get('style', 'index')
     # sort = request.GET.get('sort', 'recent')
     # view = request.GET.get('view', '')
     # sort = request.GET.get('sort', 'Newest')
-    keyword = request.GET.get('keyword', keyword)
-    keyword = keyword.lower()
-    response = User.objects.filter(display_name__iexact=keyword).first()
-    return render(request, "utils/dummy.html", {"result": response})
+
+    username = request.GET.get('username', '').strip()
+    exists = User.objects.filter(display_name__iexact=username).exists()
+    return JsonResponse({'available': not exists})
+
+    # keyword = request.GET.get('keyword', keyword)
+    # keyword = keyword.lower()
+    # response = User.objects.filter(display_name__iexact=keyword).first()
+    # return render(request, "utils/dummy.html", {"result": response})
     
     # page = request.GET.get('page', 1)
     # search = request.POST.get('post_type', '')
@@ -1927,7 +1943,7 @@ def login_verify_view(request):
 
 
 # not used
-def login_view(request):
+def login_view_old(request):
     if request.user.is_authenticated:
         return redirect("/home")
     style = request.GET.get('style', 'index')
