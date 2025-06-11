@@ -557,7 +557,7 @@ class DataPacket(models.Model):
                 return False
             
     def add_item_to_share(self, obj):
-        prnt('--datapackey add_item_to_share',str(obj)[:100],'...')
+        prnt('--datapackey add_item_to_share',self.id,'obj:',str(obj)[:100],'...')
         exclude = ['cha','wal']
         all = ['nod','reg', 'usr', 'upk','uver','udat']
         if not obj:
@@ -3060,6 +3060,8 @@ class Tidy:
 
         run_me('Post')
         run_me('Update')
+        run_me('Region')
+        run_me('Plugin')
 
     def get_missing_items(self, dt=now_utc()):
         self_node = get_self_node()
