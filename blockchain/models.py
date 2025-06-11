@@ -1357,6 +1357,7 @@ class Block(models.Model):
 
     def broadcast(self, broadcast_list=None, validations=None, validator_list=None, validators_only=False, target_node_id=None, skip_self=True):
         prnt('--broadcast_block', self.id)
+        prnt('broadcast_list',broadcast_list,'validator_list',validator_list,'validators_only',validators_only,'validations',validations)
         log = logBroadcast(return_log=True)
         if self.id not in log.data:
             log.data[self.id] = {'first_broadcast':dt_to_string(now_utc())}
@@ -2130,7 +2131,7 @@ class Blockchain(models.Model):
                     dummy_block = self.create_dummy_block(now=dt)
                     dummy_block.data = self.get_new_node_block_data(dt=dt)
                     dummy_block.number_of_peers = number_of_peers
-                prev_block = self.get_last_block()
+                prev_block = self.get_last_block(is_validated=True)
                 if prev_block.object_type == 'Block' and sort_for_sign(prev_block.data) == sort_for_sign(dummy_block.data):
                     prnt('node data repeat, clearing...')
                     self.queuedData = {}

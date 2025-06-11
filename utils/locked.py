@@ -1291,6 +1291,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
 
 def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_nodes=[], important_nodes=[], excluded_nodes=[], peer_count=None, loop=False):
     # some inputs not utilized here
+    prnt('get_broadcast_list',seed)
     from django.db import models
     from utils.models import is_id, get_dynamic_model, round_time, now_utc, dt_to_string,prnt
 
@@ -1317,6 +1318,7 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
         return seed_nodes + important_nodes + remaining_nodes
 
     def get_broadcast_map(func_name, dt, nodes, seed_nodes, important_nodes, peer_count=2, excluded_nodes=[], loop=False):
+        prnt('get_broadcast_map',node_ids)
         node_ids = list(nodes.keys())
         ordered_ids = get_deterministic_broadcast_order(func_name, dt, node_ids, seed_nodes, important_nodes, excluded_nodes=excluded_nodes)
         broadcast_map = {}
