@@ -1549,11 +1549,8 @@ class Block(models.Model):
         self.Blockchain_obj.last_block_datetime = last_dt
         self.Blockchain_obj.save()
         logEvent(f'Block is_not_valid: note:{note}, index:{self.index} - chain:{str(self.Blockchain_obj.genesisName)}, id:{self.id}')
-        if self.Blockchain_obj.queuedData:
-            if now.minute >= 50:
-                if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)):
-                    self.Blockchain_obj.new_block_candidate(self_node=self_node)
-        elif self.Blockchain_obj.genesisId == NodeChain_genesisId:
+        
+        if self.Blockchain_obj.genesisId == NodeChain_genesisId:
             nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=now_utc() - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
             prnt('nodeChain',nodeChain)
             if nodeChain:
@@ -1568,6 +1565,10 @@ class Block(models.Model):
                 if updated_nodes:
                     block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=now_utc(), updated_nodes=updated_nodes)
                     prnt('block_assigned',block_assigned)
+        elif self.Blockchain_obj.queuedData:
+            if now.minute >= 50:
+                if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)):
+                    self.Blockchain_obj.new_block_candidate(self_node=self_node)
 
         # if previously validated Node block becomes invalid, all data past that block_dt must be rechecked
 
