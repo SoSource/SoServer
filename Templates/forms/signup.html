@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <title>Create User</title>
 </head>
+
+<!-- <script>
+(function() {
+  
+</script> -->
   <script type="module">
     import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
     import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
@@ -16,40 +21,7 @@
       var form = document.getElementById("modalForm");
       form.elements["password"].value = password;
     }
-    document.addEventListener("DOMContentLoaded", function () {
-        const usernameInput = document.getElementById("username");
-        const statusSpan = document.getElementById("username-status");
-        let timeout = null;
-
-        usernameInput.addEventListener("input", function () {
-            clearTimeout(timeout);
-            const username = usernameInput.value;
-
-            if (username.length === 0) {
-                statusSpan.textContent = "";
-                return;
-            }
-
-            timeout = setTimeout(() => {
-              console.log('check',username)
-                fetch(`/accounts/username_avail/?username=${encodeURIComponent(username)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.available) {
-                            statusSpan.textContent = "✓ Available";
-                            statusSpan.style.color = "green";
-                        } else {
-                            statusSpan.textContent = "✗ Taken";
-                            statusSpan.style.color = "red";
-                        }
-                    })
-                    .catch(error => {
-                        statusSpan.textContent = "Error checking";
-                        statusSpan.style.color = "gray";
-                    });
-            }, 300); // 300ms debounce
-        });
-    });
+    
   </script>
 <body>
 
