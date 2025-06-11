@@ -2065,7 +2065,7 @@ class Blockchain(models.Model):
                             queue.enqueue(self.commit_to_chain, dummy_block=dummy_block, dt=dt, updated_nodes=updated_nodes, validator_nodes=validator_nodes, job_timeout=600, result_ttl=3600)
                         else:
                             self.commit_to_chain(dummy_block=dummy_block, dt=dt, updated_nodes=updated_nodes, validator_nodes=validator_nodes)
-                        return True
+                        return dummy_block
                     else:
                         dummy_block.delete()
         prnt('return f')
@@ -4365,6 +4365,9 @@ def tasker(dt, test=False):
                 prnt('block_assigned',block_assigned)
                 if block_assigned:
                     result['new_block_candidate'].append(nodeChain.genesisName)
+                    run_at = now_utc() + datetime.timedelta(minutes=5)
+                    prnt('add dp_broadcast to scheduler',run_at)
+                    django_rq.get_scheduler('main').enqueue_at(run_at, check_validation_consensus, block_assigned, timeout=300)
 
         # every 60 mins create block if data
         if dt.minute >= 50 or test==True:
