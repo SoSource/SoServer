@@ -1587,10 +1587,11 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
                 return dict(sorted(relevant_nodes.items())), peers_count
             else:
                 return dict(sorted(relevant_nodes.items()))
+    if node_ids_only:
+        return []
     if include_peers:
         return {}, 0
-    else:
-        return {}
+    return {}
 
 
 def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_transaction=False, full_validator_list=False, strings_only=False, node_block_data={}):
@@ -1627,8 +1628,9 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         seed_hash = hashlib.sha256(seed_input.encode('utf-8')).hexdigest()
         seed_int = int(seed_hash, 16)
         rng = random.Random(seed_int)
-        node_ids.sort()
-        shuffled_nodes = node_ids.copy()
+        # node_ids.sort()
+        # shuffled_nodes = node_ids.copy()
+        shuffled_nodes = sorted(node_ids.copy())
         rng.shuffle(shuffled_nodes)
         prnt('shuffled_nodes',shuffled_nodes)
         return shuffled_nodes

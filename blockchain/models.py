@@ -1390,8 +1390,10 @@ class Block(models.Model):
                 lst = {self_node.id:[broadcast_list[v] for v in validator_list]}
             else:
                 lst = broadcast_list
-            if len(lst) == 1:
+            if len(lst) == 1 and self_node.id in lst:
                 skip_self = False
+                if not lst[self_node.id]:
+                    lst[self_node.id].append(self_node.return_address())
             if not validations:
                 from utils.locked import verify_obj_to_data
                 validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=self.id) if verify_obj_to_data(v, v)]
