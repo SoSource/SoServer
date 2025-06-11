@@ -2335,8 +2335,8 @@ class Blockchain(models.Model):
                     from utils.locked import get_node_assignment, get_broadcast_list
                     if not validator_nodes:
                         creator_nodes, validator_nodes = get_node_assignment(new_block)
+                        new_block.notes['creator_nodes'] = creator_nodes
                     broadcast_list = get_broadcast_list(new_block)
-                    new_block.notes['creator_nodes'] = creator_nodes
                     new_block.notes['validator_nodes'] = validator_nodes
                     new_block.save()
                     prnt('broadcast_list',broadcast_list,'validator_nodes',validator_nodes)
