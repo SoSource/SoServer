@@ -2017,6 +2017,7 @@ class Blockchain(models.Model):
         # if node is repeadtedly failing to validate blocks while other nodes are successfully validating the same block, node should be removed from duties
         if self.queuedData != {} or self.genesisType == 'Nodes':
             last_block = self.get_last_block()
+            prnt('last_block',last_block)
             if not last_block or last_block.object_type == 'Blockchain' or last_block.validated:
                 dummy_block = self.create_dummy_block(now=dt) # dummy block needed to assign creator
                 if self.genesisType == 'Nodes':
@@ -2040,6 +2041,7 @@ class Blockchain(models.Model):
                         return True
                     else:
                         dummy_block.delete()
+        prnt('return f')
         return False
         
     def verify_new_node_block_data(self, block):
@@ -2509,11 +2511,12 @@ class Blockchain(models.Model):
             return new_block, reward
     
     def get_last_block(self, is_validated=False, do_not_return_self=False):
-        # prntDebug('--get_last_block')
+        prntDebug('--get_last_block')
         if is_validated:
             block = Block.objects.filter(Blockchain_obj=self, validated=True).order_by('-index').first()
         else:
             block = Block.objects.filter(Blockchain_obj=self).exclude(validated=False).order_by('-index').first()
+        prnt('block',block)
         if block:
             return block
         else:

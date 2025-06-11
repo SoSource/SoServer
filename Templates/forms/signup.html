@@ -1,0 +1,86 @@
+
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restore User</title>
+</head>
+  <script type="module">
+    import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
+    import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
+    function generatePassword() {
+      const strength = 256; // 24-word mnemonic
+      const password = generateMnemonic(wordlist, strength);
+      console.log("Mnemonic (24 words):", mnemonic);
+
+      var form = document.getElementById("modalForm");
+      form.elements["password"].value = password;
+    }
+  </script>
+<body>
+
+<div class='form'>
+    <div>
+
+        <form id="modalForm" onsubmit="onFormSubmit();">
+            <span id="field0" style="display: block; height: 25px;"></span>
+            <span id="field1">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username">
+            </span><br>
+            <span id="field2">
+            <label for="password"> Passphrase:</label>
+            <input  type="password" id="password" name="password">
+            <span onclick="displayPassword()" id="passwordVisibility" class="material-icons">visibility_off</span>
+            </span>
+            <!-- <br>
+            <br>
+            <button style='color: black;' onclick="generatePassword()">Generate Password</button> -->
+
+            <br>
+            <br>
+            <br>
+            <span id="field3">Passphrase never leaves device.<br>It can be viewed in settings.<br>It cannot be reset if lost.</span>
+            <br>
+            <span id="field4"></span>
+            <br>
+            <br>
+            <span id="field5">
+            <button style='color: black; margin-right: 7px;' type="submit" onclick=generatePassword>New User</button><button style='color: black;; margin-left: 7px;' type="submit" onclick="loginAuthenticate({{ user_dict }}, '{{ csrf_token }}')">Continue</button>
+            </span>
+            <!-- <br>
+            <br>
+            <br>
+            <span id="field6">
+            <button style='color: black;' type="submit" onclick=generatePassword>Start New</button>
+            </span> -->
+            </form>
+        
+            </div>
+</div>
+<br>
+<br>
+<br>
+{% comment %}
+<div>- OR -</div>
+
+
+<div class='form'>
+    <div>
+        <div id="authenticateForm" >
+
+            <span>If you have an existing account.</span>
+            <br>
+            <span>Authenticate with Biometrics.</span>
+            <br>
+            <br>
+            <button style='color: black;' onclick="register({{ user_dict }})">Continue</button>
+        </div>
+        
+    </div>
+</div>
+{% endcomment %}
+<div id="instruction" value="get_stored_user_login_data"></div>
+
+</body>
+</html>
