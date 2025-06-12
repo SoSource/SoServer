@@ -6191,8 +6191,8 @@ def process_received_validations_old(received_json):
         log.completed()
 
 
-# not used ?
-def broadcast_validation_old(block=None, broadcast_list=None, validator_list=None, validations=None):
+# needs work here and on receiption
+def broadcast_validation(block=None, broadcast_list=None, validator_list=None, validations=None):
     prnt('---broadcast_validation funct-------',block)
     # broadcast only to validators if received validator_list
     if is_id(block):
