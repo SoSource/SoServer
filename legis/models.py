@@ -27,9 +27,9 @@ import ast
 from itertools import islice
 from collections import defaultdict
 
-model_prefixes = {'Government':'gov','Agenda':'agn','Bill':'bil','BillText':'btxt',
+model_prefixes = {'Government':'gv','Agenda':'agn','Bill':'bil','BillText':'btxt',
                 'Meeting':'mtg','Statement':'sta','Committee':'com',
-                'Motion':'mot','Vote':'vot','Election':'ele',
+                'Motion':'mot','Vote':'vot','Election':'elc',
                 'Party':'prt','Person':'per','District':'dis'}
 
 from posts.models import BaseModel

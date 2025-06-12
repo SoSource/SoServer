@@ -138,7 +138,7 @@ user_created_modifiable_models = ['UserFollow','UserSavePost','DataPacket','Node
 script_created_modifiable_models = ['Region','District','Party']
 unshared_models = ['Post','UserAction','UserNotification','Wallet','Blockchain','EventLog','Keyphrase','KeyphraseTrend']
 
-model_prefixes = {'Sonet':'oh','Plugin':'plg','DataPacket':'dat','Node':'nod','NodeReview':'nrev','Block':'blk','Validator':'val','Blockchain':'chn','EventLog':'elog',}
+model_prefixes = {'Sonet':'oh','Plugin':'plg','DataPacket':'dpk','Node':'nod','NodeReview':'nrev','Block':'blc','Validator':'val','Blockchain':'chn','EventLog':'log',}
 'blkSo2IxsWvivAke4EE'
 'blcSo2IxsWvivAke4EE'
 
