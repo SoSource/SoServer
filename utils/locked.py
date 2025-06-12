@@ -1403,6 +1403,7 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
                 seed_nodes, important_nodes = get_node_assignment(chainId=region_id, obj=seed, dt=dt)
 
         elif seed.object_type == 'DataPacket':
+            prnt('ssed is datapacket', seed.Node_obj)
             dt = round_time(dt=seed.created, dir='down', amount='10mins')
             excluded_nodes.append(seed.Node_obj.id)
         elif seed.object_type == 'Validator':
