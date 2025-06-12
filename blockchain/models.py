@@ -2513,7 +2513,6 @@ class Blockchain(models.Model):
                 self.queuedData = {k: v for k, v in self.queuedData.items() if k not in new_block.data.keys()}
             new_block.publicKey = operatorData['pubKey']
             new_block = new_block.save() # save before creating hash
-            new_block.hash = sigData_to_hash(new_block)
             if new_block.Transaction_obj:
                 from utils.locked import calculate_reward
                 reward.token_value = calculate_reward(new_block.created)
@@ -2521,6 +2520,7 @@ class Blockchain(models.Model):
                 reward.SenderBlock_obj = new_block
                 reward = sign_obj(reward)
                 new_block.data[reward.id] = get_commit_data(reward)
+            new_block.hash = sigData_to_hash(new_block)
             new_block = sign_obj(new_block)
             from utils.locked import verify_obj_to_data
             prnt('verify_obj_to_data(new_block, new_block)',verify_obj_to_data(new_block, new_block))
