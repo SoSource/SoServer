@@ -934,10 +934,10 @@ def validate_block(block, creator_nodes=None, node_block_data={}, create_validat
             fail_reason = 76
         elif prev_block.validated == None:
             return None, None, None # wait for result of prev_block
-        if not hard_pass and block.data:
-            if any(key.startswith(get_model_prefix('UserTransaction')) for key in block.data):
-                hard_pass = True # userTransactions must be block.Transaction_obj only
-                fail_reason = 12
+        # if not hard_pass and block.data:
+        #     if any(key.startswith(get_model_prefix('UserTransaction')) for key in block.data):
+        #         hard_pass = True # userTransactions must be block.Transaction_obj only
+        #         fail_reason = 12
         if not hard_pass and block.Transaction_obj:
             if to_datetime(block.Transaction_obj.created) != to_datetime(block.created):
                 prntDebugn(f'---------***********: block:{convert_to_dict(block)} --------Transaction_obj:{convert_to_dict(block.Transaction_obj)}')
