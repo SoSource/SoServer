@@ -1694,9 +1694,9 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             if not valid_node_ids_received:
                 node_ids = get_relevant_nodes_from_block(dt=obj.DateTime, obj=obj, genesisId=obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
             prnt('node_ids11',node_ids)
-            # if sender_transaction:
+            
             if sender_transaction: # retrieves ReceiverBlock assignment
-                shuffle_seed = obj.Transaction_obj.id
+                shuffle_seed = obj.Transaction_obj.SenderWallet_obj.id
             else:
                 shuffle_seed = obj.id
             if not dt:
@@ -1716,13 +1716,12 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             # prnt('else12334')
             if obj.object_type == 'Block' and obj.Transaction_obj:
                 obj = obj.Transaction_obj
-            if obj.object_type == 'UserTransaction' and 'BlockReward' in obj.regarding and obj.Transaction_obj.regarding['BlockReward']:
+            if obj.object_type == 'UserTransaction' and 'BlockReward' in obj.regarding and obj.regarding['BlockReward']:
                 if not valid_node_ids_received:
-                    node_ids = get_relevant_nodes_from_block(dt=obj.Transaction_obj.SenderBlock_obj.DateTime, obj=obj.Transaction_obj.SenderBlock_obj, genesisId=obj.Transaction_obj.SenderBlock_obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
+                    node_ids = get_relevant_nodes_from_block(dt=obj.SenderBlock_obj.DateTime, obj=obj.SenderBlock_obj, genesisId=obj.SenderBlock_obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
                 prnt('node_ids112',node_ids)
-                # if sender_transaction:
-                if sender_transaction: # retrieves ReceiverBlock assignment
-                    shuffle_seed = obj.Transaction_obj.id
+                if sender_transaction: # retrieves ReceiverBlock assignment list
+                    shuffle_seed = obj.SenderWallet_obj.id
                 else:
                     shuffle_seed = obj.id
                 if not dt:
