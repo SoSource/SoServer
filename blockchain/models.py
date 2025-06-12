@@ -370,6 +370,8 @@ class Plugin(models.Model):
         super(Plugin, self).save(*args, **kwargs)
     
     def boot(self):
+        if not self.blockchainId:
+            self.blockchainId = Blockchain.objects.filter(genesisType='Sonet').first().id 
         blockchain, self, secondChain = find_or_create_chain_from_object(self)
         self.save()
         blockchain.add_item_to_queue(self)
