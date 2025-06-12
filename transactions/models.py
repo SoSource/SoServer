@@ -282,8 +282,8 @@ class UserTransaction(models.Model):
         from utils.models import get_self_node
         self_node = get_self_node()
         if not self.ReceiverBlock_obj:
-            creator_nodeIds, broadcast_list, validator_list = get_node_assignment(self, dt=self.created)
-            if self_node.id in creator_nodeIds:
+            creator_nodeId_list, validator_list = get_node_assignment(self, dt=self.created)
+            if self_node.id in creator_nodeId_list:
                 # if 'BlockReward' in self.regarding and not self.SenderWallet_obj:
                 #     receiverChain = self.ReceiverWallet_obj.get_chain()
                 #     receiverBlock = receiverChain.create_block(transaction=self, is_reward=True)
@@ -302,8 +302,8 @@ class UserTransaction(models.Model):
                     receiverBlock.broadcast(lst={self_node.id:validator_list}, target_node_id=self_node.id)
 
         if self.SenderWallet_obj and not self.SenderBlock_obj:
-            sendCreator_nodeIds, broadcast_list, validator_list = get_node_assignment(self, dt=self.created, sender_transaction=True)
-            if self_node.id in sendCreator_nodeIds:
+            sendcreator_nodeId_list, validator_list = get_node_assignment(self, dt=self.created, sender_transaction=True)
+            if self_node.id in sendcreator_nodeId_list:
                 senderChain = self.SenderWallet_obj.get_chain()
                 senderBlock = senderChain.create_block(transaction=self)
                 self.SenderBlock_obj = senderBlock
