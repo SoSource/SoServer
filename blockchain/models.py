@@ -75,7 +75,21 @@ def get_required_validator_count(dt=None, obj=None, func=None, node_ids=None, in
         if include_initializers:
             return 2, 1 # 2 scrapers, 1 validator
         return 1 
+    elif obj:
+        if isinstance(obj, models.Model):
+            if obj.object_type == 'UserTransaction':
+                return obj.SenderBlock_obj.get_required_validator_count(node_ids=node_ids)
+        # else account for userTransaction initialization, before block is created
+        if not dt:
+            if has_field(obj, 'DateTime'):
+                dt = obj.DateTime
+            elif has_field(obj, 'created'):
+                dt = obj.created
+            
     else:
+        # I don't know what this balognia is below - likely important at one time
+        if not dt:
+            ...
         if dt > Sonet.objects.first().created: # adjust here, covers userTransaction objs, not sure if anything else.
             vals = 10
             creator_options = 4
@@ -83,7 +97,6 @@ def get_required_validator_count(dt=None, obj=None, func=None, node_ids=None, in
             vals = 10
             creator_options = 4
         
-        # I don't know what this balognia is below - likely important
         if include_initializers: # handles userTransaction blocks, allows for multiple creators if first one is unavailable
             if (creator_options + vals) > len(node_ids):
                 vals = int(vals/2)

@@ -1733,7 +1733,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                 if full_validator_list:
                     required_validators = len(node_ids)
                 else:
-                    required_validators = get_required_validator_count(obj=obj, node_ids=node_ids)
+                    required_validators = get_required_validator_count(obj=obj.SenderBlock_obj, node_ids=node_ids)
             else: # user to user transaction
                 dt = round_time(dt=obj.created, dir='down', amount='evenhour')
                 if sender_transaction: # reverse receiver/sender
