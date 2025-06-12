@@ -1681,7 +1681,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                 prnt('fail454923784',str(e))
 
     if obj and obj.object_type == 'Block' or obj and obj.object_type == 'UserTransaction':
-        if obj.Transaction_obj:
+        if obj.object_type == 'Block' and obj.Transaction_obj:
             prnt('obj.Transaction_obj',obj.Transaction_obj)
             prnt('obj.Transaction_obj.regarding',obj.Transaction_obj.regarding)
             if 'BlockReward' in obj.Transaction_obj.regarding:
