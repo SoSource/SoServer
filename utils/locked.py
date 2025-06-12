@@ -1694,11 +1694,14 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             if not valid_node_ids_received:
                 node_ids = get_relevant_nodes_from_block(dt=obj.DateTime, obj=obj, genesisId=obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
             prnt('node_ids11',node_ids)
-            
-            if sender_transaction: # retrieves ReceiverBlock assignment
-                shuffle_seed = obj.Transaction_obj.SenderWallet_obj.id
-            else:
-                shuffle_seed = obj.id
+
+            # if sender_transaction: # retrieves ReceiverBlock assignment
+            #     shuffle_seed = obj.Transaction_obj.ReceiverWallet_obj.id
+            # else:
+            #     if obj.Transaction_obj:
+            #         shuffle_seed = obj.Transaction_obj.id
+            #     else:
+            shuffle_seed = obj.id
             if not dt:
                 dt = obj.DateTime
             shuffled_nodes = shuffle_nodes(shuffle_seed, dt, node_ids)
@@ -1721,9 +1724,9 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                     node_ids = get_relevant_nodes_from_block(dt=obj.SenderBlock_obj.DateTime, obj=obj.SenderBlock_obj, genesisId=obj.SenderBlock_obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
                 prnt('node_ids112',node_ids)
                 if sender_transaction: # retrieves ReceiverBlock assignment list
-                    shuffle_seed = obj.SenderWallet_obj.id
+                    shuffle_seed = obj.SenderBlock_obj.id
                 else:
-                    shuffle_seed = obj.id
+                    shuffle_seed = obj.ReceiverWallet_obj.id
                 if not dt:
                     dt = obj.DateTime
                 shuffled_nodes = shuffle_nodes(shuffle_seed, dt, node_ids)
