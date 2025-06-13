@@ -4369,7 +4369,7 @@ def tasker(dt, test=False):
             # updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
             # prnt('updated_nodes',updated_nodes)
             # if updated_nodes:
-            block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=dt, updated_nodes=updated_nodes)
+            block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=dt)
             prnt('block_assigned',block_assigned)
             if block_assigned:
                 result['new_block_candidate'].append(nodeChain.genesisName)
