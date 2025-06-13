@@ -632,7 +632,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
         block.is_not_valid(note='no_sig', mark_strike=False)
         prntDebug('p000 block no sig')
         return False, True, []
-    if block.Blockchain_obj.genesisId != NodeChain_genesisId:
+    if block.Blockchain_obj.genesisType != 'Nodes' and block.Blockchain_obj.genesisType != 'Wallet':
         if b_ct.minute < 50 or b_dt.minute != 50:
             block.is_not_valid(note='wrong_datetime_data')
             prntDebug('p00 created_at_wrong_time')
