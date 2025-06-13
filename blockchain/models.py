@@ -6179,6 +6179,29 @@ def broadcast_validation(block=None, broadcast_list=None, validator_list=None, v
         validations = [convert_to_dict(v) for v in validations]
 
     self_node = get_self_node()
+
+
+    # if validators_only:
+    #     prnt('1')
+    #     if not validator_list:
+    #         prnt('2')
+    #         from utils.locked import get_node_assignment
+    #         creator_nodes, validator_list = get_node_assignment(self)
+    #     lst = {self_node.id:validator_list}
+    # else:
+    #     prnt('3')
+    #     lst = broadcast_list
+    # prnt('lst1',lst)
+    # prnt('self_node',self_node)
+    if len(broadcast_list) == 1 and self_node.id in broadcast_list:
+        prnt('a')
+        skip_self = False
+        if not broadcast_list[self_node.id]:
+            prnt('b')
+            broadcast_list[self_node.id].append(self_node.return_address())
+        else:
+            prnt('c')
+    prnt('lst2',broadcast_list)
     # json_data = {'type' : 'Validations', 'packet_id':hash_obj_id('DataPacket'), 'senderId' : self_node.id, 'broadcast_list': json.dumps(broadcast_list), 'blockchainId' : block.blockchainId, 'genesisId':block.Blockchain_obj.genesisId, 'block_list' : json.dumps([{'block_dict' : convert_to_dict(block), 'block_transaction':block.get_transaction_data(), 'block_data' : [], 'validations' : validations}])}
     # successes = downstream_broadcast(broadcast_list, 'blockchain/receive_validations', json_data, target_node_id=validator_list)
     # if successes >= len(broadcast_list[self_node.id]) or successes >= Node.objects.exclude(activated_dt=None).filter(supportedChains_array__contains=[block.blockchainId], suspended_dt=None).count():
