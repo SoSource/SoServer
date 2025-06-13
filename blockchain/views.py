@@ -186,7 +186,7 @@ def declare_node_state_view(request):
                 # from blockchain.models import get_self_node
                 self_node = get_self_node()
                 if is_self:
-                    node_obj = get_or_create_model(objData_json['object_type'], id=objData_json['id'])
+                    node_obj = get_or_create_model('Node', id=objData_json['id'])
                     x = 'x2a'
                     prnt(x)
                     x = 'x3'
@@ -196,36 +196,31 @@ def declare_node_state_view(request):
                         prnt(x)
                         node_obj, is_valid = sync_and_share_object(node_obj, objData_json)
                         if is_valid:
-                            # starting_nodes, broadcast_list, validator_list = get_node_assignment(node_obj)
-                            # x = 'x5'
-                            # prnt(x)
-                            # # nodeData = convert_to_dict(node_obj)
-                            # data = {'source':'server','objData' : get_signing_data(node_obj, include_sig=True)}
-                            # prnt('declare state nodeData11111',data)
-                            # prnt('broadcast_list',broadcast_list)
-                            # # starting_node = get_node_assignment(node_obj, creator_only=True)
-                            # downstream_broadcast(broadcast_list, 'blockchain/declare_node_state', data, target_node_id=starting_nodes[0].id, skip_self=True)
-                            # # if starting_node.id != self_node.id:
-                            # #     downstream_broadcast(broadcast_list, '/blockchain/declare_node_state', get_signing_data(node_obj))
+                            nodeChain = Blockchain.objects.filter(genesisId='Nodes').first()
+                            if nodeChain:
+                                nodeChain.add_item_to_queue(node_obj)
                             x = 'x6'
                             prnt(x)
                             return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(node_obj)})
-                elif str(broadcast_to_network).lower() == 'true' and self_node.activated_dt:
-                    x = 'x7'
-                    node_obj = get_or_create_model(objData_json['object_type'], id=objData_json['id'])
-                    x = 'x2ab'
-                    prnt(x)
-                    queue = django_rq.get_queue('main')
-                    queue.enqueue(node_obj.broadcast_state, node_data=objData_json, job_timeout=200, result_ttl=3600)
+                if self_node.activated_dt:
+                    if str(broadcast_to_network).lower() == 'true':
+                        x = 'x7'
+                        node_obj = get_or_create_model('Node', id=objData_json['id'])
+                        x = 'x2ab'
+                        prnt(x)
+                        queue = django_rq.get_queue('main')
+                        queue.enqueue(node_obj.broadcast_state, node_data=objData_json, job_timeout=200, result_ttl=3600)
 
-                    return JsonResponse({'message' : 'Success'})
-                elif self_node.activated_dt:
-                    node_obj = get_or_create_model(objData_json['object_type'], id=objData_json['id'])
+                    node_obj = get_or_create_model('Node', id=objData_json['id'])
                     x = 'x2ac'
                     prnt(x)
                     node_obj, is_valid = sync_and_share_object(node_obj, objData_json)
                     if is_valid:
-                        return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(node_obj)})
+                        nodeChain = Blockchain.objects.filter(genesisId='Nodes').first()
+                        if nodeChain:
+                            nodeChain.add_item_to_queue(node_obj)
+                        # return JsonResponse({'message' : 'Success', 'obj' : get_signing_data(node_obj)})
+                        return JsonResponse({'message' : 'Success'})
                     return JsonResponse({'message' : 'A problem occured', 'obj':objData,  'err': f'-- is_valid: {is_valid} -- user: {user} -- x: {x}'})
                 else:
                     return JsonResponse({'message' : 'self_not_active'})
@@ -1363,8 +1358,8 @@ def receive_data_packet_view(request):
     return JsonResponse({'message' : 'not post method'})
         
         
-@csrf_exempt
-def receive_validations_view(request): # not used?
+@csrf_exempt # not used
+def receive_validations_view(request):
     prnt('receive_validations_view')
     try:
         if request.method == 'POST':

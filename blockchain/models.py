@@ -1567,24 +1567,24 @@ class Block(models.Model):
         self.Blockchain_obj.save()
         logEvent(f'Block is_not_valid: note:{note}, index:{self.index} - chain:{str(self.Blockchain_obj.genesisName)}, id:{self.id}')
         
-        if self.Blockchain_obj.genesisId == NodeChain_genesisId:
-            nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=now_utc() - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
-            prnt('nodeChain',nodeChain)
-            if nodeChain:
-                prnt('nodeChain2',nodeChain)
-                if nodeChain.last_block_datetime:
-                    last_dt = nodeChain.last_block_datetime
-                else:
-                    last_dt = nodeChain.created
-                prnt('last_dt',last_dt)
-                updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
-                prnt('updated_nodes',updated_nodes)
-                if updated_nodes:
-                    block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=now_utc(), updated_nodes=updated_nodes)
-                    prnt('block_assigned',block_assigned)
-        elif self.Blockchain_obj.queuedData:
-            if now.minute >= 50:
-                if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)):
+        # if self.Blockchain_obj.genesisId == NodeChain_genesisId and self.Blockchain_obj.queuedData:
+        #     nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=now - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
+        #     prnt('nodeChain',nodeChain)
+        #     if nodeChain:
+        #         prnt('nodeChain2',nodeChain)
+                # if nodeChain.last_block_datetime:
+                #     last_dt = nodeChain.last_block_datetime
+                # else:
+                #     last_dt = nodeChain.created
+                # prnt('last_dt',last_dt)
+                # updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
+                # prnt('updated_nodes',updated_nodes)
+                # if updated_nodes:
+                # block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=now_utc(), updated_nodes=updated_nodes)
+                # prnt('block_assigned',block_assigned)
+        if self.Blockchain_obj.queuedData:
+            if now.minute >= 50 or self.Blockchain_obj.genesisId == NodeChain_genesisId:
+                if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)-1):
                     self.Blockchain_obj.new_block_candidate(self_node=self_node)
 
         # if previously validated Node block becomes invalid, all data past that block_dt must be rechecked
@@ -1880,7 +1880,7 @@ class Block(models.Model):
     def get_transaction_data(self):
         if self.Transaction_obj:
             return convert_to_dict(self.Transaction_obj)
-        return None
+        return {}
 
 # redo superuser_id using stronger hash, restore sovote to legis, makemigrations, then run get_model_fields, then go ahead and start new network, 
 
@@ -4341,12 +4341,6 @@ def tasker(dt, test=False):
 
 
 
-        nodePacket = DataPacket.objects.filter(Node_obj=self_node, func='share', chainId=NodeChain_genesisId).first() # broadcast nodeReviews and/or node updates
-        if nodePacket:
-            # queue = django_rq.get_queue('low')
-            # queue.enqueue_at(run_at, nodePacket.broadcast, job_timeout=60, result_ttl=3600)
-            low_queue.enqueue(nodePacket.broadcast, job_timeout=30, result_ttl=3600)
-
         # if dt.minute >= 30 and dt.minute < 50:
         
         dataPackets = DataPacket.objects.filter(Node_obj=self_node, func='share').exclude(chainId=NodeChain_genesisId).exclude(data={})
@@ -4358,34 +4352,40 @@ def tasker(dt, test=False):
                 low_queue.enqueue(dp.broadcast, iden=dp.id, job_timeout=60, result_ttl=3600)
                 
 
-        for block in Block.objects.filter(validated__isnull=True).filter(Q(data__meta__isnull=True) | ~Q(data__meta__has_key='is_reward')).exclude(Blockchain_obj=None): # exclude .data['meta']['is_reward']
-            result['unvalidated_blocks'].append(block.Blockchain_obj.genesisName)
-            # queue = django_rq.get_queue('low')
-            low_queue.enqueue(check_validation_consensus, block, job_timeout=300, result_ttl=3600)
 
         # new node block every 10 mins if new data
         # shuold find a better way so it doesnt have to query nodes every 10 minutes as it currently does. did this because it wasnt reliably showing node changes in chain.queue
         # currently, if a new block (any block) is failing to validate, it will be discarded after its block_delay_time. A new block should immediatly be created, but chainQueue is not registering data here because previous block gets invalidated moments after this check. somehow should check for pending blocks and take appropriate action after 10 mins (or 60 mins)
-        nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).first()
+        nodeChain = Blockchain.objects.filter(genesisId=NodeChain_genesisId, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(NodeChain_genesisId)-1)).exclude(queuedData={}).first()
         prnt('nodeChain',nodeChain)
         prnt('delay',block_time_delay(NodeChain_genesisId))
         if nodeChain:
             prnt('nodeChain2',nodeChain)
-            if nodeChain.last_block_datetime:
-                last_dt = nodeChain.last_block_datetime
-            else:
-                last_dt = nodeChain.created
-            prnt('last_dt',last_dt)
-            updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
-            prnt('updated_nodes',updated_nodes)
-            if updated_nodes:
-                block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=dt, updated_nodes=updated_nodes)
-                prnt('block_assigned',block_assigned)
-                if block_assigned:
-                    result['new_block_candidate'].append(nodeChain.genesisName)
-                    run_at = now_utc() + datetime.timedelta(minutes=5)
-                    prnt('add dp_broadcast to scheduler',run_at)
-                    django_rq.get_scheduler('main').enqueue_at(run_at, check_validation_consensus, block_assigned, timeout=300)
+            # if nodeChain.last_block_datetime:
+            #     last_dt = nodeChain.last_block_datetime
+            # else:
+            #     last_dt = nodeChain.created
+            # prnt('last_dt',last_dt)
+            # updated_nodes = Node.objects.filter(Q(last_updated__gte=last_dt-datetime.timedelta(minutes=1))|Q(suspended_dt__gte=last_dt-datetime.timedelta(minutes=1))).count() # not currently recognizing nodes restored from deactivation
+            # prnt('updated_nodes',updated_nodes)
+            # if updated_nodes:
+            block_assigned = nodeChain.new_block_candidate(self_node=self_node, dt=dt, updated_nodes=updated_nodes)
+            prnt('block_assigned',block_assigned)
+            if block_assigned:
+                result['new_block_candidate'].append(nodeChain.genesisName)
+                run_at = now_utc() + datetime.timedelta(minutes=5)
+                prnt('add dp_broadcast to scheduler',run_at)
+                django_rq.get_scheduler('main').enqueue_at(run_at, check_validation_consensus, block_assigned, timeout=300)
+        elif dt.minute > 30 and dt.minute < 40:
+            nodePacket = DataPacket.objects.filter(Node_obj=self_node, func='share', chainId=NodeChain_genesisId).first() # broadcast nodeReviews and/or node updates
+            if nodePacket:
+                low_queue.enqueue(nodePacket.broadcast, job_timeout=30, result_ttl=3600)
+
+
+        for block in Block.objects.filter(validated__isnull=True).filter(Q(data__meta__isnull=True) | ~Q(data__meta__has_key='is_reward')).exclude(Blockchain_obj=None): # exclude .data['meta']['is_reward']
+            result['unvalidated_blocks'].append(block.Blockchain_obj.genesisName)
+            # queue = django_rq.get_queue('low')
+            low_queue.enqueue(check_validation_consensus, block, job_timeout=300, result_ttl=3600)
 
         # every 60 mins create block if data
         if dt.minute >= 50 or test==True:
@@ -4415,7 +4415,6 @@ def tasker(dt, test=False):
             except Exception as e:
                 prnt('fail0398612',str(e))
 
-        # scrapers log objs in GenericModel
         # send to validator in instances where scraper crashed before finishing, try to salvage some data
         logs = DataPacket.objects.filter(func__icontains='scrape assignment', updated_on_node__lt=dt - datetime.timedelta(minutes=9))
         if logs:
@@ -6164,6 +6163,55 @@ def node_ai_capable():
     pass
 
 
+# needs work here and on receiption
+def broadcast_validation(block=None, broadcast_list=None, validator_list=None, validations=None):
+    prnt('---broadcast_validation funct-------',block)
+    # broadcast only to validators if received validator_list
+    if is_id(block):
+        block = get_dynamic_model(block, id=block)
+    if not broadcast_list:
+        # starting_nodes, broadcast_list, returned_validator_list = get_node_assignment(block, strings_only=True)
+        creator_nodes, broadcast_list, validator_list = block.get_assigned_nodes()
+    if not validations:
+        validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=block.id)]
+    else:
+        validations = [convert_to_dict(v) for v in validations]
+
+    self_node = get_self_node()
+    # json_data = {'type' : 'Validations', 'packet_id':hash_obj_id('DataPacket'), 'senderId' : self_node.id, 'broadcast_list': json.dumps(broadcast_list), 'blockchainId' : block.blockchainId, 'genesisId':block.Blockchain_obj.genesisId, 'block_list' : json.dumps([{'block_dict' : convert_to_dict(block), 'block_transaction':block.get_transaction_data(), 'block_data' : [], 'validations' : validations}])}
+    # successes = downstream_broadcast(broadcast_list, 'blockchain/receive_validations', json_data, target_node_id=validator_list)
+    # if successes >= len(broadcast_list[self_node.id]) or successes >= Node.objects.exclude(activated_dt=None).filter(supportedChains_array__contains=[block.blockchainId], suspended_dt=None).count():
+
+        # for v in validations:
+        #     if v['CreatorNode_obj'] == self_node.id:
+        #         toBroadcast(v['id'], remove_item=True)
+
+    # self.save()
+    to_send_items = [convert_to_dict(block), block.get_transaction_data() ] + validations
+    compressed_data = to_send_items
+    # compressed_data = compress_data(to_send_items)
+    node_block = Block.objects.filter(Blockchain_obj__genesisId=NodeChain_genesisId, validated=True).order_by('-index', 'created').first() 
+    sending_data = {'type' : 'Validations', 'packet_id':hash_obj_id('DataPacket'), 'node_block_id': node_block.id if node_block else None, 'node_block_hash': node_block.hash if node_block else None, 'senderId' : self_node.id, 'sending_idens':[i['id'] for i in to_send_items], 'broadcast_list' : json.dumps({key:value for key, value in broadcast_list.items()}), 'content' : compressed_data}
+    # prnt('sending_data',sending_data)
+
+    sending_data = sign_for_sending(sending_data)
+    try:
+        successes = downstream_broadcast(broadcast_list, 'blockchain/receive_data_packet', sending_data, self_node=self_node, target_node_id=validator_list)
+        if successes >= len(broadcast_list[self_node.id]) or successes >= Node.objects.exclude(activated_dt=None).filter(supportedChains_array__contains=[block.blockchainId], suspended_dt=None).count():
+            for v in validations:
+                if v['CreatorNode_obj'] == self_node.id:
+                    toBroadcast(v['id'], remove_item=True)
+            return successes
+        else:
+            logEvent(f'too few successes: {successes}', func='broadcast_validation', code='97623')
+            # django_rq.get_scheduler('low').enqueue_at(broadcast_validation, self.broadcast, timeout=120)
+    except Exception as e:
+        prnt('broadcast_validation err 2634',str(e))
+        logError(str(e), func='broadcast_validation', code='2634')
+    return False
+
+
+
 
 def process_received_validations_old(received_json):
     prnt('--process_received_validation')
@@ -6202,31 +6250,6 @@ def process_received_validations_old(received_json):
                         check_validation_consensus(block)
     if log:
         log.completed()
-
-
-# needs work here and on receiption
-def broadcast_validation(block=None, broadcast_list=None, validator_list=None, validations=None):
-    prnt('---broadcast_validation funct-------',block)
-    # broadcast only to validators if received validator_list
-    if is_id(block):
-        block = get_dynamic_model(block, id=block)
-    if not broadcast_list:
-        # starting_nodes, broadcast_list, returned_validator_list = get_node_assignment(block, strings_only=True)
-        creator_nodes, broadcast_list, validator_list = block.get_assigned_nodes()
-    if not validations:
-        validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=block.id)]
-    else:
-        validations = [convert_to_dict(v) for v in validations]
-
-    self_node = get_self_node()
-    json_data = {'type' : 'Validations', 'packet_id':hash_obj_id('DataPacket'), 'senderId' : self_node.id, 'broadcast_list': json.dumps(broadcast_list), 'blockchainId' : block.blockchainId, 'genesisId':block.Blockchain_obj.genesisId, 'block_list' : json.dumps([{'block_dict' : convert_to_dict(block), 'block_transaction':block.get_transaction_data(), 'block_data' : [], 'validations' : validations}])}
-    successes = downstream_broadcast(broadcast_list, 'blockchain/receive_validations', json_data, target_node_id=validator_list)
-    if successes >= len(broadcast_list[self_node.id]) or successes >= Node.objects.exclude(activated_dt=None).filter(supportedChains_array__contains=[block.blockchainId], suspended_dt=None).count():
-
-        for v in validations:
-            if v['CreatorNode_obj'] == self_node.id:
-                toBroadcast(v['id'], remove_item=True)
-
 
 
 # I think not used
