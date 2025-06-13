@@ -2483,7 +2483,7 @@ class Blockchain(models.Model):
             new_block = new_block.save()
             new_block.hash = sigData_to_hash(new_block)
             new_block = sign_obj(new_block)
-            prnt('transaction block created')
+            prnt('transaction block created',new_block.id)
 
             if 'pending' not in self.queuedData:
                 self.queuedData['pending'] = {}
