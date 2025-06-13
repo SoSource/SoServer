@@ -698,9 +698,13 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
         
     if block.Transaction_obj:
         if not block.Transaction_obj.SenderWallet_obj:
-            if 'BlockReward' in block.Transaction_obj.regarding and block.Transaction_obj.regarding['BlockReward'] == block.id:
-                pass
-            else:
+            carry_on = False
+            if 'BlockReward' in block.Transaction_obj.regarding:
+                if block.Transaction_obj.regarding['BlockReward'] == block.id:
+                    carry_on = True
+                elif block.Transaction_obj.regarding['BlockReward'] == block.Transaction_obj.SenderBlock_obj.id and block.Transaction_obj.ReceiverBlock_obj.id == block.id:
+                    carry_on = True
+            if not carry_on:
                 block.is_not_valid(note='transaction_err1')
                 prntDebug('p2 transaction_err1')
                 return False, True, []
@@ -2383,6 +2387,7 @@ def get_commit_data(target, extra_data=None):
                 else:
                     prnt(i)
                     if has_field(obj, i):
+                        prnt('p1')
                         if is_model:
                             attr = getattr(obj, i)
                         else:
@@ -2393,15 +2398,17 @@ def get_commit_data(target, extra_data=None):
                             to_commit[i] = attr.id
                         else:
                             to_commit[i] = attr
+                        prnt('p1 attr',attr)
                     elif has_method(obj, i):
+                        prnt('p2')
                         if extra_data != None:
                             resp = getattr(obj, i)(extra_data)
                         else:
                             resp = getattr(obj, i)()
                         if resp:
-                            prnt('resp',resp)
                             for key, value in resp.items():
                                 to_commit[key] = value
+                        prnt('p2 resp',resp)
             except Exception as e:
                 prnt('fail get_commit_data 5092', str(e), obj_id, i)
                 to_commit[i] = str(e)
@@ -2415,7 +2422,7 @@ def get_commit_data(target, extra_data=None):
             to_commit['created'] = crtd
     if not to_commit:
         to_commit['hash'] = sigData_to_hash(obj)
-    # prnt('result:',to_commit)
+    prnt('result:',to_commit)
     return json.dumps(to_commit)
 
 def check_commit_data(target, data, return_err=False, return_obj=False):

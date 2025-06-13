@@ -1374,6 +1374,7 @@ class Block(models.Model):
     def broadcast(self, broadcast_list=None, validations=None, validator_list=None, validators_only=False, target_node_id=None, skip_self=True):
         prnt('--broadcast_block', self.id)
         prnt('broadcast_list',broadcast_list,'validator_list',validator_list,'validators_only',validators_only,'validations',validations)
+        self.refresh_from_db()
         log = logBroadcast(return_log=True)
         if self.id not in log.data:
             log.data[self.id] = {'first_broadcast':dt_to_string(now_utc())}
@@ -1458,6 +1459,7 @@ class Block(models.Model):
         # if block.creator_node = self_node and block failed by validators, log failed items. if items repeatedly fail block creation, stop commit attmpts for those items
         self_node = get_self_node()
         now = now_utc()
+        self.refresh_from_db()
         if mark_strike:
             # do not strike self
             strike = NodeReview.objects.filter(TargetNode_obj=self.CreatorNode_obj, CreatorNode_obj=self_node).first()
@@ -1594,6 +1596,7 @@ class Block(models.Model):
         
     def is_valid_operations(self, attempts=1, downstream_worker=True):
         prnt('-is_valid_operations',self)
+        self.refresh_from_db()
         def operations():
             if self.validated:
                 return True
