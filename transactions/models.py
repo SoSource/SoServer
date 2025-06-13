@@ -278,6 +278,7 @@ class UserTransaction(models.Model):
             self.SenderWallet_obj.tally_tokens()
 
     def send_for_block_creation(self, downstream_worker=True):
+        prntDebug('send_for_block_creation',self.id,downstream_worker)
         from utils.locked import get_node_assignment
         from utils.models import get_self_node
         self_node = get_self_node()
@@ -292,28 +293,31 @@ class UserTransaction(models.Model):
                 # else:
                 receiverChain = self.ReceiverWallet_obj.get_chain()
                 receiverBlock = receiverChain.create_block(transaction=self)
+                prnt('receiverBlock created',receiverBlock)
                 self.ReceiverBlock_obj = receiverBlock
                 self.save()
+                prnt('done 34523')
                 # broadcast_block(receiverBlock, lst={creator_nodeId:validator_list})
                 if downstream_worker:
                     queue = django_rq.get_queue('main')
-                    queue.enqueue(receiverBlock.broadcast, lst={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
+                    queue.enqueue(receiverBlock.broadcast, broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
                 else:
-                    receiverBlock.broadcast(lst={self_node.id:validator_list}, target_node_id=self_node.id)
+                    receiverBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
 
         if self.SenderWallet_obj and not self.SenderBlock_obj:
             sendcreator_nodeId_list, validator_list = get_node_assignment(self, dt=self.created, sender_transaction=True)
             if self_node.id in sendcreator_nodeId_list:
                 senderChain = self.SenderWallet_obj.get_chain()
                 senderBlock = senderChain.create_block(transaction=self)
+                prntDebug('senderBlock',senderBlock)
                 self.SenderBlock_obj = senderBlock
                 self.save()
                 # broadcast_block(senderBlock, lst={sendCreator_nodeId:validator_list})
                 if downstream_worker:
                     queue = django_rq.get_queue('main')
-                    queue.enqueue(senderBlock.broadcast, lst={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
+                    queue.enqueue(senderBlock.broadcast, broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
                 else:
-                    senderBlock.broadcast(lst={self_node.id:validator_list}, target_node_id=self_node.id)
+                    senderBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
 
     def mark_valid(self):
         prnt('--mark_valid')

@@ -2358,7 +2358,7 @@ def sign_obj(item, operatorData=None, do_save=True, return_error=False):
 
 
 def get_commit_data(target, extra_data=None):
-    # prntDebug('-get_commit_data',target)
+    prntDebug('-get_commit_data',target)
     # from blockchain.models import sigData_to_hash
     from .models import get_dynamic_model, get_model, has_method, has_field, sigData_to_hash, dt_to_string, prnt
     if isinstance(target, str):
@@ -2382,6 +2382,7 @@ def get_commit_data(target, extra_data=None):
                 if i == 'hash':
                     to_commit[i] = sigData_to_hash(obj)
                 else:
+                    prnt(i)
                     if has_field(obj, i):
                         if is_model:
                             attr = getattr(obj, i)
@@ -2399,6 +2400,7 @@ def get_commit_data(target, extra_data=None):
                         else:
                             resp = getattr(obj, i)()
                         if resp:
+                            prnt('resp',resp)
                             for key, value in resp.items():
                                 to_commit[key] = value
             except Exception as e:

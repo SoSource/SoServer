@@ -295,6 +295,7 @@ class Plugin(models.Model):
             return ['id','created','User_obj','Title','model_prefixes','app_name','app_dir','assign_plugin_prefix'] # should create a new block if any of these are changed
         
     def assign_plugin_prefix(self, check_data=None, addition=0):
+        prnt('assign_plugin_prefix',self.id)
         if check_data:
             if 'plugin_prefix' not in check_data:
                 return False
@@ -6171,7 +6172,7 @@ def broadcast_validation(block=None, broadcast_list=None, validator_list=None, v
         block = get_dynamic_model(block, id=block)
     if not broadcast_list:
         # starting_nodes, broadcast_list, returned_validator_list = get_node_assignment(block, strings_only=True)
-        creator_nodes, broadcast_list, validator_list = block.get_assigned_nodes()
+        creator_nodes, validator_list, broadcast_list = block.get_assigned_nodes()
     if not validations:
         validations = [convert_to_dict(v) for v in Validator.objects.filter(data__has_key=block.id)]
     else:
