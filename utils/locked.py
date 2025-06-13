@@ -2358,9 +2358,8 @@ def sign_obj(item, operatorData=None, do_save=True, return_error=False):
 
 
 def get_commit_data(target, extra_data=None):
+    from .models import get_dynamic_model, get_model, has_method, has_field, sigData_to_hash, dt_to_string, prnt, prntDebug
     prntDebug('-get_commit_data',target)
-    # from blockchain.models import sigData_to_hash
-    from .models import get_dynamic_model, get_model, has_method, has_field, sigData_to_hash, dt_to_string, prnt
     if isinstance(target, str):
         obj_id = target
         obj = get_dynamic_model(target, id=target)
