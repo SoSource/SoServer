@@ -2380,13 +2380,14 @@ def get_commit_data(target, extra_data=None):
         obj_id = obj.id
     to_commit = {}
     if has_method(obj, 'commit_data'):
+        field_names = [f.name for f in obj._meta.get_fields()]
         for i in obj.commit_data():
             try:
                 if i == 'hash':
                     to_commit[i] = sigData_to_hash(obj)
                 else:
                     prnt(i)
-                    if has_field(obj, i):
+                    if i in field_names:
                         prnt('p1')
                         if is_model:
                             attr = getattr(obj, i)
