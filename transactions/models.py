@@ -282,7 +282,9 @@ class UserTransaction(models.Model):
         from utils.locked import get_node_assignment
         from utils.models import get_self_node
         self_node = get_self_node()
+        prnt('self.ReceiverBlock_obj',self.ReceiverBlock_obj)
         if not self.ReceiverBlock_obj:
+            prntDebug('no ReceiverBlock 1')
             creator_nodeId_list, validator_list = get_node_assignment(self, dt=self.created)
             if self_node.id in creator_nodeId_list:
                 # if 'BlockReward' in self.regarding and not self.SenderWallet_obj:
@@ -292,6 +294,7 @@ class UserTransaction(models.Model):
                 #     return None
                 # else:
                 receiverChain = self.ReceiverWallet_obj.get_chain()
+                prnt('receiverChain',receiverChain)
                 receiverBlock = receiverChain.create_block(transaction=self)
                 prnt('receiverBlock created',receiverBlock)
                 self.ReceiverBlock_obj = receiverBlock
@@ -304,10 +307,13 @@ class UserTransaction(models.Model):
                 else:
                     receiverBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
 
+        prnt('self.SenderBlock_obj',self.SenderBlock_obj)
         if self.SenderWallet_obj and not self.SenderBlock_obj:
+            prntDebug('no SenderBlock_obj 1')
             sendcreator_nodeId_list, validator_list = get_node_assignment(self, dt=self.created, sender_transaction=True)
             if self_node.id in sendcreator_nodeId_list:
                 senderChain = self.SenderWallet_obj.get_chain()
+                prnt('senderChain',senderChain)
                 senderBlock = senderChain.create_block(transaction=self)
                 prntDebug('senderBlock',senderBlock)
                 self.SenderBlock_obj = senderBlock
@@ -318,6 +324,7 @@ class UserTransaction(models.Model):
                     queue.enqueue(senderBlock.broadcast, broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
                 else:
                     senderBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
+        prntDebug('done send_for_block_creation')
 
     def mark_valid(self):
         prnt('--mark_valid')

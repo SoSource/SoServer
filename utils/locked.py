@@ -1322,13 +1322,13 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
         return seed_nodes + important_nodes + remaining_nodes
 
     def get_broadcast_map(func_name, dt, nodes, seed_nodes, important_nodes, peer_count=2, excluded_nodes=[], loop=False):
-        prnt('get_broadcast_map',nodes,'important_nodes',important_nodes)
+        # prnt('get_broadcast_map',nodes,'important_nodes',important_nodes)
         node_ids = list(nodes.keys())
         ordered_ids = get_deterministic_broadcast_order(func_name, dt, node_ids, seed_nodes, important_nodes, excluded_nodes=excluded_nodes)
         broadcast_map = {}
         total = len(ordered_ids)
         recipients_set = set()
-        prnt('ordered_ids',ordered_ids)
+        # prnt('ordered_ids',ordered_ids)
 
 
         if loop:
@@ -1370,8 +1370,8 @@ def get_broadcast_list(seed, dt=None, region_id=None, relevant_nodes={}, seed_no
 
         # prntDebug('broadcast_map',broadcast_map)
         # prnt('ordered_ids',ordered_ids)
-        prnt('recipients_set',recipients_set)
-        prnt('loop',loop)
+        # prnt('recipients_set',recipients_set)
+        # prnt('loop',loop)
         # If loop is enabled, connect remaining unassigned nodes (if any)
         # if loop:
         #     early_candidates = [
@@ -1473,26 +1473,26 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
         from blockchain.models import mandatoryChains, Node, Blockchain
         from utils.models import get_pointer_type, get_chain_type, is_id
         if genesisId and genesisId in mandatoryChains or get_pointer_type(genesisId) in mandatoryChains or get_chain_type(genesisId) in mandatoryChains:
-            prnt('op1')
-            prnt("node_block.data['All']",node_block.data['All'])
+            # prnt('op1')
+            # prnt("node_block.data['All']",node_block.data['All'])
             node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
-            prnt('node_idsA',node_ids)
-            prnt('node_idsB sort',sorted(node_ids))
+            # prnt('node_idsA',node_ids)
+            # prnt('node_idsB sort',sorted(node_ids))
             if node_ids_only:
                 return sorted(node_ids)
             if strings_only and 'addresses' in node_block.notes:
-                prnt('path1')
+                # prnt('path1')
                 relevant_nodes = {iden:node_block.notes['addresses'][iden] for iden in node_ids}
             elif strings_only:
-                prnt('path12')
+                # prnt('path12')
                 relevant_nodes = {n.id:n.return_address() for n in Node.objects.filter(id__in=node_ids)}
             else:
-                prnt('path13')
+                # prnt('path13')
                 relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
-            prnt('relevant_nodesA',relevant_nodes)
+            # prnt('relevant_nodesA',relevant_nodes)
 
         elif genesisId or blockchain:
-            prnt('is gen or bchain')
+            # prnt('is gen or bchain')
             if not blockchain and get_pointer_type(genesisId) == 'Blockchain':
                 # prnt('11')
                 blockchain = Blockchain.objects.filter(id=genesisId).first()
@@ -1523,7 +1523,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
             else:
                 relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
         elif chains:
-            prnt('is chains')
+            # prnt('is chains')
             node_ids = []
             for c in chains:
                 if c in mandatoryChains:
@@ -1542,7 +1542,7 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
                                     prnt('-----node_iden',node_iden)
                                     if node_iden not in node_ids and node_iden not in exclude_list:
                                         node_ids.append(node_iden)
-            prnt('node_ids',node_ids)
+            # prnt('node_ids',node_ids)
             if node_ids_only:
                 return sorted(node_ids)
             if strings_only and 'addresses' in node_block.notes:
@@ -1551,9 +1551,9 @@ def get_relevant_nodes_from_block(dt=None, genesisId=None, chains=None, blockcha
                 relevant_nodes = {n.id:n.return_address() for n in Node.objects.filter(id__in=node_ids)}
             else:
                 relevant_nodes = {n.id: n for n in Node.objects.filter(id__in=node_ids)}
-            prnt('done is chains')
+            # prnt('done is chains')
         else:
-            prnt('else')
+            # prnt('else')
             node_ids = [n for n in node_block.data['All'] if n not in exclude_list]
             if node_ids_only:
                 return sorted(node_ids)
@@ -1627,7 +1627,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             dt_str = dt
         else:
             raise ValueError("dt must be a datetime or ISO string", dt)
-        prnt('node_ids133',node_ids)
+        # prnt('node_ids133',node_ids)
         
         # node_ids = ['node1','node2','node3','node4','node5','node6']
         # seed_input = f"myseed"
@@ -1639,7 +1639,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
         # shuffled_nodes = node_ids.copy()
         shuffled_nodes = sorted(node_ids.copy())
         rng.shuffle(shuffled_nodes)
-        prnt('shuffled_nodes',shuffled_nodes)
+        # prnt('shuffled_nodes',shuffled_nodes)
         return shuffled_nodes
 
     def browser_shuffle(text_input, dt, node_ids): # works in javascript so can be run by user but is much slower
@@ -1685,19 +1685,19 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
                 prnt('fail454923784',str(e))
 
     if obj and obj.object_type == 'Block' or obj and obj.object_type == 'UserTransaction':
-        if obj.object_type == 'Block' and obj.Transaction_obj:
-            prnt('obj.Transaction_obj',obj.Transaction_obj)
-            prnt('obj.Transaction_obj.regarding',obj.Transaction_obj.regarding)
-            if 'BlockReward' in obj.Transaction_obj.regarding:
-                prnt('yes1')
-            if obj.Transaction_obj.regarding['BlockReward'] == obj.id:
-                prnt('yes2')
+        # if obj.object_type == 'Block' and obj.Transaction_obj:
+        #     prnt('obj.Transaction_obj',obj.Transaction_obj)
+        #     prnt('obj.Transaction_obj.regarding',obj.Transaction_obj.regarding)
+        #     if 'BlockReward' in obj.Transaction_obj.regarding:
+        #         prnt('yes1')
+        #     if obj.Transaction_obj.regarding['BlockReward'] == obj.id:
+        #         prnt('yes2')
 
         if obj.object_type == 'Block' and not obj.Transaction_obj or obj.object_type == 'Block' and 'BlockReward' in obj.Transaction_obj.regarding and obj.Transaction_obj.regarding['BlockReward'] == obj.id:
             
             if not valid_node_ids_received:
                 node_ids = get_relevant_nodes_from_block(dt=obj.DateTime, obj=obj, genesisId=obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
-            prnt('node_ids11',node_ids)
+            # prnt('node_ids11',node_ids)
 
             # if sender_transaction: # retrieves ReceiverBlock assignment
             #     shuffle_seed = obj.Transaction_obj.ReceiverWallet_obj.id
@@ -1726,7 +1726,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
             if obj.object_type == 'UserTransaction' and 'BlockReward' in obj.regarding and obj.regarding['BlockReward']:
                 if not valid_node_ids_received:
                     node_ids = get_relevant_nodes_from_block(dt=obj.SenderBlock_obj.DateTime, obj=obj.SenderBlock_obj, genesisId=obj.SenderBlock_obj.Blockchain_obj.genesisId, strings_only=strings_only, node_ids_only=True)
-                prnt('node_ids112',node_ids)
+                # prnt('node_ids112',node_ids)
                 if sender_transaction: # retrieves ReceiverBlock assignment list
                     shuffle_seed = obj.id
                 else:
@@ -3067,17 +3067,22 @@ def create_keys(user_id, user_pass):
 
 def verify_data(data, public_key, signature):
     from utils.models import prnt
-    prnt('verifying...',data)
+    prnt('verifying...',data, public_key, signature)
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives import hashes
     from cryptography.exceptions import InvalidSignature
     from django.db import models
+    err = 0
     try:
         if isinstance(public_key, models.Model):
             public_key = public_key.publicKey
+        err = 1
         pub_bytes = bytes.fromhex(public_key)
+        err = 2
         sig_bytes = bytes.fromhex(signature)
+        err = 3
         public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), pub_bytes)
+        err = 4
         try:
             public_key.verify(sig_bytes, (data+'5uHPEF0DPaI4egus4sa6AX').encode('utf-8'), ec.ECDSA(hashes.SHA256()))
             prnt("Signature is valid!")
@@ -3085,7 +3090,7 @@ def verify_data(data, public_key, signature):
         except InvalidSignature:
             prnt("Signature is INVALID!")
     except Exception as e:
-        prnt('err3',str(e))
+        prnt('err3',str(e), 'code:',err)
     return False
 
 def sort_for_sign(data):

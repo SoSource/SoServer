@@ -1712,8 +1712,11 @@ class Block(models.Model):
                 prnt('do assess')
                 # both senderBlock and receiverBlock should be validated together
                 if self.Transaction_obj.ReceiverBlock_obj and self == self.Transaction_obj.ReceiverBlock_obj:
+                    prntDebug('asses p1')
                     if not self.Transaction_obj.SenderBlock_obj or self.Transaction_obj.SenderBlock_obj.validated == None:
+                        prntDebug('asses p2')
                         if self.Transaction_obj.SenderBlock_obj:
+                            prntDebug('asses p3')
                             is_valid, consensus_found, validations = check_validation_consensus(self.Transaction_obj.SenderBlock_obj, do_mark_valid=False)
                             if is_valid and consensus_found:
                                 result = operations()
@@ -1739,8 +1742,11 @@ class Block(models.Model):
                     else:
                         return None # wait for SenderBlock_obj validation
                 elif self.Transaction_obj.SenderBlock_obj and self == self.Transaction_obj.SenderBlock_obj:
+                    prntDebug('asses pq1')
                     if not self.Transaction_obj.ReceiverBlock_obj or self.Transaction_obj.ReceiverBlock_obj.validated == None:
+                        prntDebug('asses pq2')
                         if self.Transaction_obj.ReceiverBlock_obj:
+                            prntDebug('asses pq3')
                             is_valid, consensus_found, validations = check_validation_consensus(self.Transaction_obj.ReceiverBlock_obj, do_mark_valid=False)
                             if is_valid and consensus_found:
                                 result = operations()
@@ -1752,10 +1758,13 @@ class Block(models.Model):
                         from utils.locked import get_node_assignment, get_broadcast_list
                         creator_nodes, validator_nodes = get_node_assignment(self.Transaction_obj, sender_transaction=True)
                         if get_self_node().id in creator_nodes:
+                            prntDebug('asses pq4')
                             if 'BlockReward' in self.Transaction_obj.regarding:
                                 if self.Transaction_obj.regarding['BlockReward'] == self.id:
+                                    prntDebug('asses pq5')
                                     self.Transaction_obj.send_for_block_creation()
                             else:
+                                prntDebug('asses pq6')
                                 self.Transaction_obj.send_for_block_creation(downstream_worker=False)
                         else:
                             log = EventLog.objects.filter(type='Broadcast History', data__has_key=self.id).first()
@@ -2049,7 +2058,7 @@ class Blockchain(models.Model):
         return obj
 
     def create_dummy_block(self, now=now_utc()):
-        # now = now_utc()
+        prnt('create_dummy_block', now)
         if self.genesisType == 'Nodes':
             dt = round_time(dt=now, dir='up', amount='10mins') # node block is 10mins ahead of time to ensure the node list is already created when called upon
         else:
@@ -2433,14 +2442,14 @@ class Blockchain(models.Model):
                 return None
             return new_block
         elif transaction:
+            prnt('has transaction')
             self_node = get_self_node()
             if not dummy_block:
-                new_block = self.create_dummy_block()
+                new_block = self.create_dummy_block(now=transaction.created)
             else:
                 new_block = dummy_block
 
             new_block.created = now_utc()
-            new_block.DateTime = transaction.created
             new_block.index = chain_length + 1
             new_block.CreatorNode_obj = self_node
             new_block.previous_hash = new_block.get_previous_hash()
@@ -2483,6 +2492,7 @@ class Blockchain(models.Model):
             # if is_reward and 'BlockReward' in transaction.regarding and not transaction.SenderWallet_obj:
             #     new_block.data['meta'] = {'is_reward':True}
             new_block.publicKey = operatorData['pubKey']
+            prnt('new_block ==',convert_to_dict(new_block))
             new_block = new_block.save()
             new_block.hash = sigData_to_hash(new_block)
             new_block = sign_obj(new_block)
@@ -2495,7 +2505,7 @@ class Blockchain(models.Model):
             elif transaction.SenderWallet_obj and self.genesisId == transaction.SenderWallet_obj.id:
                 self.queuedData['pending'][transaction.id] = {'block':new_block.id,'index':new_block.index,'created':dt_to_string(transaction.created),'before':transaction.SenderWallet_obj.value,'value':f'-{transaction.token_value}'}
             self.save()
-
+            prnt('done create block')
             return new_block
 
         elif dummy_block:
@@ -2686,9 +2696,6 @@ class Blockchain(models.Model):
         prnt('done add to blockchain.queue')
         return False
 
-
-# many votes not validated
-# many bill actions contain no text
 
 
 class EventLog(models.Model):
