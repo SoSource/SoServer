@@ -132,12 +132,18 @@ def is_debug():
     try:
         # from blockchain.models import get_operatorData
         operatorData = get_operatorData()
-        if operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'] == True or 'start_local_install' in operatorData and operatorData['start_local_install'] == True:
+        if operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'] == True:
             return True
         else:
             prnt('whats up debug:',operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'])
+            prnt('wdb2', operatorData['start_local_install'])
     except Exception as e:
         prnt('fial9593',str(e))
+    try:
+        if 'start_local_install' in operatorData and operatorData['start_local_install'] == True:
+            return True
+    except Exception as e:
+        prnt('fial9634',str(e))
     return debugging    
 
 def is_test_env():
