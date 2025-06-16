@@ -1335,7 +1335,7 @@ def check_dataPacket(obj):
 
 
 
-def has_field(model, field_name, exclude_method=True):
+def has_field(model, field_name, exclude_method=False):
     if exclude_method:
         return any([f.name for f in model._meta.get_fields() if f.name == field_name])
     return hasattr(model, field_name)

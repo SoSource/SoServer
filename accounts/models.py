@@ -138,9 +138,9 @@ class User(AbstractUser):
     
     def verify_sig(self, data, signature_hex, simple_verify=False):
         prntDebug('--user verify sig:',self,simple_verify)
-        # prnt(data)
+        prnt(data)
         if isinstance(data, dict):
-            # prnt('isdict')
+            prnt('isdict')
             if 'created' in data and data['created']:
                 dt = string_to_dt(data['created'])
             elif 'last_updated' in data:
@@ -151,7 +151,7 @@ class User(AbstractUser):
             # if upk.end_life_dt and obj.Block_obj.created > upk.end_life_dt:
                 # return False
         else:
-            # prnt('else')
+            prnt('else')
             if has_field(data, 'created') and data.created:
                 dt = data.created
             elif has_field(data, 'last_updated'):
@@ -167,7 +167,7 @@ class User(AbstractUser):
                 sigData = str(data)
         else:
             sigData = get_signing_data(data)
-        # prntDebug('sigData',str(sigData)[:1500])
+        prntDebug('sigData',str(sigData)[:1500])
         pubKeys = UserPubKey.objects.filter(User_obj=self)
         for p in pubKeys:
             prntDebug('pkey',p.publicKey)
@@ -185,7 +185,7 @@ class User(AbstractUser):
             if is_valid:
                 # prnt('3.5-')
                 return True
-        # prnt('4-')
+        prnt('4-')
         # prnt(sigData)
         return False
     

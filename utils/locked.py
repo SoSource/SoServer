@@ -2388,7 +2388,7 @@ def get_commit_data(target, extra_data=None):
                     to_commit[i] = sigData_to_hash(obj)
                 else:
                     # prnt(i)
-                    if has_field(obj, i):
+                    if has_field(obj, i, exclude_method=True):
                     # if i in field_names:
                         # prnt('p1')
                         if is_model:
@@ -2508,7 +2508,7 @@ def check_commit_data(target, data, return_err=False, return_obj=False):
         # field_names = [f.name for f in obj._meta.get_fields()]
         for i in obj.commit_data():
             if i != 'hash':
-                if has_field(obj, i):
+                if has_field(obj, i, exclude_method=True):
                     if is_model:
                         attr = getattr(obj, i)
                         if isinstance(attr, datetime.datetime):
