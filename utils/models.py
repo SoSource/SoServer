@@ -132,7 +132,7 @@ def is_debug():
     try:
         # from blockchain.models import get_operatorData
         operatorData = get_operatorData()
-        if operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'] == True:
+        if operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'] == True or 'start_local_install' in operatorData and operatorData['start_local_install'] == True:
             return True
         else:
             prnt('whats up debug:',operatorData['myNodes'][operatorData['local_nodeId']]['meta']['debug'])
