@@ -1337,7 +1337,10 @@ def check_dataPacket(obj):
 
 def has_field(model, field_name, exclude_method=False):
     if exclude_method:
-        return any([f.name for f in model._meta.get_fields() if f.name == field_name])
+        try:
+            return any([f.name for f in model._meta.get_fields() if f.name == field_name])
+        except Exception as e:
+            prnt('err 6892',str(e))
     return hasattr(model, field_name)
 
 def has_method(model, method_name):
