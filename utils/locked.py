@@ -707,7 +707,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
                         carry_on = True
             if not carry_on:
                 block.is_not_valid(note='transaction_err1')
-                prntDebug('p2 transaction_err1')
+                prntDebug('p2 transaction_err1',block.id)
                 return False, True, []
             
     prntDebug('next stage')

@@ -1749,6 +1749,11 @@ class Block(models.Model):
                     prntDebug('asses pq1')
                     if not self.Transaction_obj.ReceiverBlock_obj or self.Transaction_obj.ReceiverBlock_obj.validated == None:
                         prntDebug('asses pq2')
+                        if not self.Transaction_obj.ReceiverBlock_obj and 'ReceiverBlock' in self.Transaction_obj.regarding:
+                            ReceiverBlock = Block.objects.filter(id=self.Transaction_obj.regarding['ReceiverBlock']).first()
+                            if ReceiverBlock:
+                                self.Transaction_obj.ReceiverBlock_obj = ReceiverBlock
+                                self.Transaction_obj.save()
                         if self.Transaction_obj.ReceiverBlock_obj:
                             prntDebug('asses pq3')
                             is_valid, consensus_found, validations = check_validation_consensus(self.Transaction_obj.ReceiverBlock_obj, do_mark_valid=False)
@@ -1757,27 +1762,28 @@ class Block(models.Model):
                                 if result:
                                     self.Transaction_obj.ReceiverBlock_obj.mark_valid()
                                 return result
-                        # send self to receiverBlock validator nodes
-                        
-                        from utils.locked import get_node_assignment, get_broadcast_list
-                        creator_nodes, validator_nodes = get_node_assignment(self.Transaction_obj, sender_transaction=True)
-                        if get_self_node().id in creator_nodes:
-                            prntDebug('asses pq4')
-                            if 'BlockReward' in self.Transaction_obj.regarding:
-                                if self.Transaction_obj.regarding['BlockReward'] == self.id:
-                                    prntDebug('asses pq5')
-                                    self.Transaction_obj.send_for_block_creation()
-                            else:
-                                prntDebug('asses pq6')
-                                self.Transaction_obj.send_for_block_creation(downstream_worker=False)
                         else:
-                            log = EventLog.objects.filter(type='Broadcast History', data__has_key=self.id).first()
-                            if not log:
-                                log = logBroadcast()
-                                log.data[self.id] = {'dt':dt_to_string(now_utc()),'to':'ReceiverBlock_obj.validators'}
-                                log.save()
-                                broadcast_list = get_broadcast_list(self.Transaction_obj)
-                                self.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, validations=[convert_to_dict(v) for v in Validator.objects.filter(id__in=list(self.validators.keys()))])
+                            # send self to receiverBlock validator nodes
+                            
+                            from utils.locked import get_node_assignment, get_broadcast_list
+                            creator_nodes, validator_nodes = get_node_assignment(self.Transaction_obj, sender_transaction=True)
+                            if get_self_node().id in creator_nodes:
+                                prntDebug('asses pq4')
+                                if 'BlockReward' in self.Transaction_obj.regarding:
+                                    if self.Transaction_obj.regarding['BlockReward'] == self.id:
+                                        prntDebug('asses pq5')
+                                        self.Transaction_obj.send_for_block_creation()
+                                else:
+                                    prntDebug('asses pq6')
+                                    self.Transaction_obj.send_for_block_creation(downstream_worker=False)
+                            else:
+                                log = EventLog.objects.filter(type='Broadcast History', data__has_key=self.id).first()
+                                if not log:
+                                    log = logBroadcast()
+                                    log.data[self.id] = {'dt':dt_to_string(now_utc()),'to':'ReceiverBlock_obj.validators'}
+                                    log.save()
+                                    broadcast_list = get_broadcast_list(self.Transaction_obj)
+                                    self.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, validations=[convert_to_dict(v) for v in Validator.objects.filter(id__in=list(self.validators.keys()))])
                         return None
                     elif self.Transaction_obj.ReceiverBlock_obj.validated == False:
                         self.is_not_valid(mark_strike=False, note='receiver_fail')
@@ -2551,7 +2557,8 @@ class Blockchain(models.Model):
             if new_block.Transaction_obj:
                 from utils.locked import calculate_reward
                 reward.token_value = calculate_reward(new_block.created)
-                reward.regarding = {'BlockReward':new_block.id}
+                receiverBlock_id = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(reward.created), 'regarding':reward.id})
+                reward.regarding = {'BlockReward':new_block.id,'ReceiverBlock':receiverBlock_id}
                 reward.SenderBlock_obj = new_block
                 reward = sign_obj(reward)
                 new_block.data[reward.id] = get_commit_data(reward)
