@@ -1630,7 +1630,7 @@ def get_app_info(rerun=False):
             #         continue
             #     except Exception as e:
             #         print(f"Error loading myDict from {app_config.name}: {e}")
-    prnt('_appInfo',_appInfo)
+    # prnt('_appInfo',_appInfo)
     return _appInfo
 
 

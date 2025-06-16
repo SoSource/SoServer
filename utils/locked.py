@@ -2426,7 +2426,8 @@ def get_commit_data(target, extra_data=None):
     if not to_commit:
         to_commit['hash'] = sigData_to_hash(obj)
     # prnt('result:',to_commit)
-    return json.dumps(to_commit)
+    return to_commit
+    # return json.dumps(to_commit)
 
 def check_commit_data(target, data, return_err=False, return_obj=False):
     # prnt('-check_commit_data',target,data)
