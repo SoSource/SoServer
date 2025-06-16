@@ -1685,11 +1685,11 @@ def get_app_name(model_name=None, prefix=None, return_prefix=False, return_model
         return models
     elif am_i_model and model_name in models['apps']:
         return model_name
-    prnt('None resp',model_name,prefix,return_prefix)
+    # prnt('None resp',model_name,prefix,return_prefix)
     return None
 
 def get_model(obj_type):
-    prntDebug('-get_model', obj_type)
+    # prntDebug('-get_model', obj_type)
     if not obj_type or not isinstance(obj_type, str):
         return None
     if any(char.isdigit() for char in obj_type):

@@ -2591,6 +2591,7 @@ class Blockchain(models.Model):
         prntDebug('--add_item_to_blockchain',self,str(post)[:300])
         # logEvent(f'additem to queue', code='375', func='add_item_to_queue', region=None, extra={'chainId':self.id,'post':str(post)[:500]})
         # previous commits are checked at creation time
+        added_items = []
         try:
             if post:
                 err = '0'
@@ -2601,7 +2602,7 @@ class Blockchain(models.Model):
                     prntDebug('add_data',str(p)[:250])
                     if has_field(p, 'is_valid') and not p.is_valid:
                         prnt('not valid')
-                        return
+                        return False
                     to_commit = None
                     if p.object_type == 'Region' and has_field(p, 'ParentRegion_obj'):
                         # prntDebug('11')
@@ -2640,7 +2641,7 @@ class Blockchain(models.Model):
                             prnt('-secondChain add_to',secondChain)
                             secondChain.add_item_to_queue(p)
                     if p.id not in self.queuedData:
-                        prnt('not in queue')
+                        # prnt('not in queue')
                         # if p.id == self.genesisId: # all genesis objects are modifiable
                         #     to_commit = {'genesis':p.id}
                         # else:
@@ -2648,7 +2649,9 @@ class Blockchain(models.Model):
                             # to_commit = get_commit_data(p)
                         self.queuedData[p.id] = to_commit
                         # prnt('added to chain queue',p)
-                    prnt('done add_data')
+                        return True
+                    # prnt('done add_data')
+                    return False
 
                 if not force_add and has_field(post, 'Block_obj') and post.Block_obj and post.Block_obj.Blockchain_obj == self and not has_field(post, 'is_modifiable'):
                     prntDebug('pass1', post.Block_obj.Blockchain_obj)
@@ -2662,6 +2665,7 @@ class Blockchain(models.Model):
                     if not self.data_added_datetime:
                         self.data_added_datetime = now_utc()
                     self.save()
+                    prnt('added items:', post)
                     return True
                 elif isinstance(post, list):
                     err = err + '3'
@@ -2672,14 +2676,16 @@ class Blockchain(models.Model):
                         err = err + '5'
                     for p in post:
                         if has_field(p, 'blockchainType') or has_field(p, 'blockchainId'):
-                            added = True
-                            add_data(p)
+                            if add_data(p):
+                                added_items.append(p.id)
+                                added = True
                     err = err + '6'
                     if added:
                         err = err + '7'
                         if not self.data_added_datetime:
                             self.data_added_datetime = now_utc()
                         self.save()
+                    prnt('added items:', added_items)
                     return added
                 elif isinstance(post, dict):
                     err = err + '8'
@@ -2688,8 +2694,9 @@ class Blockchain(models.Model):
                     err = err + '9'
                     for p in post:
                         if has_field(p, 'blockchainType') or has_field(p, 'blockchainId'):
-                            added = True
-                            add_data(p)
+                            if add_data(p):
+                                added_items.append(p.id)
+                                added = True
                         else:
                             prnt('skip',p)
                     err = err + '10'
@@ -2697,14 +2704,18 @@ class Blockchain(models.Model):
                         if not self.data_added_datetime:
                             self.data_added_datetime = now_utc()
                         self.save()
+                    prnt('added items:', added_items)
                     return added
                 elif has_field(post, 'blockchainType') or has_field(post, 'blockchainId'):
                     err = err + '11a'
-                    add_data(post)
-                    if not self.data_added_datetime:
-                        self.data_added_datetime = now_utc()
-                    self.save()
-                    return True
+                    added = add_data(post)
+                    if added:
+                        added_items.append(post)
+                        if not self.data_added_datetime:
+                            self.data_added_datetime = now_utc()
+                        self.save()
+                    prnt('added items:', added_items)
+                    return added
         except Exception as e:
             prnt('add_item_to_queue err 53254', str(e))
             logError(f'additem to queue {str(e)}', code='53254', func='add_item_to_queue', region=None, extra={'err':err,'chainId':self.id,'post':str(post)[:500]})
