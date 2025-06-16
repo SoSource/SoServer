@@ -1607,6 +1607,10 @@ class Block(models.Model):
             
             self_node = get_self_node()
             if self.blockchainType == NodeChain_genesisId:
+                if 'All' in self.data:
+                    for i in self.data['All']:
+                        if i in self.Blockchain_obj.queuedData:
+                            del self.Blockchain_obj.queuedData[i]
                 proceed = True
             elif self_node.id in self.validators and json.loads(self.validators[self_node.id])['is_valid']: # self_node created validator, doesnt need to process contents again
                 proceed = True
