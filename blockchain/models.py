@@ -2454,6 +2454,8 @@ class Blockchain(models.Model):
         elif transaction:
             prnt('has transaction')
             block_iden = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
+            prnt('self.id',self.id,'dt_to_string(transaction.created)',dt_to_string(transaction.created),'transaction.id',transaction.id)
+            prnt('block_iden',block_iden)
             new_block = Block.objects.filter(id=block_iden).first()
             if new_block:
                 return new_block
@@ -2558,6 +2560,8 @@ class Blockchain(models.Model):
                 from utils.locked import calculate_reward
                 reward.token_value = calculate_reward(new_block.created)
                 receiverBlock_id = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(reward.created), 'regarding':reward.id})
+                prnt('self.id',self.id,'dt_to_string(reward.created)',dt_to_string(reward.created),'reward.id',reward.id)
+                prnt('block_iden',receiverBlock_id)
                 reward.regarding = {'BlockReward':new_block.id,'ReceiverBlock':receiverBlock_id}
                 reward.SenderBlock_obj = new_block
                 reward = sign_obj(reward)
