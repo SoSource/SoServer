@@ -306,6 +306,11 @@ class UserTransaction(models.Model):
                     queue.enqueue(receiverBlock.broadcast, broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id, job_timeout=150)
                 else:
                     receiverBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
+                from utils.locked import convert_to_dict
+                prntn('now_uct()', now_utc())
+                prntn('self.updated_on_node:', self.updated_on_node)
+                prntn('self.ReceiverBlock_obj:', self.ReceiverBlock_obj)
+                prnt('transaction full dic:', convert_to_dict(self))
 
         prnt('self.SenderBlock_obj',self.SenderBlock_obj)
         if self.SenderWallet_obj and not self.SenderBlock_obj:
