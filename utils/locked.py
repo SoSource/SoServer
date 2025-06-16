@@ -2381,15 +2381,16 @@ def get_commit_data(target, extra_data=None):
         obj_id = obj.id
     to_commit = {}
     if has_method(obj, 'commit_data'):
-        field_names = [f.name for f in obj._meta.get_fields()]
+        # field_names = [f.name for f in obj._meta.get_fields()]
         for i in obj.commit_data():
             try:
                 if i == 'hash':
                     to_commit[i] = sigData_to_hash(obj)
                 else:
-                    prnt(i)
-                    if i in field_names:
-                        prnt('p1')
+                    # prnt(i)
+                    if has_field(obj, i):
+                    # if i in field_names:
+                        # prnt('p1')
                         if is_model:
                             attr = getattr(obj, i)
                         else:
@@ -2400,9 +2401,9 @@ def get_commit_data(target, extra_data=None):
                             to_commit[i] = attr.id
                         else:
                             to_commit[i] = attr
-                        prnt('p1 attr',attr)
+                        # prnt('p1 attr',attr)
                     elif has_method(obj, i):
-                        prnt('p2')
+                        # prnt('p2')
                         if extra_data != None:
                             resp = getattr(obj, i)(extra_data)
                         else:
@@ -2410,7 +2411,7 @@ def get_commit_data(target, extra_data=None):
                         if resp:
                             for key, value in resp.items():
                                 to_commit[key] = value
-                        prnt('p2 resp',resp)
+                        # prnt('p2 resp',resp)
             except Exception as e:
                 prnt('fail get_commit_data 5092', str(e), obj_id, i)
                 to_commit[i] = str(e)
@@ -2424,7 +2425,7 @@ def get_commit_data(target, extra_data=None):
             to_commit['created'] = crtd
     if not to_commit:
         to_commit['hash'] = sigData_to_hash(obj)
-    prnt('result:',to_commit)
+    # prnt('result:',to_commit)
     return json.dumps(to_commit)
 
 def check_commit_data(target, data, return_err=False, return_obj=False):
@@ -2504,6 +2505,7 @@ def check_commit_data(target, data, return_err=False, return_obj=False):
     elif 'genesis' in data and data['genesis'] == obj_id:
         success = True
     if success and has_method(obj, 'commit_data'):
+        # field_names = [f.name for f in obj._meta.get_fields()]
         for i in obj.commit_data():
             if i != 'hash':
                 if has_field(obj, i):
