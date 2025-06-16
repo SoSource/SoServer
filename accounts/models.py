@@ -615,6 +615,9 @@ class UserPubKey(models.Model):
                     user_created = self.User_obj.created
                 if user_created >= now_utc()-datetime.timedelta(seconds=7):
                     self.boot()
+                else:
+                    prntn('!!!!!user_created',user_created)
+                    prntn('!!!!!now_utc(',now_utc())
 
         elif verify_obj_to_data(self, self):
             super(UserPubKey, self).save()

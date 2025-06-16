@@ -21,7 +21,7 @@ skip_sign_fields = [
         'is_superuser','is_staff','display_hour','latestModel','enacted',
         'SenderBlock_obj','ReceiverBlock_obj','validation_error', 'notes',
         'blockchainType','secondChainType','is_modifiable','BillText_obj',
-        'queued_dt','plugin_prefix','is_modifiable'
+        'queued_dt','plugin_prefix','is_modifiable','iden_length'
         ]
 
 

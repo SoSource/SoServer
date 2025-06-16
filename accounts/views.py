@@ -1362,7 +1362,7 @@ def receive_user_login_view(request):
                             try:
                                 prnt('new user', user)
                             except Exception as e:
-                                prnt(str(e))
+                                prnt('error59354',str(e))
                             prnt()
                             prnt('create 111')
 
