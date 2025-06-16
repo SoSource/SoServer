@@ -8,14 +8,14 @@
   <script type="module">
     import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
     import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
-    function generatePassword() {
-      const strength = 256; // 24-word mnemonic
-      const password = generateMnemonic(wordlist, strength);
-      console.log("Mnemonic (24 words):", mnemonic);
+    // function generatePassword() {
+    //   const strength = 256; // 24-word mnemonic
+    //   const password = generateMnemonic(wordlist, strength);
+    //   console.log("Mnemonic (24 words):", mnemonic);
 
-      var form = document.getElementById("modalForm");
-      form.elements["password"].value = password;
-    }
+    //   var form = document.getElementById("modalForm");
+    //   form.elements["password"].value = password;
+    // }
 
     
   </script>

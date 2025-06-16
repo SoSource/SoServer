@@ -550,6 +550,8 @@ class UserPubKey(models.Model):
             f = '-upk verify data: ' + str(e)
         if not publicKey:
             publicKey = self.publicKey
+        prntn('publicKey',publicKey,'---signature_hex',signature_hex)
+        prnt('f',f)
         from utils.locked import verify_data
         return verify_data(data, publicKey, signature_hex)
         # data = data + ' '
