@@ -1917,7 +1917,7 @@ class Block(models.Model):
             transaction = self.Transaction_obj
             try:
                 if transaction:
-                    transaction.delete(superDel=superDel, skipReceiver_Block=True)
+                    transaction.delete(superDel=superDel, skip_block=self.id)
             except Exception as e:
                 prnt('f4276',str(e))
             super(Block, self).delete()
@@ -2447,12 +2447,16 @@ class Blockchain(models.Model):
             return new_block
         elif transaction:
             prnt('has transaction')
+            block_iden = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
+            new_block = Block.objects.filter(id=block_iden).first()
+            if new_block:
+                return new_block
             self_node = get_self_node()
             if not dummy_block:
                 new_block = self.create_dummy_block(now=transaction.created)
             else:
                 new_block = dummy_block
-            new_block.id = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
+            new_block.id = block_iden
             new_block.created = now_utc()
             new_block.index = chain_length + 1
             new_block.CreatorNode_obj = self_node
@@ -2774,7 +2778,7 @@ class Tidy:
         skipped = 0
         runs = 0
         while invalid_posts and runs < 20:
-            prnt('run',runs, invalid_posts)
+            # prnt('run',runs, invalid_posts)
             runs += 1
             for p in invalid_posts:
                 # prnt('p',p)

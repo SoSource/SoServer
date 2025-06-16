@@ -414,13 +414,12 @@ class UserTransaction(models.Model):
                 super(UserTransaction, self).save(*args, **kwargs)
                 prnt('transaction saved2')
     
-    def delete(self, superDel=False, skipReceiver_Block=False):
+    def delete(self, superDel=False, skip_block=None):
         if not is_locked(self) or superDel:
-            if self.SenderBlock_obj:
-                self.SenderBlock_obj.delete(superDel=superDel)
-            if not skipReceiver_Block: # in event of recursion loop
-                try:
-                    self.ReceiverBlock_obj.delete(superDel=superDel)
-                except:
-                    pass
+            if self.SenderBlock_obj and self.SenderBlock_obj.id != skip_block:
+                if not is_locked(self.SenderBlock_obj) or superDel:
+                    super(Block, self.SenderBlock_obj).delete()
+            if self.ReceiverBlock_obj and self.ReceiverBlock_obj.id != skip_block:
+                if not is_locked(self.ReceiverBlock_obj) or superDel:
+                    super(Block, self.ReceiverBlock_obj).delete()
             super(UserTransaction, self).delete()

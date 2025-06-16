@@ -2905,7 +2905,7 @@ def convert_to_dict(obj, broadcast=False, withold_fields=True):
 id_len = 14
 def generate_id(data=None, len=id_len):
     from utils.models import prnt
-    prnt('generate_id')
+    # prnt('generate_id')
     import xxhash
     import base62
     if not len:
@@ -2923,7 +2923,7 @@ def generate_id(data=None, len=id_len):
     
 def hash_obj_id(obj, verify=False, specific_data=None, return_data=False, model=None, version=None, len=id_len):
     from utils.models import has_method, has_field, get_model_prefix, get_model,sort_dict,prnt
-    prnt('hash_obj_id', obj)
+    # prnt('hash_obj_id', obj)
     if not len:
         len = id_len
     if specific_data:
@@ -3130,7 +3130,7 @@ _super_id = None
 
 def super_id(iden=None, net=None):
     from utils.models import prntDev, prnt, prntDebug
-    prnt('super_id()',iden)
+    # prnt('super_id()',iden)
     global _super_id
     if _super_id is None:
         from blockchain.models import Sonet
@@ -3160,7 +3160,7 @@ def super_id(iden=None, net=None):
         else:
             return True
         
-    prnt('_super_id',_super_id)
+    # prnt('_super_id',_super_id)
     if iden:
         return True if _super_id == iden else False
     return _super_id
