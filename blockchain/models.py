@@ -1715,37 +1715,7 @@ class Block(models.Model):
             if self.Transaction_obj:
                 prnt('do assess')
                 # both senderBlock and receiverBlock should be validated together
-                if self.Transaction_obj.ReceiverBlock_obj and self == self.Transaction_obj.ReceiverBlock_obj:
-                    prntDebug('asses p1')
-                    if not self.Transaction_obj.SenderBlock_obj or self.Transaction_obj.SenderBlock_obj.validated == None:
-                        prntDebug('asses p2')
-                        if self.Transaction_obj.SenderBlock_obj:
-                            prntDebug('asses p3')
-                            is_valid, consensus_found, validations = check_validation_consensus(self.Transaction_obj.SenderBlock_obj, do_mark_valid=False)
-                            if is_valid and consensus_found:
-                                result = operations()
-                                if result:
-                                    self.Transaction_obj.SenderBlock_obj.mark_valid()
-                                return result
-                        # send self to SenderBlock_obj validator nodes
-                        log = EventLog.objects.filter(type='Broadcast History', data__has_key=self.id).first()
-                        if not log:
-                            log = logBroadcast(return_log=True)
-                            log.data[self.id] = {'dt':dt_to_string(now_utc()),'to':'SenderBlock_obj.validators'}
-                            log.save()
-                            from utils.locked import get_node_assignment, get_broadcast_list
-                            creator_nodes, validator_nodes = get_node_assignment(self.Transaction_obj, sender_transaction=True)
-                            broadcast_list = get_broadcast_list(self.Transaction_obj)
-                            self.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, validations=[convert_to_dict(v) for v in Validator.objects.filter(id__in=list(self.validators.keys()))])
-                        return None
-                    elif self.Transaction_obj.SenderBlock_obj.validated == False:
-                        self.is_not_valid(mark_strike=False, note='sender_fail')
-                        return False
-                    elif self.Transaction_obj.SenderBlock_obj.validated:
-                        return operations() # validate self, then broadcast to all - maybe needs broadcast_block() here
-                    else:
-                        return None # wait for SenderBlock_obj validation
-                elif self.Transaction_obj.SenderBlock_obj and self == self.Transaction_obj.SenderBlock_obj:
+                if self.Transaction_obj.SenderBlock_obj and self == self.Transaction_obj.SenderBlock_obj:
                     prntDebug('asses pq1')
                     if not self.Transaction_obj.ReceiverBlock_obj or self.Transaction_obj.ReceiverBlock_obj.validated == None:
                         prntDebug('asses pq2')
@@ -1792,6 +1762,36 @@ class Block(models.Model):
                         return operations() # validate self, then broadcast to all - maybe needs broadcast_block() here
                     else:
                         return None # wait for receiverBlock validation
+                if self.Transaction_obj.ReceiverBlock_obj and self == self.Transaction_obj.ReceiverBlock_obj:
+                    prntDebug('asses p1')
+                    if not self.Transaction_obj.SenderBlock_obj or self.Transaction_obj.SenderBlock_obj.validated == None:
+                        prntDebug('asses p2')
+                        if self.Transaction_obj.SenderBlock_obj:
+                            prntDebug('asses p3')
+                            is_valid, consensus_found, validations = check_validation_consensus(self.Transaction_obj.SenderBlock_obj, do_mark_valid=False)
+                            if is_valid and consensus_found:
+                                result = operations()
+                                if result:
+                                    self.Transaction_obj.SenderBlock_obj.mark_valid()
+                                return result
+                        # send self to SenderBlock_obj validator nodes
+                        log = EventLog.objects.filter(type='Broadcast History', data__has_key=self.id).first()
+                        if not log:
+                            log = logBroadcast(return_log=True)
+                            log.data[self.id] = {'dt':dt_to_string(now_utc()),'to':'SenderBlock_obj.validators'}
+                            log.save()
+                            from utils.locked import get_node_assignment, get_broadcast_list
+                            creator_nodes, validator_nodes = get_node_assignment(self.Transaction_obj, sender_transaction=True)
+                            broadcast_list = get_broadcast_list(self.Transaction_obj)
+                            self.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, validations=[convert_to_dict(v) for v in Validator.objects.filter(id__in=list(self.validators.keys()))])
+                        return None
+                    elif self.Transaction_obj.SenderBlock_obj.validated == False:
+                        self.is_not_valid(mark_strike=False, note='sender_fail')
+                        return False
+                    elif self.Transaction_obj.SenderBlock_obj.validated:
+                        return operations() # validate self, then broadcast to all - maybe needs broadcast_block() here
+                    else:
+                        return None # wait for SenderBlock_obj validation
                 else:
                     return False
             else:

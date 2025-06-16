@@ -630,12 +630,12 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     #     b_ct = dt_to_string(block.created)
     if not block.signature:
         block.is_not_valid(note='no_sig', mark_strike=False)
-        prntDebug('p000 block no sig')
+        prntDebug('p000 block no sig',block.id)
         return False, True, []
     if block.Blockchain_obj.genesisType != 'Nodes' and block.Blockchain_obj.genesisType != 'Wallet':
         if b_ct.minute < 50 or b_dt.minute != 50:
             block.is_not_valid(note='wrong_datetime_data')
-            prntDebug('p00 created_at_wrong_time')
+            prntDebug('p00 created_at_wrong_time',block.id)
             return False, True, []
     
     if backcheck and block.index > 1:
@@ -680,11 +680,11 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
 
         if not carry_on:
             block.is_not_valid(note='did_not_pass_discrepenacies2')
-            prntDebug('p0 did_not_pass_discrepenacies')
+            prntDebug('p0 did_not_pass_discrepenacies',block.id)
             return False, True, []
     if prev_block and prev_block.object_type != 'Blockchain' and prev_block.index != block.index - 1:
         block.is_not_valid(note='wrong_index')
-        prntDebug('p1 wrong_index')
+        prntDebug('p1 wrong_index',block.id)
         return False, True, []
     if handle_discrepancies:
         competing_index = Block.objects.filter(Blockchain_obj=block.Blockchain_obj, index=block.index, validated=True)
@@ -702,9 +702,14 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
             if 'BlockReward' in block.Transaction_obj.regarding:
                 if block.Transaction_obj.regarding['BlockReward'] == block.id:
                     carry_on = True
-                elif block.Transaction_obj.SenderBlock_obj and block.Transaction_obj.ReceiverBlock_obj:
-                    if block.Transaction_obj.regarding['BlockReward'] == block.Transaction_obj.SenderBlock_obj.id and block.Transaction_obj.ReceiverBlock_obj.id == block.id:
-                        carry_on = True
+                elif 'ReceiverBlock' in block.Transaction_obj.regarding and block.Transaction_obj.regarding['ReceiverBlock'] == block.id:
+                    carry_on = True
+                    if not block.Transaction_obj.ReceiverBlock_obj:
+                        block.Transaction_obj.ReceiverBlock_obj = block
+                        block.Transaction_obj.save()
+                # elif block.Transaction_obj.SenderBlock_obj and block.Transaction_obj.ReceiverBlock_obj:
+                #     if block.Transaction_obj.regarding['BlockReward'] == block.Transaction_obj.SenderBlock_obj.id and block.Transaction_obj.ReceiverBlock_obj.id == block.id:
+                #         carry_on = True
             if not carry_on:
                 block.is_not_valid(note='transaction_err1')
                 prntDebug('p2 transaction_err1',block.id)
@@ -726,7 +731,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     prnt(f'now_utc:{now_utc()} ---(b_ct + datetime.timedelta(minutes=(block_time_delay*(3/4))+1)): {(b_ct + datetime.timedelta(minutes=(block_time_delay*(3/4))+1))}')
     if block.CreatorNode_obj.id not in creator_nodes:
         block.is_not_valid(note='wrong_creator')
-        prntDebug(f'p3 wrong_creator, block.CreatorNode_obj.id:{block.CreatorNode_obj.id}, creator_nodes:{creator_nodes}')
+        prntDebug(f'p3 wrong_creator, block.CreatorNode_obj.id:{block.CreatorNode_obj.id}, creator_nodes:{creator_nodes}',block.id)
         return False, True, []
     if self_node.id in validator_list[:required_validators]:
         prnt(f'self assigned as validator, {(b_ct + datetime.timedelta(minutes=(block_time_delay*(3/4))+1))}')
@@ -806,7 +811,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     prnt(f'total:{total}, required_validators:{required_validators}, (b_ct + datetime.timedelta(minutes=(block_time_delay))):{(b_ct + datetime.timedelta(minutes=(block_time_delay)-1.5))}')
     if total < required_validators and now_utc() > (b_ct + datetime.timedelta(minutes=(block_time_delay)-1.5)):
         block.is_not_valid(note='timed_out')
-        prntDebug('p6 timed_out')
+        prntDebug('p6 timed_out',block.id)
         return False, True, []
     prntDebug('check consensus stage3')
     save_block = False
@@ -839,7 +844,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     elif total >= required_validators and percent < 50:
         prntDebug('stage3 opt2')
         if block.validated != False:
-            prnt("now_utc() < (b_ct + datetime.timedelta(hours=24))", now_utc(), (b_ct + datetime.timedelta(hours=24)))
+            prnt("now_utc() < (b_ct + datetime.timedelta(hours=24))", now_utc(), (b_ct + datetime.timedelta(hours=24)),block.id)
             block.is_not_valid(note='failed_by_validators')
             if now_utc() < (b_ct + datetime.timedelta(hours=24)):
                 if any(v for v in validations if v.created > b_ct + datetime.timedelta(minutes=(block_time_delay/2))):
