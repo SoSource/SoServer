@@ -137,7 +137,7 @@ class User(AbstractUser):
         return []
     
     def verify_sig(self, data, signature_hex, simple_verify=False):
-        # prntDebug('--user verify sig:',self,simple_verify)
+        prntDebug('--user verify sig:',self,simple_verify)
         # prnt(data)
         if isinstance(data, dict):
             # prnt('isdict')
@@ -170,7 +170,7 @@ class User(AbstractUser):
         # prntDebug('sigData',str(sigData)[:1500])
         pubKeys = UserPubKey.objects.filter(User_obj=self)
         for p in pubKeys:
-            # prntDebug('pkey',p.publicKey)
+            prntDebug('pkey',p.publicKey)
             if not p.end_life_dt:
                 # prnt('1')
                 is_valid = verify_data(sigData, p, signature_hex)

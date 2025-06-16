@@ -702,8 +702,9 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
             if 'BlockReward' in block.Transaction_obj.regarding:
                 if block.Transaction_obj.regarding['BlockReward'] == block.id:
                     carry_on = True
-                elif block.Transaction_obj.regarding['BlockReward'] == block.Transaction_obj.SenderBlock_obj.id and block.Transaction_obj.ReceiverBlock_obj.id == block.id:
-                    carry_on = True
+                elif block.Transaction_obj.SenderBlock_obj and block.Transaction_obj.ReceiverBlock_obj:
+                    if block.Transaction_obj.regarding['BlockReward'] == block.Transaction_obj.SenderBlock_obj.id and block.Transaction_obj.ReceiverBlock_obj.id == block.id:
+                        carry_on = True
             if not carry_on:
                 block.is_not_valid(note='transaction_err1')
                 prntDebug('p2 transaction_err1')
@@ -2665,7 +2666,7 @@ def verify_obj_to_data(obj, target_data, user=None, return_user=False, requireSu
     from utils.models import prnt, prntDebug
     # requires data and obj or data and user
     f = '---verify_obj_to_data'
-    # prntDebug(f)
+    prntDebug(f)
     is_valid = False
     x = 0
     try:
@@ -2831,7 +2832,7 @@ def verify_obj_to_data(obj, target_data, user=None, return_user=False, requireSu
     except Exception as e:
         prnt(f'verify_obj_to_data error 3875623-{x}, iden:{iden}',str(e))
     if not is_valid:
-        prntDebug(f, f'failed is_valid err:{x} hardFail:{failed}, iden:{iden}')
+        prntDebug(f, f'failed is_valid err:{x} hardFail:{failed}, iden:{iden}, data:{str(target_data)[:1000]}, sig:{sig}')
     if return_user and user:
         return is_valid, user
     if return_user:
@@ -3067,7 +3068,7 @@ def create_keys(user_id, user_pass):
     
 
 def verify_data(data, public_key, signature):
-    from utils.models import prnt
+    from utils.models import prnt, prntDebug
     prnt('verifying...',data, public_key, signature)
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives import hashes
@@ -3092,6 +3093,10 @@ def verify_data(data, public_key, signature):
             prnt("Signature is INVALID!")
     except Exception as e:
         prnt('err3',str(e), 'code:',err)
+        prntDebug('public_key',public_key)
+        prntDebug('pub_bytes',pub_bytes)
+        prntDebug('signature',signature)
+        prntDebug('sig_bytes',sig_bytes)
     return False
 
 def sort_for_sign(data):

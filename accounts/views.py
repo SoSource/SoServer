@@ -1330,7 +1330,7 @@ def receive_user_login_view(request):
             else:
                 try:
                     err_code = 'A'
-                    prnt('1')
+                    prnt('create user stage 1')
                     validator_upk = UserPubKey()
                     
                     prnt('Intial userData',userData)
@@ -1384,6 +1384,7 @@ def receive_user_login_view(request):
                             err_code = 'E'
 
 
+                    prntn('create user stage 12')
                     err_code = 1
                     proceed_to_login = False
                     if upk and upk.verify(get_signing_data(upkData), upkSignature):
@@ -1430,9 +1431,10 @@ def receive_user_login_view(request):
                                 err_code = str(err_code) + '/' + str(e)
 
 
+                            prntn('create user stage 3')
                             # prnt()
                             err_code = 9
-                            prnt('\n\n\n\n')
+                            # prnt('\n\n\n\n')
                             prnt('newU', user)
                             new_user_valid = upk.verify(get_signing_data(user), userSignature)
                             prnt('new_user_valid',new_user_valid)
@@ -1485,10 +1487,11 @@ def receive_user_login_view(request):
                             if not new_user_valid:
                                 err_code = 12
                                 proceed_to_login = False
-                            prnt('step3')
+                            # prnt('step3')
                             # prnt('signingdata',get_signing_data(userData))
                             # prnt()
                             # prnt('signinguser', get_signing_data(user))
+                    prntn('create user stage 4')
                     # prnt('is valid', is_valid)
                     if proceed_to_login:
                         login(request, user, backend='django.contrib.auth.backends.ModelBackend')

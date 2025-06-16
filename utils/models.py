@@ -2119,6 +2119,7 @@ def sync_model(xModel, jsonContent, skip_fields=[], do_save=True, node_block_dat
     if not is_valid:
         prnt('is_not_validA:',is_valid)
         prntDebug('xmodel',str(convert_to_dict(xModel))[:500],'\ndata',str(received_data)[:500])
+        return xModel, is_valid, False
     try:
         if is_locked(xModel):
             return xModel, is_valid, False
