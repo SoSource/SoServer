@@ -3093,14 +3093,14 @@ def verify_data(data, public_key, signature):
             prnt("Signature is INVALID!")
     except Exception as e:
         prnt('err3',str(e), 'code:',err)
-        prntDebug('public_key',public_key)
-        prntDebug('pub_bytes',pub_bytes)
-        prntDebug('signature',signature)
-        prntDebug('sig_bytes',sig_bytes)
-        prntDebug('data',data)
-        prntDebug('data+++',(data+'5uHPEF0DPaI4egus4sa6AX').encode('utf-8'))
-        prnt('isstr',isinstance(data, str))
-        prnt()
+        # prntDebug('public_key',public_key)
+        # prntDebug('pub_bytes',pub_bytes)
+        # prntDebug('signature',signature)
+        # prntDebug('sig_bytes',sig_bytes)
+        # prntDebug('data',data)
+        # prntDebug('data+++',(data+'5uHPEF0DPaI4egus4sa6AX').encode('utf-8'))
+        # prnt('isstr',isinstance(data, str))
+        # prnt()
     return False
 
 def sort_for_sign(data):

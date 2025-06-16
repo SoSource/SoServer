@@ -609,15 +609,15 @@ class UserPubKey(models.Model):
             if not upk:
                 prnt('self.User_obj',self.User_obj)
                 prntDebug('user dict', convert_to_dict(self.User_obj))
-                if not isinstance(self.User_obj.created, datetime.datetime):
-                    user_created = string_to_dt(self.User_obj.created)
-                else:
-                    user_created = self.User_obj.created
-                if user_created >= now_utc()-datetime.timedelta(seconds=7):
+                # if not isinstance(self.User_obj.created, datetime.datetime):
+                #     user_created = string_to_dt(self.User_obj.created)
+                # else:
+                #     user_created = self.User_obj.created
+                if string_to_dt(self.User_obj.created) >= string_to_dt(self.created)-datetime.timedelta(seconds=7):
                     self.boot()
                 else:
-                    prntn('!!!!!user_created',user_created)
-                    prntn('!!!!!now_utc(',now_utc())
+                    prntn('!!!!!user_created',string_to_dt(self.User_obj.created))
+                    prntn('!!!!!self.created',string_to_dt(self.created))
 
         elif verify_obj_to_data(self, self):
             super(UserPubKey, self).save()

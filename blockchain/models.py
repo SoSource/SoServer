@@ -2448,7 +2448,7 @@ class Blockchain(models.Model):
                 new_block = self.create_dummy_block(now=transaction.created)
             else:
                 new_block = dummy_block
-
+            new_block.id = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
             new_block.created = now_utc()
             new_block.index = chain_length + 1
             new_block.CreatorNode_obj = self_node
