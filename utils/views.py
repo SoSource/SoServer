@@ -2427,7 +2427,7 @@ def tester_queue_view(request):
         ut = UserTransaction.objects.filter(id='utraSoMZHxoRLpYWkkSwoMIoQq').first()
         prnt('ut',ut)
         if ut:
-            ut.mark_valid()
+            ut.ReceiverWallet_obj.tally_tokens()
 
         # import importlib
         # from django.conf import settings
