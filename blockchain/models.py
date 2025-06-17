@@ -3132,7 +3132,7 @@ class Tidy:
     def check_transactions(self, dt=now_utc()):
         prnt('check_transactions')
         from transactions.models import UserTransaction
-        transactions = UserTransaction.objects.exclude(validated=True,validated=False)
+        transactions = UserTransaction.objects.exclude(validated=True).exclude(validated=False)
         for t in transactions:
             prnt('t1',t)
             t.mark_valid()
