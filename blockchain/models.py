@@ -142,6 +142,11 @@ NodeChain_genesisId = 'Nodes'
 UserChains = 'User'
 EarthChain_genesisId = 'regSoIkpb6hxMSAEOQI'
 
+earth_test = hash_obj_id('Region', specific_data=sort_for_sign({'object_type':'Region','Name':'Earth','ParentRegion_obj':None,'modelType':'planet'}), len=14)
+prntn('earth_test',earth_test)
+prnt('EarthChain_genesisId',EarthChain_genesisId)
+prnt()
+
 default_apps = ['accounts', 'blockchain', 'posts', 'transactions']
 mandatoryChains = [NodeChain_genesisId, UserChains, 'Sonet', 'Wallet', EarthChain_genesisId]
 specialChains = ['New']
@@ -152,8 +157,7 @@ script_created_modifiable_models = ['Region','District','Party']
 unshared_models = ['Post','UserAction','UserNotification','Wallet','Blockchain','EventLog','Keyphrase','KeyphraseTrend']
 
 model_prefixes = {'Sonet':'oh','Plugin':'plg','DataPacket':'dpk','Node':'nod','NodeReview':'nrev','Block':'blc','Validator':'val','Blockchain':'chn','EventLog':'log',}
-'blkSo2IxsWvivAke4EE'
-'blcSo2IxsWvivAke4EE'
+
 
 def default_coin_info():
     return {'name': 'Token', 'plural': 'Tokens', 'pronunciation': 'toe-ken'}
@@ -1211,18 +1215,24 @@ class Block(models.Model):
         return True if not next_block else False
 
     def get_assigned_nodes(self, node_block_data={}):
+        prnt('get_assigned_nodes',self.id)
         if not node_block_data:
             node_block_data = get_relevant_nodes_from_block(obj=self, genesisId=self.Blockchain_obj.genesisId)
         if self.Transaction_obj:
             if not self.Transaction_obj.SenderWallet_obj:
+                carry_on = False
                 if 'BlockReward' in self.Transaction_obj.regarding and self.Transaction_obj.regarding['BlockReward'] == self.id:
-                    transaction_type = 'reward'
+                    carry_on = True
 
+                elif 'ReceiverBlock' in self.Transaction_obj.regarding and self.Transaction_obj.regarding['ReceiverBlock'] == self.id:
+                    carry_on = True
+                if carry_on:
                     creator_nodes, validator_nodes = get_node_assignment(self, full_validator_list=True, node_block_data=node_block_data)
                     broadcast_list = get_broadcast_list(self, relevant_nodes=node_block_data, peer_count=self.number_of_peers)
                     return creator_nodes, validator_nodes, broadcast_list
                 else:
-                    self.is_not_valid()
+                    self.is_not_valid(note='transaction_err2')
+                    prntDebug('px transaction_err2',self.id)
                     # prntDebug('p5')
                     return [], [], {}
             elif self.Transaction_obj.ReceiverWallet_obj == self.Blockchain_obj:
@@ -1455,7 +1465,7 @@ class Block(models.Model):
 
 
     def is_not_valid(self, mark_strike=True, note='', check_posts=False, super_delete_content=False):
-        prnt('--is_not_valid',self)
+        prnt('--is_not_valid',self,note)
         # if block.creator_node = self_node and block failed by validators, log failed items. if items repeatedly fail block creation, stop commit attmpts for those items
         self_node = get_self_node()
         now = now_utc()
@@ -1544,6 +1554,7 @@ class Block(models.Model):
             self.notes['fail_position'] = note
         if 'fail_dt' not in self.notes:
             self.notes['fail_dt'] = dt_to_string(now)
+        self.notes[dt_to_string(now)] = note
         # self.save()
         self.nodeBlockId = ''
         super(Block, self).save()
@@ -1905,8 +1916,6 @@ class Block(models.Model):
         if self.Transaction_obj:
             return convert_to_dict(self.Transaction_obj)
         return {}
-
-# redo superuser_id using stronger hash, restore sovote to legis, makemigrations, then run get_model_fields, then go ahead and start new network, 
 
     def save(self, share=False, *args, **kwargs):
         prnt('saving block...',self.id, self.blockchainId)
@@ -3218,7 +3227,6 @@ class Tidy:
 
 
 
-# run update.sync_to_post on lois
 # cors not yet wokring from court to lois 
 # cors did work from lois to court
 
@@ -3403,17 +3411,6 @@ def toBroadcast(obj, remove_item=False, extra={}):
         log.save()
 
 
-# mark block valid needs to invalidate problem idens ?? maybe not
-
-# validater needs block_obj and is_locked function, check for locked in validation jobs
-# add block to validater.block_obj when block marked valid, both vals in data and in block.validators
-# block_obj field should be protected
-# check max_winddow on all validations and block.commts is being used
-
-# move some functions to utils.locked like validate_block, maybe check_contents and check _consensus
-
-# move transaction models to new transactions app
-# in prcs_rcvd_data if incoming obj has blocck_obj, check data against block
 
 # def data_sort_priority(entry, version=None):
 #     type_order = {'type1': 0, 'type2': 1}
