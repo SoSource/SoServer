@@ -344,10 +344,10 @@ class UserTransaction(models.Model):
                     senderBlock.broadcast(broadcast_list={self_node.id:validator_list}, target_node_id=self_node.id)
         prntDebug('done send_for_block_creation')
 
-    def mark_valid(self):
+    def mark_valid(self, skip_assess=False):
         prnt('--mark_valid')
         if not self.validated:
-            if self.assess_validation():
+            if skip_assess or self.assess_validation():
                 from utils.locked import verify_obj_to_data
                 if verify_obj_to_data(self, self):
                     self.validated = True
