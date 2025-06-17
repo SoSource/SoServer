@@ -187,25 +187,28 @@ class UserTransaction(models.Model):
             return ['hash','token_value','signature','ReceiverWallet_obj','SenderWallet_obj','enact_dt']
 
     def assess_validation(self):
-        prnt('--assess_validation')
+        prnt('--assess_validation', now_utc())
         if self.ReceiverBlock_obj:
-            # prnt('1')
+            prnt('1')
             prev_block = self.ReceiverBlock_obj.get_previous_block()
-            # prnt(prev_block)
+            prnt(prev_block)
             if prev_block and prev_block.object_type == 'Blockchain' or prev_block.validated:
-                # prnt('2')
+                prnt('2')
                 from utils.locked import verify_obj_to_data
                 if verify_obj_to_data(self, self):
-                    # prnt('3')
+                    prnt('3')
                     if self.SenderBlock_obj:
-                        # prnt('4')
+                        prnt('4')
                         prev_Sendblock = self.SenderBlock_obj.get_previous_block()
+                        prnt(prev_Sendblock)
                         if prev_Sendblock and prev_Sendblock.object_type == 'Blockchain' or prev_Sendblock.validated:
+                            prnt('4.1')
                             if self.SenderBlock_obj.validated and self.ReceiverBlock_obj.validated:
+                                prnt('4.2')
                                 return True
         
                     elif 'BlockReward' in self.regarding:
-                        # prnt('5')
+                        prnt('5')
                         # rewardBlock = self.get_reward_block()
                         # prnt('rewardBlock',rewardBlock)
                         if self.ReceiverBlock_obj.validated:
@@ -358,6 +361,7 @@ class UserTransaction(models.Model):
                     if 'pending' in senderChain.queuedData and self.id in senderChain.queuedData['pending']:
                         del senderChain.queuedData['pending'][self.id]
                     senderChain.save()
+
                             
         if self.validated and not self.enacted:
             if not self.enact_dt or self.enact_dt < now_utc():

@@ -2414,6 +2414,7 @@ def tester_queue_view(request):
         from blockchain.models import Blockchain, Block,NodeReview,NodeChain_genesisId
         # from accounts.models import UserTransaction, UserPubKey,verify_obj_to_data, hash_obj_id
         from legis.models import Government, Statement, Bill, Motion, Person, BillText
+        from transactions.models import UserTransaction
         import uuid
         # from utils.models import get_model_prefix, get_operatorData,get_self_node
         from scrapers.usa.federal import get_bills
@@ -2423,37 +2424,42 @@ def tester_queue_view(request):
         start_time = now_utc()
         prnt('HELLLOO!!')
 
-        import importlib
-        from django.conf import settings
+        ut = UserTransaction.objects.filter(id='utraSoMZHxoRLpYWkkSwoMIoQq').first()
+        prnt('ut',ut)
+        if ut:
+            ut.mark_valid()
+
+        # import importlib
+        # from django.conf import settings
 
 
 
-        def get_all_model_prefixes():
-            model_prefixes_list = []
+        # def get_all_model_prefixes():
+        #     model_prefixes_list = []
 
-            for app in settings.INSTALLED_APPS:
-                try:
-                    prnt('app_config.name',app)
-                    if app in ['accounts', 'blockchain', 'transactions', 'posts']:
-                        # Try to import the models module
-                        models_module = importlib.import_module(f"{app}.models")
-                        if hasattr(models_module, "model_prefixes"):
-                            prefixes = getattr(models_module, "model_prefixes")
-                            if isinstance(prefixes, dict):
-                                model_prefixes_list.append(prefixes)
-                except ModuleNotFoundError:
-                    continue  # No models.py, skip this app
-                except Exception:
-                    continue  # Handle broken models.py or import issues
+        #     for app in settings.INSTALLED_APPS:
+        #         try:
+        #             prnt('app_config.name',app)
+        #             if app in ['accounts', 'blockchain', 'transactions', 'posts']:
+        #                 # Try to import the models module
+        #                 models_module = importlib.import_module(f"{app}.models")
+        #                 if hasattr(models_module, "model_prefixes"):
+        #                     prefixes = getattr(models_module, "model_prefixes")
+        #                     if isinstance(prefixes, dict):
+        #                         model_prefixes_list.append(prefixes)
+        #         except ModuleNotFoundError:
+        #             continue  # No models.py, skip this app
+        #         except Exception:
+        #             continue  # Handle broken models.py or import issues
 
-                # Check for the 'model_prefixes' attribute
+        #         # Check for the 'model_prefixes' attribute
 
-            return model_prefixes_list
-        prnt('loading apps')
-        prefixes = get_all_model_prefixes()
-        prnt()
-        for d in prefixes:
-            prnt(d)
+        #     return model_prefixes_list
+        # prnt('loading apps')
+        # prefixes = get_all_model_prefixes()
+        # prnt()
+        # for d in prefixes:
+        #     prnt(d)
 
         # from django.apps import apps
         # import importlib
