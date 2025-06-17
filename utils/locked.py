@@ -2208,7 +2208,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
                 if x.id in block.data:
                     # prnt('az')
                     i_dt = get_timeData(x)
-                    if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt < self_dt + datetime.timedelta(seconds=20):
+                    if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt < self_dt:
                         # prnt('ax')
                         if check_commit_data(x, block.data[x.id]):
                             obj_idens.append(x.id)
