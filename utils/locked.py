@@ -2158,7 +2158,7 @@ def get_node_assignment(obj=None, dt=None, func=None, chainId=None, sender_trans
     
 
 def check_block_contents(block, retrieve_missing=True, log_missing=True, downstream_worker=True, return_missing=False, input_data=[]):
-    from utils.models import chunk_dict, get_timeData, has_field, get_dynamic_model, sigData_to_hash, exists_in_worker, get_data, now_utc, prnt, string_to_dt
+    from utils.models import chunk_dict, get_timeData, has_field, get_dynamic_model, sigData_to_hash, exists_in_worker, get_data, now_utc, prnt, string_to_dt, is_id
     prnt('check_block_contents now_utc:', now_utc( ),block.id, block.index, input_data)
     from blockchain.models import Validator, logEvent, request_items, logMissing, logError, max_commit_window
     # from posts.models import 
@@ -2188,14 +2188,14 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
         total_found += len(not_valid)
         total_found += len(storedModels)
         for x in storedModels:
-            # prnt('x',x)
+            prnt('x',x)
             if not has_field(x, 'Validator_obj') or x.Validator_obj and x.Validator_obj.is_valid and x.id in x.Validator_obj.data and x.Validator_obj.data[x.id] == sigData_to_hash(x):
                 # prnt('a')
                 if x.id in block.data:
-                    # prnt('ab')
                     i_dt = get_timeData(x)
+                    prnt(f'ab:::i_dt:{i_dt}::content_dt:{content_dt}:::self_dt:{self_dt}:::max_commit_window:{max_commit_window}')
                     if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt < self_dt:
-                        # prnt('ac')
+                        prnt('ac')
                         if check_commit_data(x, block.data[x.id]): 
                             obj_idens.append(x.id)
                         else:
@@ -2242,7 +2242,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
                                 requested_validators.remove(obj.id)
     prnt('next stage')
     if retrieve_missing:
-        fetch_idens = [i for i in block.data if i not in obj_idens]
+        fetch_idens = [i for i in block.data if i not in obj_idens and is_id(i)]
         if fetch_idens:
             request_nodes = [block.CreatorNode_obj.id]
             for iden, data in block.validators.items():
