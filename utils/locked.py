@@ -1033,7 +1033,7 @@ def validate_block(block, creator_nodes=None, node_block_data={}, create_validat
                             prnt('not valid 1a')
                             validated = False
 
-                        elif any(i for i in block.data if i not in found_idens):
+                        elif any(i for i in block.data if i not in found_idens and is_id(i)):
 
                         # if mismatch:
                             fail_reason = 113
