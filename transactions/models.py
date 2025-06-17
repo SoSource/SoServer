@@ -353,20 +353,20 @@ class UserTransaction(models.Model):
                     self.validated = True
                     super(UserTransaction, self).save()
 
-                if not self.ReceiverBlock_obj.notes:
-                    self.ReceiverBlock_obj.notes = {}
-                self.ReceiverBlock_obj.notes['wallet_total'] = {'dt':dt_to_string(now_utc()),'value':self.ReceiverWallet_obj.tally_tokens()}
-                super(Block, self.ReceiverBlock_obj).save()
+                # if not self.ReceiverBlock_obj.notes:
+                #     self.ReceiverBlock_obj.notes = {}
+                # self.ReceiverBlock_obj.notes['wallet_total'] = {'dt':dt_to_string(now_utc()),'value':self.ReceiverWallet_obj.tally_tokens()}
+                # super(Block, self.ReceiverBlock_obj).save()
                 receiverChain = self.ReceiverWallet_obj.get_chain()
                 if 'pending' in receiverChain.queuedData and self.id in receiverChain.queuedData['pending']:
                     del receiverChain.queuedData['pending'][self.id]
                     receiverChain.save()
 
                 if self.SenderWallet_obj:
-                    if not self.SenderBlock_obj.notes:
-                        self.SenderBlock_obj.notes = {}
-                    self.SenderBlock_obj.notes['wallet_total'] = {'dt':dt_to_string(now_utc()),'value':self.SenderWallet_obj.tally_tokens()}
-                    super(Block, self.SenderBlock_obj).save()
+                    # if not self.SenderBlock_obj.notes:
+                    #     self.SenderBlock_obj.notes = {}
+                    # self.SenderBlock_obj.notes['wallet_total'] = {'dt':dt_to_string(now_utc()),'value':self.SenderWallet_obj.tally_tokens()}
+                    # super(Block, self.SenderBlock_obj).save()
                     senderChain = self.SenderWallet_obj.get_chain()
                     if 'pending' in senderChain.queuedData and self.id in senderChain.queuedData['pending']:
                         del senderChain.queuedData['pending'][self.id]
