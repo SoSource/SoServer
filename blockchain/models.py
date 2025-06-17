@@ -2072,8 +2072,10 @@ class Blockchain(models.Model):
         prnt('create_dummy_block', now)
         if self.genesisType == 'Nodes':
             dt = round_time(dt=now, dir='up', amount='10mins') # node block is 10mins ahead of time to ensure the node list is already created when called upon
+            prnt('dt1',dt)
         else:
             dt = round_time(dt=now, dir='down', amount='10mins')
+            prnt('dt2',dt)
         dummy_block = Block(id=hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(dt)}), Blockchain_obj=self, blockchainId=self.id, blockchainType=self.genesisType, created=now, DateTime=dt)
         prnt('dummy_block:',dummy_block, dt)
         return dummy_block
