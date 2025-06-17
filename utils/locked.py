@@ -913,7 +913,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     return is_valid, False, validations
 
 def validate_block(block, creator_nodes=None, node_block_data={}, create_validator=True):
-    from utils.models import to_datetime, get_self_node, prntDebugn, get_model_prefix, sigData_to_hash, sort_dict,now_utc,prnt,dt_to_string
+    from utils.models import get_self_node, prntDebugn, sigData_to_hash, sort_dict,now_utc,prnt,dt_to_string
     prnt('---validate_block now_utc:', now_utc(),block)
     from blockchain.models import Validator, logEvent, NodeChain_genesisId, toBroadcast
     self_node = get_self_node()
@@ -949,17 +949,29 @@ def validate_block(block, creator_nodes=None, node_block_data={}, create_validat
         #         hard_pass = True # userTransactions must be block.Transaction_obj only
         #         fail_reason = 12
         if not hard_pass and block.Transaction_obj:
-            if to_datetime(block.Transaction_obj.created) != to_datetime(block.created):
-                prntDebugn(f'---------***********: block:{convert_to_dict(block)} --------Transaction_obj:{convert_to_dict(block.Transaction_obj)}')
-                logEvent(f'---------***********: block:{convert_to_dict(block)} --------Transaction_obj:{convert_to_dict(block.Transaction_obj)}')
-                hard_pass = True
-                fail_reason = 72
-            elif not block.Transaction_obj.SenderWallet_obj:
-                if 'BlockReward' in block.Transaction_obj.regarding and block.Transaction_obj.regarding['BlockReward'] == block.id and block.Transaction_obj.token_value == calculate_reward(block.created):
-                    transaction_type = 'reward'
+            carry_on = False
+            if 'BlockReward' in block.Transaction_obj.regarding:
+                if block.Transaction_obj.regarding['BlockReward'] == block.id and block.Transaction_obj.token_value == calculate_reward(block.created):
+                    hard_pass = False
+                    transaction_type = 'sender'
+                elif 'ReceiverBlock' in block.Transaction_obj.regarding and block.Transaction_obj.regarding['ReceiverBlock'] == block.id:
+                    hard_pass = False
+                    transaction_type = 'receiver'
                 else:
-                    fail_reason = 73
                     hard_pass = True
+                    fail_reason = 72
+
+                # if to_datetime(block.Transaction_obj.created) != to_datetime(block.created):
+                #     prntDebugn(f'---------***********: block:{convert_to_dict(block)} --------Transaction_obj:{convert_to_dict(block.Transaction_obj)}')
+                #     logEvent(f'---------***********: block:{convert_to_dict(block)} --------Transaction_obj:{convert_to_dict(block.Transaction_obj)}')
+                #     hard_pass = True
+                #     fail_reason = 72
+            elif not block.Transaction_obj.SenderWallet_obj:
+                # if 'BlockReward' in block.Transaction_obj.regarding and block.Transaction_obj.regarding['BlockReward'] == block.id and block.Transaction_obj.token_value == calculate_reward(block.created):
+                #     transaction_type = 'reward'
+                # else:
+                fail_reason = 73
+                hard_pass = True
             elif block.Transaction_obj.ReceiverWallet_obj == block.Blockchain_obj:
                 transaction_type = 'receiver'
             elif block.Transaction_obj.SenderWallet_obj == block.Blockchain_obj:
