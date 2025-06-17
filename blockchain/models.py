@@ -1588,6 +1588,7 @@ class Block(models.Model):
         if self.Blockchain_obj.queuedData:
             if now.minute >= 50 or self.Blockchain_obj.genesisId == NodeChain_genesisId:
                 if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)-1):
+                    prnt('check new block candidate',self.id, self.Blockchain_obj.id)
                     self.Blockchain_obj.new_block_candidate(self_node=self_node)
 
         # if previously validated Node block becomes invalid, all data past that block_dt must be rechecked
@@ -2078,7 +2079,7 @@ class Blockchain(models.Model):
         return dummy_block
 
     def new_block_candidate(self, self_node=None, dt=now_utc(), add_to_queue=True, updated_nodes=None):
-        prnt('-new_block_candidate')
+        prnt('-new_block_candidate', dt)
         # if node is repeadtedly failing to validate blocks while other nodes are successfully validating the same block, node should be removed from duties
         if self.queuedData != {} or self.genesisType == 'Nodes':
             last_block = self.get_last_block()
@@ -2478,7 +2479,9 @@ class Blockchain(models.Model):
             #     storedModels, not_found, not_valid = get_data(self.data, return_model=True, include_related=False)
             #     # for i in storedModels:
             #     #     if not added_dt or i.added < added_dt:
-            #     #         added_dt = i.added
+            #     #         added_dt = i.added  
+            # ~:self.id,chnSo1MzJSt4fcQgYYw,dt_to_string(transaction.created),2025-06-16T23:50:04.700Z,transaction.id,utraSois9pz3yrdeMaaoM28OQu
+            # ~:self.id,chnSo61bHg1watiEAKO,dt_to_string(reward.created),2025-06-16T23:50:07.188Z,reward.id,utraSo2LjgBk8Y1yyyIuGCYYSa
             #     for i in storedModels:
             #         # if i.added == added_dt:
             #         if check_commit_data(i, self.data[i.id]):
