@@ -72,56 +72,57 @@ class Wallet(models.Model):
         return Blockchain.objects.filter(id=self.blockchainId).first()
     
 
-    def tally_tokens(self):
+    def tally_tokens(self, full_recount=False):
         prnt('--tally_tokens wallet')
 
-        latest_block = Block.objects.filter(Blockchain_obj=self.get_chain(), validated=True).order_by('-index').first()
-        if latest_block:
-            latest_dt = string_to_dt(latest_block.notes['wallet_total']['dt'])
-            latest_value = float(latest_block.notes['wallet_total']['value'])
-            latest_transactions = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enacted=True, enact_dt__gt=latest_dt).order_by('enact_dt')
-            for transaction in latest_transactions:
-                if transaction.ReceiverWallet_obj == self:
-                    latest_value += float(transaction.token_value)
-                elif transaction.SenderWallet_obj == self:
-                    latest_value -= float(transaction.token_value)
-            if self.value != str(latest_value):
-                self.value = str(latest_value)
-                self.save()
-            return str(latest_value)
-        else:
+        if not full_recount:
+            latest_block = Block.objects.filter(Blockchain_obj=self.get_chain(), validated=True).order_by('-index').first()
+            if latest_block and 'wallet_total' in latest_block.notes:
+                latest_dt = string_to_dt(latest_block.notes['wallet_total']['dt'])
+                latest_value = float(latest_block.notes['wallet_total']['value'])
+                latest_transactions = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enacted=True, enact_dt__gt=latest_dt).order_by('enact_dt')
+                for transaction in latest_transactions:
+                    if transaction.ReceiverWallet_obj == self:
+                        latest_value += float(transaction.token_value)
+                    elif transaction.SenderWallet_obj == self:
+                        latest_value -= float(transaction.token_value)
+                if self.value != str(latest_value):
+                    self.value = str(latest_value)
+                    self.save()
+                return str(latest_value)
+        # else:
                 
-            target_value = 0
-            utrIdens = []
-            
-            # if history:
-            #     utrs = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enact_dt__lte=now_utc()).order_by('-enact_dt')[:history]
-            # else:
-            utrs = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enact_dt__lte=now_utc()).order_by('-enact_dt')
-            for utr in utrs:
-                if utr.ReceiverWallet_obj == self and utr.ReceiverBlock_obj and utr.ReceiverBlock_obj.validated:
-                    target_value = float(target_value) + float(utr.token_value)
-                elif utr.SenderWallet_obj == self and utr.SenderBlock_obj and utr.SenderBlock_obj.validated:
-                    target_value = float(target_value) - float(utr.token_value)
-            
-            # from blockchain.models import Block
-            # blocks = Block.objects.filter(Blockchain_obj=self, validated=True).order_by('index')
-            # for block in blocks:
-            #     idens = [key for key in block.data if key.startswith(get_model_prefix('UserTransaction'))]
-            #     utrIdens.append(idens[0])
-            # if utrIdens:
-            #     utrs = get_dynamic_model('UserTransaction', list=True, id__in=utrIdens)
-            #     for utr in utrs:
-            #         if not utr.enacted or utr.enact_dt and utr.enact_dt > now_utc():
-            #             pass
-            #         else:
-            #             if utr.ReceiverBlock_obj and utr.ReceiverBlock_obj.Blockchain_obj == self:
-            #                 target_value = float(target_value) + float(utr.token_value)
-            #             elif utr.SenderBlock_obj and utr.SenderBlock_obj.Blockchain_obj == self:
-            #                 target_value = float(target_value) - float(utr.token_value)
-            self.value = str(target_value)
-            self.save()
-            return self.value
+        target_value = 0
+        utrIdens = []
+        
+        # if history:
+        #     utrs = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enact_dt__lte=now_utc()).order_by('-enact_dt')[:history]
+        # else:
+        utrs = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enact_dt__lte=now_utc()).order_by('-enact_dt')
+        for utr in utrs:
+            if utr.ReceiverWallet_obj == self and utr.ReceiverBlock_obj and utr.ReceiverBlock_obj.validated:
+                target_value = float(target_value) + float(utr.token_value)
+            elif utr.SenderWallet_obj == self and utr.SenderBlock_obj and utr.SenderBlock_obj.validated:
+                target_value = float(target_value) - float(utr.token_value)
+        
+        # from blockchain.models import Block
+        # blocks = Block.objects.filter(Blockchain_obj=self, validated=True).order_by('index')
+        # for block in blocks:
+        #     idens = [key for key in block.data if key.startswith(get_model_prefix('UserTransaction'))]
+        #     utrIdens.append(idens[0])
+        # if utrIdens:
+        #     utrs = get_dynamic_model('UserTransaction', list=True, id__in=utrIdens)
+        #     for utr in utrs:
+        #         if not utr.enacted or utr.enact_dt and utr.enact_dt > now_utc():
+        #             pass
+        #         else:
+        #             if utr.ReceiverBlock_obj and utr.ReceiverBlock_obj.Blockchain_obj == self:
+        #                 target_value = float(target_value) + float(utr.token_value)
+        #             elif utr.SenderBlock_obj and utr.SenderBlock_obj.Blockchain_obj == self:
+        #                 target_value = float(target_value) - float(utr.token_value)
+        self.value = str(target_value)
+        self.save()
+        return self.value
             
 
     def save(self, share=False, *args, **kwargs):
