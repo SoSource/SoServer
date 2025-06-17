@@ -415,7 +415,7 @@ class DataPacket(models.Model):
         return f'DATAPACKET:{self.id} chain:{self.chainId}'
     
     class Meta:
-        ordering = ["-queued_dt","-created"]
+        ordering = ["-updated_on_node","-created"]
 
     def get_version_fields(self, version=None):
         if not version:
