@@ -2521,7 +2521,7 @@ class Blockchain(models.Model):
             reward = None
             if self.genesisType == 'Region':
                 from transactions.models import UserTransaction
-                reward = UserTransaction(ReceiverWallet_obj=self_node.User_obj.get_wallet(), regarding={'BlockReward':'coming'}, created=new_block.created)
+                reward = UserTransaction(ReceiverWallet_obj=self_node.User_obj.get_wallet(), regarding={'BlockReward':'coming'}, created=new_block.DateTime)
                 reward.save()
                 new_block.Transaction_obj = reward
             new_block.previous_hash = new_block.get_previous_hash()

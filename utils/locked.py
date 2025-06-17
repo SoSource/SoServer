@@ -2255,7 +2255,9 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
                 if not exists_in_worker('request_items', fetch_idens, queue):
                     # attempts += 1
                     queue.enqueue(request_items, fetch_idens, nodes=request_nodes, job_timeout=600, result_ttl=3600)
-                    return None
+                    if return_missing:
+                        return [], []
+                    return []
             else:
                 prnt('is valid path 444')
                 fetch_again = []
