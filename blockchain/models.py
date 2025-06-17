@@ -1924,14 +1924,19 @@ class Block(models.Model):
     
     def delete(self, superDel=False):
         if not is_locked(self) or superDel:
-            prnt('deleting block',self)
-            transaction = self.Transaction_obj
             try:
-                if transaction:
-                    transaction.delete(superDel=superDel, skip_block=self.id)
+                prnt('deleting block',self)
+                transaction = self.Transaction_obj
+                try:
+                    if transaction:
+                        transaction.delete(superDel=superDel, skip_block=self.id)
+                except Exception as e:
+                    prnt('f4276',str(e))
+                # for v in Validator.objects.filter(Block_obj=self):
+                dynamic_bulk_update('Validator', update_data={'Block_obj':None}, Block_obj=self)
+                super(Block, self).delete()
             except Exception as e:
-                prnt('f4276',str(e))
-            super(Block, self).delete()
+                prnt('del block error 98523', str(e), self.id)
     
 
 class Validator(models.Model):
@@ -3132,10 +3137,13 @@ class Tidy:
     def check_transactions(self, dt=now_utc()):
         prnt('check_transactions')
         from transactions.models import UserTransaction
-        transactions = UserTransaction.objects.exclude(validated=True).exclude(validated=False)
+        transactions = UserTransaction.objects.exclude(validated=True).exclude(validated=False).filter(created__lt=dt-datetime.timedelta(hours=2))
         for t in transactions:
             prnt('t1',t)
-            t.mark_valid()
+            if t.assess_validation():
+                t.mark_valid(skip_assess=True)
+            else:
+                t.is_not_valid(note='cleaned')
         transactions = UserTransaction.objects.filter(validated=True,enacted=False,enact_dt__lt=dt)
         for t in transactions:
             prnt('t2',t)
