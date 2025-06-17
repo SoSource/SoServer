@@ -77,18 +77,23 @@ class Wallet(models.Model):
 
         if not full_recount:
             latest_block = Block.objects.filter(Blockchain_obj=self.get_chain(), validated=True).order_by('-index').first()
+            prnt('latest_block',latest_block)
             if latest_block and 'wallet_total' in latest_block.notes:
                 latest_dt = string_to_dt(latest_block.notes['wallet_total']['dt'])
                 latest_value = float(latest_block.notes['wallet_total']['value'])
                 latest_transactions = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enacted=True, enact_dt__gt=latest_dt).order_by('enact_dt')
                 for transaction in latest_transactions:
+                    prnt('transaction',transaction, transaction.token_value)
                     if transaction.ReceiverWallet_obj == self:
+                        prnt('a1')
                         latest_value += float(transaction.token_value)
                     elif transaction.SenderWallet_obj == self:
+                        prnt('a2')
                         latest_value -= float(transaction.token_value)
                 if self.value != str(latest_value):
                     self.value = str(latest_value)
                     self.save()
+                prnt('latest_value',latest_value)
                 return str(latest_value)
         # else:
                 
@@ -100,9 +105,12 @@ class Wallet(models.Model):
         # else:
         utrs = UserTransaction.objects.filter(Q(ReceiverWallet_obj=self)|Q(SenderWallet_obj=self), validated=True, enact_dt__lte=now_utc()).order_by('-enact_dt')
         for utr in utrs:
+            prnt('utr',utr, utr.token_value)
             if utr.ReceiverWallet_obj == self and utr.ReceiverBlock_obj and utr.ReceiverBlock_obj.validated:
+                prnt('a')
                 target_value = float(target_value) + float(utr.token_value)
             elif utr.SenderWallet_obj == self and utr.SenderBlock_obj and utr.SenderBlock_obj.validated:
+                prnt('b')
                 target_value = float(target_value) - float(utr.token_value)
         
         # from blockchain.models import Block
@@ -120,6 +128,7 @@ class Wallet(models.Model):
         #                 target_value = float(target_value) + float(utr.token_value)
         #             elif utr.SenderBlock_obj and utr.SenderBlock_obj.Blockchain_obj == self:
         #                 target_value = float(target_value) - float(utr.token_value)
+        prnt('target_value',target_value)
         self.value = str(target_value)
         self.save()
         return self.value
