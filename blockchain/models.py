@@ -142,8 +142,8 @@ NodeChain_genesisId = 'Nodes'
 UserChains = 'User'
 EarthChain_genesisId = 'regSoIkpb6hxMSAEOQI'
 
-earth_test = hash_obj_id('Region', specific_data=sort_for_sign({'object_type':'Region','Name':'Earth','ParentRegion_obj':None,'modelType':'planet'}), len=14)
-prntn('earth_test',earth_test)
+# earth_test = hash_obj_id('Region', specific_data=sort_for_sign({'object_type':'Region','Name':'Earth','ParentRegion_obj':None,'modelType':'planet'}), len=14)
+# prntn('earth_test',earth_test)
 prnt('EarthChain_genesisId',EarthChain_genesisId)
 prnt()
 
