@@ -913,7 +913,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     return is_valid, False, validations
 
 def validate_block(block, creator_nodes=None, node_block_data={}, create_validator=True):
-    from utils.models import get_self_node, prntDebugn, sigData_to_hash, sort_dict,now_utc,prnt,dt_to_string
+    from utils.models import get_self_node, prntDebugn, sigData_to_hash, sort_dict,now_utc,prnt,dt_to_string,is_id
     prnt('---validate_block now_utc:', now_utc(),block)
     from blockchain.models import Validator, logEvent, NodeChain_genesisId, toBroadcast
     self_node = get_self_node()
@@ -1041,7 +1041,7 @@ def validate_block(block, creator_nodes=None, node_block_data={}, create_validat
                             validated = False
                             fail_reason = []
                             for iden, commit in block.data.items():
-                                if iden != 'meta' and iden not in found_idens:
+                                if iden != 'meta' and is_id(iden) and iden not in found_idens:
                                     validated = False
                                     fail_reason.append(iden)
                             if fail_reason:
