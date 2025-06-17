@@ -415,7 +415,7 @@ class DataPacket(models.Model):
         return f'DATAPACKET:{self.id} chain:{self.chainId}'
     
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-queued_dt","-created"]
 
     def get_version_fields(self, version=None):
         if not version:
@@ -598,7 +598,9 @@ class DataPacket(models.Model):
             allPacket = DataPacket.objects.filter(chainId='All').first()
             save_all = False
             if isinstance(obj, list):
+                prntDebug('islsit')
                 for i in obj:
+                    prntDebug(i)
                     if isinstance(i, models.Model):
                         if i.id not in allPacket.data:
                             allPacket.data[i.id] = sigData_to_hash(i)
@@ -608,8 +610,10 @@ class DataPacket(models.Model):
                             allPacket.data[i['id']] = sigData_to_hash(i)
                             save_all = True
                         else:
+                            prntDebug('el1')
                             for key, value in i.items():
                                 if key not in allPacket.data:
+                                    prntDebug('el2', key, value)
                                     allPacket.data[key] = value
                                     save_all = True
                     elif isinstance(i, str) and is_id(i):
@@ -617,6 +621,7 @@ class DataPacket(models.Model):
                             allPacket.data[i] = sigData_to_hash(get_dynamic_model(i, id=i))
                             save_all = True
             else:
+                prntDebug('isNOTlsit')
                 if isinstance(obj, models.Model):
                     if obj.id not in allPacket.data:
                         allPacket.data[obj.id] = sigData_to_hash(obj)
@@ -634,9 +639,11 @@ class DataPacket(models.Model):
                     if obj not in allPacket.data:
                         allPacket.data[obj] = sigData_to_hash(get_dynamic_model(i, id=i))
                         save_all = True
+            prntDebug('save_all',save_all)
             if save_all:
                 allPacket.save()
                 add_worker_job(allPacket)
+            prntDebug('allPacket data',allPacket.data)
             prnt('donw send to all')
 
         if not self.data:
@@ -725,6 +732,7 @@ class DataPacket(models.Model):
                         prnt('content:',self.data)
                         add_worker_job(self)
                         self.save()
+                    prnt('stage4', to_all)
                     if to_all:
                         send_to_all(to_all)
                     return True

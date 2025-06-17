@@ -2424,10 +2424,14 @@ def tester_queue_view(request):
         start_time = now_utc()
         prnt('HELLLOO!!')
 
-        ut = UserTransaction.objects.filter(id='utraSoMZHxoRLpYWkkSwoMIoQq').first()
-        prnt('ut',ut)
-        if ut:
-            ut.ReceiverWallet_obj.tally_tokens()
+
+        all = ['nod','reg', 'usr', 'upk','uver','udat']
+        for i in ['regSoYZ4VJcKXEO42Cq','valSo5aYx3POjdYu8qi']:
+            prnt(i)
+            if i.startswith(tuple(all)):
+                prnt('yes')
+            else:
+                prnt('no')
 
         # import importlib
         # from django.conf import settings
