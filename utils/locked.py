@@ -2208,7 +2208,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
                 if x.id in block.data:
                     # prnt('az')
                     i_dt = get_timeData(x)
-                    if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt < self_dt:
+                    if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt < self_dt + datetime.timedelta(seconds=20):
                         # prnt('ax')
                         if check_commit_data(x, block.data[x.id]):
                             obj_idens.append(x.id)
@@ -2223,7 +2223,6 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
         not_found.clear()
         not_valid.clear()
     prnt('total_found',total_found,'requested_idens',requested_idens,'obj_idens',len(obj_idens),'requested_validators',requested_validators)
-
     if requested_validators:
         vals = Validator.objects.filter(data__has_any_keys=requested_validators, is_valid=True).order_by('-created')
         if vals:
@@ -2247,7 +2246,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
             request_nodes = [block.CreatorNode_obj.id]
             for iden, data in block.validators.items():
                 # prnt(iden, data)
-                request_nodes.append(json.loads(data)['CreatorNode_obj'])
+                request_nodes.append(data['CreatorNode_obj'])
             prnt('is valid path 11 request_nodes',request_nodes)
             logEvent(f'requesting:{fetch_idens}', func='is_valid_operations')
             if downstream_worker:
