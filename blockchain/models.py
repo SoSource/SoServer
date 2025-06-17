@@ -2456,8 +2456,8 @@ class Blockchain(models.Model):
             return new_block
         elif transaction:
             prnt('has transaction')
-            block_iden = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
-            prnt('self.id',self.id,'dt_to_string(transaction.created)',dt_to_string(transaction.created),'transaction.id',transaction.id)
+            block_iden = hash_obj_id('Block', specific_data={'object_type':'Block','DateTime':dt_to_string(transaction.created), 'regarding':transaction.id})
+            prnt('ReceiverBlock_id111 self.id',self.id,'dt_to_string(transaction.created)',dt_to_string(transaction.created),'transaction.id',transaction.id)
             prnt('block_iden',block_iden)
             new_block = Block.objects.filter(id=block_iden).first()
             if new_block:
@@ -2472,32 +2472,9 @@ class Blockchain(models.Model):
             new_block.index = chain_length + 1
             new_block.CreatorNode_obj = self_node
             new_block.previous_hash = new_block.get_previous_hash()
-            # if 'meta' in self.queuedData:
-            #     del self.queuedData['meta']
-            # if self.data:
-            #     obj_list = []
-            #     # added_dt = None
-            #     transfer_data = {}
-            #     storedModels, not_found, not_valid = get_data(self.data, return_model=True, include_related=False)
-            #     # for i in storedModels:
-            #     #     if not added_dt or i.added < added_dt:
-            #     #         added_dt = i.added  
             # ~:self.id,chnSo1MzJSt4fcQgYYw,dt_to_string(transaction.created),2025-06-16T23:50:04.700Z,transaction.id,utraSois9pz3yrdeMaaoM28OQu
             # ~:self.id,chnSo61bHg1watiEAKO,dt_to_string(reward.created),2025-06-16T23:50:07.188Z,reward.id,utraSo2LjgBk8Y1yyyIuGCYYSa
-            #     for i in storedModels:
-            #         # if i.added == added_dt:
-            #         if check_commit_data(i, self.data[i.id]):
-            #             transfer_data[i.id] = self.data[i.id]
-            #             obj_list.append(i.id)
-            #     already_committed = Block.objects.filter(Blockchain_obj=self, data__has_any_keys=obj_list).exclude(validated=False)
-            #     for block in already_committed:
-            #         # remove items contained in previous valid blocks
-            #         transfer_data = {k: v for k, v in transfer_data.items() if k not in block.data.keys()}
-            #     if not transfer_data:
-            #         return None
-            #     self.data = {k: v for k, v in self.data.items() if k not in transfer_data.keys()}
-            # if 'pending' not in self.queuedData:
-            #     self.queuedData['pending'] = {}
+
             if self.genesisId == transaction.ReceiverWallet_obj.id:
                 new_block.data['value'] = {'before':transaction.ReceiverWallet_obj.value,'value':transaction.token_value}
             elif transaction.SenderWallet_obj and self.genesisId == transaction.SenderWallet_obj.id:
@@ -2505,8 +2482,6 @@ class Blockchain(models.Model):
             else:
                 # new_block.delete()
                 return None
-
-            
 
             new_block.data[transaction.id] = get_commit_data(transaction)
             new_block.Transaction_obj = transaction
@@ -2557,15 +2532,15 @@ class Blockchain(models.Model):
                     prnt('-no transfre data')
                     logEvent(f'No Block Data: {self.genesisName} - err:{err}', log_type='Tasks')
                     return None, None
-                
+
                 self.queuedData = {k: v for k, v in self.queuedData.items() if k not in new_block.data.keys()}
             new_block.publicKey = operatorData['pubKey']
             new_block = new_block.save() # save before creating hash
             if new_block.Transaction_obj:
                 from utils.locked import calculate_reward
                 reward.token_value = calculate_reward(new_block.created)
-                receiverBlock_id = hash_obj_id('Block', specific_data={'object_type':'Block','blockchainId':self.id,'DateTime':dt_to_string(reward.created), 'regarding':reward.id})
-                prnt('self.id',self.id,'dt_to_string(reward.created)',dt_to_string(reward.created),'reward.id',reward.id)
+                receiverBlock_id = hash_obj_id('Block', specific_data={'object_type':'Block','DateTime':dt_to_string(reward.created), 'regarding':reward.id})
+                prnt('ReceiverBlock_id222 self.id',self.id,'dt_to_string(reward.created)',dt_to_string(reward.created),'reward.id',reward.id)
                 prnt('block_iden',receiverBlock_id)
                 reward.regarding = {'BlockReward':new_block.id,'ReceiverBlock':receiverBlock_id}
                 reward.SenderBlock_obj = new_block
