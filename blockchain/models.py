@@ -3129,6 +3129,18 @@ class Tidy:
             if save_log:
                 log.save()
 
+    def check_transactions(self, dt=now_utc()):
+        prnt('check_transactions')
+        from transactions.models import UserTransaction
+        transactions = UserTransaction.objects.exclude(validated=True,validated=False)
+        for t in transactions:
+            prnt('t1',t)
+            t.mark_valid()
+        transactions = UserTransaction.objects.filter(validated=True,enacted=False,enact_dt__lt=dt)
+        for t in transactions:
+            prnt('t2',t)
+            t.enact_transaction()
+
     def prune_validator_objs(self, dt=now_utc()):
         # blocks are removed when invalid, validators for those should be removed after a time
         pass
