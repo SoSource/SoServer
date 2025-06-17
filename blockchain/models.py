@@ -1588,7 +1588,7 @@ class Block(models.Model):
         if self.Blockchain_obj.queuedData:
             if now.minute >= 50 or self.Blockchain_obj.genesisId == NodeChain_genesisId:
                 if self.Blockchain_obj.last_block_datetime < now - datetime.timedelta(minutes=block_time_delay(self.Blockchain_obj)-1):
-                    prnt('check new block candidate',self.id, self.Blockchain_obj.id)
+                    prnt('check new block candidate',now,self.id, self.Blockchain_obj.id)
                     self.Blockchain_obj.new_block_candidate(self_node=self_node)
 
         # if previously validated Node block becomes invalid, all data past that block_dt must be rechecked
