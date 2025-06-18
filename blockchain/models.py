@@ -2232,9 +2232,14 @@ class Blockchain(models.Model):
                 broadcast_list = get_broadcast_list(new_block)
                 new_block.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, target_node_id=None, skip_self=False)
 
+                run_at = now_utc() + datetime.timedelta(minutes=5)
+                prnt('add dp_broadcast to scheduler',run_at)
+                django_rq.get_scheduler('main').enqueue_at(run_at, check_validation_consensus, new_block, timeout=300)
+
                 return new_block
             elif self.queuedData:
                 self.queuedData = {}
+                self.data_added_datetime = now_utc()
                 self.save()
 
             
@@ -4434,16 +4439,14 @@ def tasker(dt, test=False):
             prnt('block_assigned',block_assigned)
             if block_assigned:
                 result['new_block_candidate'].append(nodeChain.genesisName)
-                run_at = now_utc() + datetime.timedelta(minutes=5)
-                prnt('add dp_broadcast to scheduler',run_at)
-                django_rq.get_scheduler('main').enqueue_at(run_at, check_validation_consensus, block_assigned, timeout=300)
+                result['new_block_candidate'].append(block_assigned.id)
         elif dt.minute > 30 and dt.minute < 40:
             nodePacket = DataPacket.objects.filter(Node_obj=self_node, func='share', chainId=NodeChain_genesisId).first() # broadcast nodeReviews and/or node updates
             if nodePacket:
                 low_queue.enqueue(nodePacket.broadcast, job_timeout=30, result_ttl=3600)
 
 
-        for block in Block.objects.filter(validated__isnull=True).filter(Q(data__meta__isnull=True) | ~Q(data__meta__has_key='is_reward')).exclude(Blockchain_obj=None): # exclude .data['meta']['is_reward']
+        for block in Block.objects.filter(validated__isnull=True).exclude(id__in=result['new_block_candidate']).filter(Q(data__meta__isnull=True) | ~Q(data__meta__has_key='is_reward')).exclude(Blockchain_obj=None): # exclude .data['meta']['is_reward']
             result['unvalidated_blocks'].append(block.Blockchain_obj.genesisName)
             # queue = django_rq.get_queue('low')
             low_queue.enqueue(check_validation_consensus, block, job_timeout=300, result_ttl=3600)
@@ -4457,6 +4460,7 @@ def tasker(dt, test=False):
                 prntDebug('block_assigned0',block_assigned)
                 if block_assigned:
                     result['new_block_candidate'].append(sonet_chain.genesisName)
+                    result['new_block_candidate'].append(block_assigned.id)
             for chain in mandatoryChains:
                 if chain != NodeChain_genesisId and  chain != 'Sonet':
                     mChains = None
@@ -4471,6 +4475,7 @@ def tasker(dt, test=False):
                             prntDebug('block_assigned1',block_assigned)
                             if block_assigned:
                                 result['new_block_candidate'].append(mChain.genesisName)
+                                result['new_block_candidate'].append(block_assigned.id)
             try:
                 chains = Blockchain.objects.filter(genesisId__in=self_node.supportedChains_array, genesisType__in=selectableChains, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay()-10)).exclude(queuedData={}).order_by('?')
                 prnt('chains222',chains)
@@ -4479,6 +4484,7 @@ def tasker(dt, test=False):
                     prntDebug('block_assigned123',block_assigned)
                     if block_assigned:
                         result['new_block_candidate'].append(c.genesisName)
+                        result['new_block_candidate'].append(block_assigned.id)
             except Exception as e:
                 prnt('fail0398612',str(e))
 
