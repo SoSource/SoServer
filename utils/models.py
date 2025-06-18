@@ -1404,6 +1404,10 @@ def get_chainName(obj):
     return None
 
 def seperate_by_type(obj_list, include_only={}, exclude={}):
+    prntDebug('seperate_by_type')
+    prntDebug('obj_list',obj_list)
+    prntDebug('include_only',include_only)
+    prntDebug('exclude',exclude)
     # from blockchain.models import data_sort_priority
     obj_types = {}
     models = {}
