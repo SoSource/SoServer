@@ -4454,7 +4454,7 @@ def tasker(dt, test=False):
         # every 60 mins create block if data
         if dt.minute >= 50 or test==True:
             block_assigned = False
-            sonet_chain = Blockchain.objects.filter(genesisName='Sonet', last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay('Sonet')-10)).exclude(queuedData={})
+            sonet_chain = Blockchain.objects.filter(genesisName='Sonet', last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay('Sonet')-10)).exclude(queuedData={}).first()
             if sonet_chain:
                 block_assigned = sonet_chain.new_block_candidate(self_node=self_node, dt=dt)
                 prntDebug('block_assigned0',block_assigned)
