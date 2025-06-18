@@ -1634,12 +1634,18 @@ class Block(models.Model):
                 self.nodeBlockId = Block.objects.filter(Blockchain_obj__genesisId=NodeChain_genesisId, DateTime__lte=self.DateTime, validated=True).order_by('-index', 'created').first().id
 
             if not proceed:
-                obj_idens, problem_idens = check_block_contents(self, retrieve_missing=True, return_missing=True, downstream_worker=downstream_worker)
+                obj_idens, problem_idens = check_block_contents(self, retrieve_missing=True, return_missing=True, downstream_worker=False)
                 proceed = True
 
-                for model_name, iden_list in seperate_by_type(obj_idens, include_only={'has_field':['Block_obj']}).items():
-                    prnt('model_name',model_name,'iden_list',iden_list)
-                    dynamic_bulk_update(model_name, update_data={'Block_obj':self}, id__in=iden_list)
+                if self.Blockchain_obj.genesisType == 'Sonet':
+                    for model_name, iden_list in seperate_by_type(obj_idens, include_only={'has_field':['Block_obj']}).items():
+                        prnt('model_name',model_name,'iden_list',iden_list)
+                        dynamic_bulk_update(model_name, update_data={'Block_obj':self}, id__in=iden_list)
+                else:
+                    for model_name, iden_list in seperate_by_type(obj_idens, include_only={'has_field':['Block_obj']}, exclude={'fields':{'secondChainType':'Sonet'}}).items():
+                        prnt('model_name',model_name,'iden_list',iden_list)
+                        dynamic_bulk_update(model_name, update_data={'Block_obj':self}, id__in=iden_list)
+
                 from posts.models import Post, update_post
                 node_block_data = {}
                 iden_list = obj_idens.copy()
@@ -2982,7 +2988,7 @@ class Tidy:
                 uncommitted_posts = list(model.objects.filter(blockId=None, created__lte=dt - datetime.timedelta(hours=hours)).iterator(chunk_size=500))
             elif model_name == 'Update':
                 uncommitted_posts = list(model.objects.filter(Block_obj=None, validated=True, created__lte=dt - datetime.timedelta(hours=hours)).iterator(chunk_size=500))
-            else:
+            elif has_field(model, 'Block_obj'):
                 uncommitted_posts = list(model.objects.filter(Block_obj=None, created__lte=dt - datetime.timedelta(hours=hours)).iterator(chunk_size=500))
             runs = 0
             exclude_idens = set()
@@ -2995,7 +3001,11 @@ class Tidy:
                 has_block = {}
                 add_to_queue = {}
                 run_posts = []
+                earliest_dt = dt
                 for p in uncommitted_posts:
+                    p_dt = get_timeData(p)
+                    if not earliest_dt or p_dt < earliest_dt:
+                        earliest_dt = p_dt
                     exclude_idens.add(p.id)
                     run_posts.append(p)
                     if p.object_type == 'Post':
@@ -3017,13 +3027,18 @@ class Tidy:
                                 prntDebug('rmv1', key)
                             if not obj_idens:
                                 break
+
                 if obj_idens:
-                    existing_blocks = Block.objects.filter(data__has_any_keys=obj_idens).exclude(validated=False)
+                    existing_blocks = Block.objects.filter(DateTime__gte=earliest_dt).filter(data__has_any_keys=obj_idens).exclude(validated=False).order_by('created')
                     for b in existing_blocks:
                         for key in obj_idens:
                             if key in b.data:
-                                obj_idens.remove(key)
-                                has_block[key] = b
+                                if key in obj_idens:
+                                    obj_idens.remove(key)
+                                if key not in has_block:
+                                    has_block[key] = b
+                                elif not has_block[key].validated:
+                                    has_block[key] = b
                                 prntDebug('rmv2', key)
                             if not obj_idens:
                                 break
@@ -3046,11 +3061,11 @@ class Tidy:
                             p.save()
                             pointer = p.get_pointer()
                             if has_field(pointer,'Block_obj') and not pointer.Block_obj:
-                                if has_block[p.pointerId][p.pointerId] == get_commit_data(pointer):
+                                if has_block[p.pointerId].validated and has_block[p.pointerId][p.pointerId] == get_commit_data(pointer):
                                     pointer.Block_obj = has_block[p.pointerId]
                                     super(get_model(pointer.object_type), pointer).save()
                         elif has_field(p, 'Block_obj') and not p.Block_obj:
-                            if has_block[p.id][p.id] == get_commit_data(p):
+                            if has_block[p.id].validated and has_block[p.id][p.id] == get_commit_data(p):
                                 p.Block_obj = has_block[p.id]
                                 super(get_model(p.object_type), p).save()
 
@@ -3087,9 +3102,9 @@ class Tidy:
                                 if blockchain not in add_to_queue:
                                     add_to_queue[blockchain] = []
                                 add_to_queue[blockchain].append(pointer)
-                            elif has_field(p, 'blockId') and has_field(pointer, 'proposed_modification') and not pointer.proposed_modification:
-                                p.blockId = 'N/A'
-                                p.save()
+                            # elif has_field(p, 'blockId') and has_field(pointer, 'proposed_modification') and not pointer.proposed_modification:
+                            #     p.blockId = 'N/A'
+                            #     p.save()
                     # elif p.Update_obj and p.Update_obj.id in obj_idens:
                     #     # prnt('opt3')
                     #     blockchain, obj, secondChain = find_or_create_chain_from_object(p.Update_obj)
@@ -3114,6 +3129,7 @@ class Tidy:
         run_me('Update')
         run_me('Region')
         run_me('Plugin')
+        run_me('User')
 
     def get_missing_items(self, dt=now_utc()):
         self_node = get_self_node()
@@ -4430,13 +4446,19 @@ def tasker(dt, test=False):
         # every 60 mins create block if data
         if dt.minute >= 50 or test==True:
             block_assigned = False
+            sonet_chain = Blockchain.objects.filter(genesisName='Sonet', last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(chain)-10)).exclude(queuedData={})
+            if sonet_chain:
+                block_assigned = sonet_chain.new_block_candidate(self_node=self_node, dt=dt)
+                prntDebug('block_assigned0',block_assigned)
+                if block_assigned:
+                    result['new_block_candidate'].append(sonet_chain.genesisName)
             for chain in mandatoryChains:
-                if chain != NodeChain_genesisId:
+                if chain != NodeChain_genesisId and  chain != 'Sonet':
                     mChains = None
                     if is_id(chain):
-                        mChains = Blockchain.objects.filter(genesisId=chain, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(chain)-10)).exclude(queuedData={})
+                        mChains = Blockchain.objects.filter(genesisId=chain, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(chain)-10)).exclude(queuedData={}).order_by('?')
                     else:
-                        mChains = Blockchain.objects.filter(genesisType=chain, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(chain)-10)).exclude(queuedData={})
+                        mChains = Blockchain.objects.filter(genesisType=chain, last_block_datetime__lte=dt - datetime.timedelta(minutes=block_time_delay(chain)-10)).exclude(queuedData={}).order_by('?')
                     prnt('mandaroryChain',chain,'mChains',mChains)
                     if mChains:
                         for mChain in mChains:

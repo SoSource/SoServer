@@ -232,12 +232,12 @@ def prntDebug(*args):
         # print(f'p3:{msg}')
         logger.info(f'~:{msg}')
         # prnt('*',','.join(f"{i}" for i in args))
-    else:
-        msg = '#' + ','.join(str(i) for i in args)
-        # msg = '*,'.join(f"{i}" for i in args)
-        # print(f'p3:{msg}')
-        logger.info(f'~:{msg}')
-        prnt('not debug above:')
+    # else:
+    #     msg = '#' + ','.join(str(i) for i in args)
+    #     # msg = '*,'.join(f"{i}" for i in args)
+    #     # print(f'p3:{msg}')
+    #     logger.info(f'~:{msg}')
+    #     prnt('not debug above:')
 
 def prntn(*args):
     # logger.info("This is a debug message")
@@ -1444,6 +1444,18 @@ def seperate_by_type(obj_list, include_only={}, exclude={}):
                         for method in include_only['has_method']:
                             if not has_method(model, method):
                                 skip = True
+                if not skip and exclude:
+                    if 'fields' in exclude:
+                        if isinstance(exclude['fields'], dict):
+                            for field_name, value in exclude['fields'].items():
+                                if has_field(model, field_name) and getattr(model, field_name) == value:
+                                    skip = True
+                                    break
+                        if isinstance(exclude['fields'], list):
+                            for field in exclude['fields']:
+                                if has_field(model, field):
+                                    skip = True
+                                    break
                 if skip:
                     skipping_models.append(objType)
                 if objType and value and not skip:

@@ -1260,7 +1260,7 @@ class ValidPostManager(models.Manager):
 class Post(models.Model):
     object_type = "Post"
     id = models.CharField(max_length=50, default="0", primary_key=True)
-    created = models.DateTimeField(auto_now=False, auto_now_add=True, blank=True, null=True)
+    created = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     updated_on_node = models.DateTimeField(auto_now=True, auto_now_add=False, blank=True, null=True)
     validated = models.BooleanField(default=False, null=True, blank=True) # is validated by validator nodes
     blockId = models.CharField(max_length=50, default=None, blank=True, null=True)
@@ -1552,6 +1552,7 @@ class Post(models.Model):
         if self.id == '0':
             self.id = hash_obj_id(self)
             pointer, self = self.get_pointer(return_self=True, do_save=False)
+            self.created = get_timeData(pointer)
             if has_field(pointer, 'Government_obj'):
                 self.Government_obj = pointer.Government_obj
                 if pointer.Government_obj:

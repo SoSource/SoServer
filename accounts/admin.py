@@ -394,6 +394,7 @@ class BlockchainAdmin(AutoForeignKeyAdmin):
     list_display_links = []
     list_editable = ['genesisName']
     list_filter = []
+    ordering = ['-updated_on_node', 'chain_length']
     search_fields = AutoForeignKeyAdmin.search_fields + ['genesisName', 'genesisId','id']
     class Meta:
         model = Blockchain
