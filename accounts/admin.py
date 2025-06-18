@@ -384,7 +384,7 @@ class BlockAdmin(AutoForeignKeyAdmin):
     list_display_links = []
     list_editable = []
     list_filter = []
-    ordering = ['-DateTime', '-index']
+    ordering = ['-DateTime', '-created', '-index']
     search_fields = AutoForeignKeyAdmin.search_fields + ['blockchainType','id']
     class Meta:
         model = Block

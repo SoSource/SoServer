@@ -643,10 +643,10 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     elif backcheck:
         prev_block = None
     else:
-        prev_block = block.get_previous_block(is_validated=True, return_chain=False)
+        # prev_block = block.get_previous_block(is_validated=True, return_chain=False)
+        prev_block = Block.objects.filter(blockchainId=block.blockchainId, hash=block.previous_hash).exclude(validated=False).order_by('created').first()
     prntDebug('prev_block',prev_block)
-
-    if prev_block and prev_block.hash != block.previous_hash or sigData_to_hash(block) != block.hash:
+    if prev_block and prev_block.index != block.index-1 or sigData_to_hash(block) != block.hash:
         prnt(f'prev_block.hash:{prev_block.hash if prev_block else "0"}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}')
         carry_on = False
         logEvent(f'prev_block.hash:{prev_block.hash if prev_block else "0"}, block.previous_hash:{block.previous_hash}, sigData_to_hash(block):{sigData_to_hash(block)}, block.hash:{block.hash}, handle_discrepancies:{handle_discrepancies}, prev_block.index:{prev_block.index if prev_block else "x"}, block.index:{block.index}')
@@ -682,10 +682,17 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
             block.is_not_valid(note='did_not_pass_discrepenacies2')
             prntDebug('p0 did_not_pass_discrepenacies',block.id)
             return False, True, []
+    
+    if prev_block and prev_block.object_type != 'Blockchain' and prev_block.validated == None:
+        # if prev_block.created < now_utc() - datetime.timedelta()
+        # block.is_not_valid(note='wrong_index')
+        prntDebug('p1.2 waiting on prev_block',prev_block.id,'block.id',block.id)
+        return None, False, []
     if prev_block and prev_block.object_type != 'Blockchain' and prev_block.index != block.index - 1:
         block.is_not_valid(note='wrong_index')
         prntDebug('p1 wrong_index',block.id)
         return False, True, []
+    
     if handle_discrepancies:
         competing_index = Block.objects.filter(Blockchain_obj=block.Blockchain_obj, index=block.index, validated=True)
         if competing_index:
