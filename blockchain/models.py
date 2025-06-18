@@ -1212,9 +1212,9 @@ class Block(models.Model):
     
     def is_latest(self, is_validated=True):
         if is_validated:
-            next_block = Block.objects.filter(blockchainId=self.blockchainId, index__gt=self.index, validated=True).first()
+            next_block = Block.objects.filter(blockchainId=self.blockchainId, index=self.index+1, validated=True).first()
         else:
-            next_block = Block.objects.filter(blockchainId=self.blockchainId, index__gt=self.index).first()
+            next_block = Block.objects.filter(blockchainId=self.blockchainId, index=self.index+1).first()
         return True if not next_block else False
 
     def get_assigned_nodes(self, node_block_data={}):
@@ -1625,9 +1625,9 @@ class Block(models.Model):
                 if 'All' in self.data:
                     for i in self.data['All']:
                         if i in self.Blockchain_obj.queuedData:
-                            del self.Blockchain_obj.queuedData[i]
+                            del self.Blockchain_obj.queuedData[i] # doesnt seem to be working
                 proceed = True
-            elif self_node.id in self.validators and json.loads(self.validators[self_node.id])['is_valid']: # self_node created validator, doesnt need to process contents again
+            elif self_node.id in self.validators and self.validators[self_node.id]['is_valid']: # self_node created validator, doesnt need to process contents again
                 proceed = True
 
             if self.Blockchain_obj.genesisId != NodeChain_genesisId:
@@ -2183,6 +2183,7 @@ class Blockchain(models.Model):
 
     def commit_to_chain(self, dummy_block=None, dt=None, updated_nodes=None, validator_nodes=[], testing=False):
         prnt('--commit_to_chain', self.genesisType)
+        self.refresh_from_db()
         
         if self.genesisType == 'Nodes':
             # check if any nodes have been updated
@@ -2232,6 +2233,10 @@ class Blockchain(models.Model):
                 new_block.broadcast(broadcast_list=broadcast_list, validator_list=validator_nodes, validators_only=True, target_node_id=None, skip_self=False)
 
                 return new_block
+            elif self.queuedData:
+                self.queuedData = {}
+                self.save()
+
             
         elif self.queuedData:
             if not dummy_block:
