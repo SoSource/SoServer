@@ -1638,6 +1638,7 @@ class Block(models.Model):
                 proceed = True
 
                 for model_name, iden_list in seperate_by_type(obj_idens, include_only={'has_field':['Block_obj']}).items():
+                    prnt('model_name',model_name,'iden_list',iden_list)
                     dynamic_bulk_update(model_name, update_data={'Block_obj':self}, id__in=iden_list)
                 from posts.models import Post, update_post
                 node_block_data = {}
@@ -1687,8 +1688,6 @@ class Block(models.Model):
                 for chunk in chunk_list(iden_list, 500):
                     Post.all_objects.filter(pointerId__in=chunk, blockId=None).update(blockId=self.id)
                         
-                # for model_name, iden_list in seperate_by_type(obj_idens, include_only={'has_field':['Block_obj']}).items():
-                #     dynamic_bulk_update(model_name, update_data={'Block_obj':self}, id__in=iden_list)
                 for i in obj_idens:
                     if i in self.Blockchain_obj.queuedData:
                         del self.Blockchain_obj.queuedData[i]

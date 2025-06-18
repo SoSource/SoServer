@@ -485,6 +485,7 @@ def update_post(obj=None, p=None, save_p=True, update=None):
 class Region(ModifiableModel):
     object_type = "Region"
     blockchainType = 'Region'
+    secondChainType = 'Sonet'
     latestModel = 1
     modelVersion = models.IntegerField(default=latestModel)
     ParentRegion_obj = models.ForeignKey('posts.Region', blank=True, null=True, on_delete=models.SET_NULL)
@@ -510,7 +511,7 @@ class Region(ModifiableModel):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'Region', 'is_modifiable': True, 'blockchainType': 'Region', 'id': '0', 'created': None, 'func': '', 'creatorNodeId': '', 'validatorNodeId': '', 'Validator_obj': None, 'blockchainId': '', 'Block_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'last_updated': None, 'proposed_modification': None, 'modelVersion': 1, 'ParentRegion_obj': None, 'nameType': 'State', 'modelType': 'provState', 'Name': '', 'AbbrName': None, 'FullName': None, 'LogoLinks': None, 'timezone': 'US/Eastern', 'data': None, 'menuItem_array': None, 'Chamber_array': None, 'Office_array': None, 'Wiki': None, 'is_supported': False}
+            return {'object_type': 'Region', 'is_modifiable': True, 'blockchainType': 'Region', 'secondChainType': 'Sonet', 'id': '0', 'created': None, 'func': '', 'creatorNodeId': '', 'validatorNodeId': '', 'Validator_obj': None, 'blockchainId': '', 'Block_obj': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'last_updated': None, 'proposed_modification': None, 'modelVersion': 1, 'ParentRegion_obj': None, 'nameType': 'State', 'modelType': 'provState', 'Name': '', 'AbbrName': None, 'FullName': None, 'LogoLinks': None, 'timezone': 'US/Eastern', 'data': None, 'menuItem_array': None, 'Chamber_array': None, 'Office_array': None, 'Wiki': None, 'is_supported': False}
 
     def get_hash_to_id(self, version=None):
         if not version:

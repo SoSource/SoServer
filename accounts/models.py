@@ -83,7 +83,8 @@ class User(AbstractUser):
     email = models.EmailField(blank=True, null=True)
     timezone = models.CharField(max_length=20, default="US/Eastern", null=True, blank=True)
 
-    UserData_obj = models.ForeignKey('accounts.UserData', blank=True, null=True, on_delete=models.CASCADE)
+    UserData_obj = models.ForeignKey('accounts.UserData', blank=True, null=True, on_delete=models.SET_NULL)
+    Block_obj = models.ForeignKey('blockchain.Block', blank=True, null=True, on_delete=models.PROTECT)
     # region_set_date = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
 
     # localities = models.TextField(default='[]', blank=True, null=True)
@@ -106,7 +107,7 @@ class User(AbstractUser):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'User', 'is_modifiable': True, 'blockchainType': 'User', 'secondChainType': 'Sonet', 'password': '', 'last_login': None, 'is_superuser': False, 'username': '', 'is_staff': False, 'is_active': True, 'date_joined': None, 'id': '0', 'modelVersion': 1, 'created': None, 'last_updated': None, 'nodeCreatorId': '0', 'signature': '', 'publicKey': '', 'validation_error': False, 'display_name': '', 'must_rename': None, 'first_name': None, 'last_name': None, 'email': None, 'timezone': 'US/Eastern', 'UserData_obj': None, 'receiveNotifications': True, 'isVerified': False, 'groups': [], 'user_permissions': [], 'iden_length':11}
+            return {'object_type': 'User', 'is_modifiable': True, 'blockchainType': 'User', 'secondChainType': 'Sonet', 'iden_length': 11, 'password': '', 'last_login': None, 'is_superuser': False, 'username': '', 'is_staff': False, 'is_active': True, 'date_joined': None, 'id': '0', 'modelVersion': 1, 'created': None, 'last_updated': None, 'nodeCreatorId': '0', 'signature': '', 'publicKey': '', 'validation_error': False, 'display_name': '', 'must_rename': None, 'first_name': None, 'last_name': None, 'email': None, 'timezone': 'US/Eastern', 'UserData_obj': None, 'Block_obj': None, 'receiveNotifications': True, 'isVerified': False, 'groups': [], 'user_permissions': []}
 
     def commit_data(self, version=None):
         if not version:
@@ -439,7 +440,7 @@ class UserData(models.Model):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return ['id']
+            return ['userId']
             
     def save(self, *args, **kwargs):
         if self.id == '0':
@@ -492,7 +493,7 @@ class UserPubKey(models.Model):
     signature = models.CharField(max_length=200, default="", blank=True, null=True)
     validation_error = models.BooleanField(default=False, blank=True, null=True)
     blockchainId = models.CharField(max_length=50, default="", blank=True)
-    Block_obj = models.ForeignKey('blockchain.Block', blank=True, null=True, on_delete=models.SET_NULL)
+    Block_obj = models.ForeignKey('blockchain.Block', blank=True, null=True, on_delete=models.PROTECT)
     User_obj = models.ForeignKey('accounts.User', blank=True, null=True, on_delete=models.CASCADE)
     keyType = models.CharField(max_length=50, default="password") # password or biometrics
     
@@ -641,13 +642,12 @@ class UserVerification(BaseAccountModel):
     modelVersion = models.IntegerField(default=latestModel)
     creatorNodeId = models.CharField(max_length=50, default="", blank=True)
     validatorNodeId = models.CharField(max_length=50, default="", blank=True)
-    Validator_obj = models.ForeignKey('blockchain.Validator', blank=True, null=True, on_delete=models.SET_NULL)
+    Validator_obj = models.ForeignKey('blockchain.Validator', blank=True, null=True, on_delete=models.PROTECT)
     # pointerId = models.CharField(max_length=50, default="", blank=True, null=True)
     # pointerType = 'User'
     User_obj = models.ForeignKey('accounts.User', blank=True, null=True, on_delete=models.CASCADE)
     isVerified = models.BooleanField(default=False)
-    # signature = models.CharField(max_length=200, default="0")
-    # publicKey = models.CharField(max_length=200, default="0")
+    Block_obj = models.ForeignKey('blockchain.Block', blank=True, null=True, on_delete=models.PROTECT)
     
 
     def __str__(self):
@@ -660,7 +660,7 @@ class UserVerification(BaseAccountModel):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'UserVerification', 'blockchainType': 'User', 'id': '0', 'blockchainId': '', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'creatorNodeId': '', 'validatorNodeId': '', 'Validator_obj': None, 'User_obj': None, 'isVerified': False}
+            return {'object_type': 'UserVerification', 'blockchainType': 'User', 'id': '0', 'blockchainId': '', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'creatorNodeId': '', 'validatorNodeId': '', 'Validator_obj': None, 'User_obj': None, 'isVerified': False, 'Block_obj': None}
         
     def get_hash_to_id(self, version=None):
         if not version:
@@ -689,7 +689,7 @@ class UserVerification(BaseAccountModel):
 
 class SuperSign(BaseAccountModel):
     object_type = "SuperSign"
-    blockchainType = 'User'
+    blockchainType = 'Sonet'
     latestModel = 1
     modelVersion = models.IntegerField(default=latestModel)
     blockchainId = models.CharField(max_length=50, default="", blank=True)
@@ -708,7 +708,7 @@ class SuperSign(BaseAccountModel):
         if not version:
             version = self.modelVersion
         if int(version) >= 1:
-            return {'object_type': 'SuperSign', 'blockchainType': 'User', 'id': '0', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'blockchainId': '', 'Block_obj': None, 'pointerId': '', 'User_obj': None, 'data': {}}
+            return {'object_type': 'SuperSign', 'blockchainType': 'Sonet', 'id': '0', 'created': None, 'last_updated': None, 'publicKey': '', 'signature': '', 'validation_error': False, 'modelVersion': 1, 'blockchainId': '', 'Block_obj': None, 'pointerId': '', 'User_obj': None, 'data': {}}
         
     def get_hash_to_id(self, version=None):
         if not version:
