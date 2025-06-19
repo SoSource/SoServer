@@ -2426,12 +2426,13 @@ def tester_queue_view(request):
 
 
         all = ['nod','reg', 'usr', 'upk','uver','udat']
-        for i in ['regSoYZ4VJcKXEO42Cq','valSo5aYx3POjdYu8qi']:
+        for i in ['regSoIkpb6hxMSAEOQI','regSoYZ4VJcKXEO42Cq','regSo4by0PRcGDSYkSY']:
             prnt(i)
-            if i.startswith(tuple(all)):
-                prnt('yes')
-            else:
-                prnt('no')
+            i.boot()
+            # if i.startswith(tuple(all)):
+            #     prnt('yes')
+            # else:
+            #     prnt('no')
 
         # import importlib
         # from django.conf import settings

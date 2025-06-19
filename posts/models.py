@@ -569,6 +569,7 @@ class Region(ModifiableModel):
         chain, self, secondChain = find_or_create_chain_from_object(self)
         self.save()
         chain.add_item_to_queue(self)
+        secondChain.add_item_to_queue(self)
 
     def delete(self):
         pass
