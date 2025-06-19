@@ -2428,7 +2428,9 @@ def tester_queue_view(request):
         all = ['nod','reg', 'usr', 'upk','uver','udat']
         for i in ['regSoIkpb6hxMSAEOQI','regSoYZ4VJcKXEO42Cq','regSo4by0PRcGDSYkSY']:
             prnt(i)
-            i.boot()
+            r = Region.objects.filter(id=i).first()
+            prnt('r',r)
+            r.boot()
             # if i.startswith(tuple(all)):
             #     prnt('yes')
             # else:
