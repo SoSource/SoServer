@@ -367,6 +367,7 @@ def open_browser(url=None, headless=True, chrome_testing=False):
 #             session not created: This version of ChromeDriver only supports Chrome version 131
 # Current browser version is 136.0.7103.92 with binary path /usr/bin/google-chrome
             version_err = '''Message: session not created: This version of ChromeDriver only supports Chrome version'''
+            install_err = '''cannot access local variable 'driver' where it is not associated with a value'''
             if version_err in str(e):
                 # Current browser version is 136.0.7103.92 with binary path /usr/bin/google-chrome'''
                 x = str(e).find('Current browser version is ')+len('Current browser version is ')
@@ -376,6 +377,11 @@ def open_browser(url=None, headless=True, chrome_testing=False):
                 if attempt == 1:
                     update_chromeDriver(required_version)
                     return normal_chrome(attempt=2)
+            elif install_err in str(e):
+                if attempt == 1:
+                    update_chromeDriver()
+                    return normal_chrome(attempt=2)
+
 
     
     if chrome_testing or device_system == 'mac':
@@ -396,7 +402,7 @@ def close_browser(driver, service=None):
     except Exception:
         pass
 
-def update_chromeDriver(required_version):
+def update_chromeDriver(required_version=None):
     prnt('update_chromeDriver',required_version)
     if platform.system() == 'Darwin': 
         # import requests
@@ -418,6 +424,8 @@ def update_chromeDriver(required_version):
             ['rm', '/tmp/chromedriver_mac64.zip'],
         ]
     else:
+        if not required_version:
+            required_version = '131.0.6778.85'
         commands = [
             ['wget', '-O', '/tmp/chromedriver-linux64.zip', f'https://storage.googleapis.com/chrome-for-testing-public/{required_version}/linux64/chromedriver-linux64.zip'],
             ["sudo", "-S", "apt", "install", "zip"],
