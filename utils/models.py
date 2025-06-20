@@ -367,7 +367,7 @@ def open_browser(url=None, headless=True, chrome_testing=False):
 #             session not created: This version of ChromeDriver only supports Chrome version 131
 # Current browser version is 136.0.7103.92 with binary path /usr/bin/google-chrome
             version_err = '''Message: session not created: This version of ChromeDriver only supports Chrome version'''
-            install_err = '''cannot access local variable 'driver' where it is not associated with a value'''
+            install_err = '''Unable to obtain driver for chrome'''
             if version_err in str(e):
                 # Current browser version is 136.0.7103.92 with binary path /usr/bin/google-chrome'''
                 x = str(e).find('Current browser version is ')+len('Current browser version is ')
