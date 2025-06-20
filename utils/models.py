@@ -232,12 +232,12 @@ def prntDebug(*args):
         # print(f'p3:{msg}')
         logger.info(f'~:{msg}')
         # prnt('*',','.join(f"{i}" for i in args))
-    # else:
-    #     msg = '#' + ','.join(str(i) for i in args)
-    #     # msg = '*,'.join(f"{i}" for i in args)
-    #     # print(f'p3:{msg}')
-    #     logger.info(f'~:{msg}')
-    #     prnt('not debug above:')
+    else:
+        msg = '#' + ','.join(str(i) for i in args)
+        # msg = '*,'.join(f"{i}" for i in args)
+        # print(f'p3:{msg}')
+        logger.info(f'~:{msg}')
+        prnt('not debug above:')
 
 def prntn(*args):
     # logger.info("This is a debug message")
@@ -1909,7 +1909,7 @@ def get_dynamic_model(model_name, list=False, order_by=None, exclude={}, **kwarg
     elif isinstance(model_name, models.Model) or issubclass(model_name, models.Model):
         model = model_name
     if not model:
-        return None
+        return [] if list else None
     creation_fields = ['created','created_dt']
     if order_by and order_by in creation_fields:
         for f in creation_fields:
@@ -1928,7 +1928,7 @@ def get_dynamic_model(model_name, list=False, order_by=None, exclude={}, **kwarg
                     return model.objects.filter(**kwargs).exclude(**exclude)
             except Exception as e:
                 prntDebug('fail48476', str(e))
-                return None
+                return []
         else:
             try:
                 if order_by:
@@ -1936,7 +1936,7 @@ def get_dynamic_model(model_name, list=False, order_by=None, exclude={}, **kwarg
                 else:
                     return model.objects.filter(**kwargs).exclude(**exclude)[list[0]:list[1]]
             except model.DoesNotExist:
-                return None
+                return []
             
     else:
         try:
@@ -2488,6 +2488,54 @@ def super_sync(target, received_data, do_save=False, skip_fields=['latestModel']
 
 def find_or_create_chain_from_object(obj, recheck_chain=False):
     prntDebug('-find_or_create_chain_from_object',obj)
+
+    def get_secondChain(obj, blockchain, secondChain, obj_is_model):     
+        if obj_is_model and has_field(obj, 'secondChainType') or not obj_is_model and 'secondChainType' in obj:
+            prntDebug('find secondChain')
+            if obj_is_model and obj.object_type == 'UserTransaction' or not obj_is_model and 'object_type' in obj and obj['object_type'] == 'UserTransaction': # wallet chain
+                if obj_is_model:
+                    if obj.SenderWallet_obj:
+                        secondChain = obj.SenderWallet_obj.get_chain()
+                        blockchain = obj.ReceiverWallet_obj.get_chain()
+                else:
+                    if 'SenderWallet_obj' in obj and obj['SenderWallet_obj']:
+                        secondChain = Blockchain.objects.filter(genesisId=obj['SenderWallet_obj']).first()
+                    blockchain = Blockchain.objects.filter(genesisId=obj['ReceiverWallet_obj']).first()
+            elif obj_is_model and obj.object_type == 'UserVote': # not used
+                blockchain = Blockchain.objects.filter(genesisType=obj.blockchainType, genesisId=obj.User_obj.id).first()
+                pointer = get_dynamic_model(obj.pointerId, id=obj.pointerId)
+                secondChain, pointer, ignore = find_or_create_chain_from_object(pointer)
+            else:
+                prnt('chain else')
+                if obj_is_model:
+                    schainType = obj.secondChainType
+                    prnt('schainType',schainType)
+                    s_obj = schainType+'_obj'
+                    fields = obj._meta.fields
+                    if any(f.name == s_obj for f in fields):
+                        genId = getattr(obj, s_obj).id
+                        secondChain = Blockchain.objects.filter(genesisId=genId).first()
+                else:
+                    schainType = obj['secondChainType']
+                    s_obj = schainType+'_obj'
+                    if any(f == s_obj for f in obj):
+                        secondChain = Blockchain.objects.filter(genesisId=obj[s_obj]).first()
+                if not secondChain:
+                    if schainType.startswith(get_model_prefix('Blockchain')):
+                        secondChain = Blockchain.objects.filter(id=schainType).first()
+                    else:
+                        secondChain = Blockchain.objects.filter(genesisId=schainType).first()
+                if not secondChain and schainType == 'Sonet':
+                    prnt('get 2')
+                    secondChain = Blockchain.objects.filter(genesisType='Sonet').first()
+                    prnt('secondChain',secondChain)
+                    if not secondChain:
+                        sonet = Sonet.objects.first()
+                        if sonet:
+                            secondChain = Blockchain(genesisId=sonet.id, genesisType='Sonet', genesisName='Sonet', created=sonet.created)
+                            secondChain.save()
+        return blockchain, secondChain
+    
     if isinstance(obj, dict):
         obj_is_model = False
     else:
@@ -2499,6 +2547,8 @@ def find_or_create_chain_from_object(obj, recheck_chain=False):
     if not recheck_chain and obj_is_model and has_field(obj, 'blockchainId') and obj.blockchainId:
         blockchain = Blockchain.objects.filter(id=obj.blockchainId).first()
         if blockchain:
+            blockchain, secondChain = get_secondChain(obj, blockchain, secondChain, obj_is_model)
+            prntDebug('done find chain p2', blockchain, obj, secondChain)
             return blockchain, obj, secondChain
     if obj_is_model and has_field(obj, 'proposed_modification') and obj.proposed_modification or not obj_is_model and 'proposed_modification' in obj and obj['proposed_modification']:
         return None, obj, None # proposals are not committed to chain, commit after modification completed
@@ -2595,48 +2645,8 @@ def find_or_create_chain_from_object(obj, recheck_chain=False):
         # elif obj_is_model and obj.blockchainType in ChainTypes or not obj_is_model and 'blockchainType' in obj and obj['blockchainType'] in ChainTypes:
         #     ...
 
-        
-        
-    if obj_is_model and has_field(obj, 'secondChainType') or not obj_is_model and 'secondChainType' in obj:
-        if obj_is_model and obj.object_type == 'UserTransaction' or not obj_is_model and 'object_type' in obj and obj['object_type'] == 'UserTransaction': # wallet chain
-            if obj_is_model:
-                if obj.SenderWallet_obj:
-                    secondChain = obj.SenderWallet_obj.get_chain()
-                    blockchain = obj.ReceiverWallet_obj.get_chain()
-            else:
-                if 'SenderWallet_obj' in obj and obj['SenderWallet_obj']:
-                    secondChain = Blockchain.objects.filter(genesisId=obj['SenderWallet_obj']).first()
-                blockchain = Blockchain.objects.filter(genesisId=obj['ReceiverWallet_obj']).first()
-        elif obj_is_model and obj.object_type == 'UserVote': # not used
-            blockchain = Blockchain.objects.filter(genesisType=obj.blockchainType, genesisId=obj.User_obj.id).first()
-            pointer = get_dynamic_model(obj.pointerId, id=obj.pointerId)
-            secondChain, pointer, ignore = find_or_create_chain_from_object(pointer)
-        else:
-            if obj_is_model:
-                schainType = obj.secondChainType
-                s_obj = schainType+'_obj'
-                fields = obj._meta.fields
-                if any(f.name == s_obj for f in fields):
-                    genId = getattr(obj, s_obj).id
-                    secondChain = Blockchain.objects.filter(genesisId=genId).first()
-            else:
-                schainType = obj['secondChainType']
-                s_obj = schainType+'_obj'
-                if any(f == s_obj for f in obj):
-                    secondChain = Blockchain.objects.filter(genesisId=obj[s_obj]).first()
-            if not secondChain:
-                if schainType.startswith(get_model_prefix('Blockchain')):
-                    secondChain = Blockchain.objects.filter(id=schainType).first()
-                else:
-                    secondChain = Blockchain.objects.filter(genesisId=schainType).first()
-            if not secondChain and schainType == 'Sonet':
-                secondChain = Blockchain.objects.filter(genesisType='Sonet').first()
-                if not secondChain:
-                    sonet = Sonet.objects.first()
-                    if sonet:
-                        secondChain = Blockchain(genesisId=sonet.id, genesisType='Sonet', genesisName='Sonet', created=sonet.created)
-                        secondChain.save()
-                
+    blockchain, secondChain = get_secondChain(obj, blockchain, secondChain, obj_is_model)
+
     prntDebug('done find chain', blockchain, obj, secondChain)
     return blockchain, obj, secondChain
 

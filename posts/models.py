@@ -566,7 +566,10 @@ class Region(ModifiableModel):
             save_mutable_fields(self, *args, **kwargs)
 
     def boot(self):
+        prnt('boot',self)
         chain, self, secondChain = find_or_create_chain_from_object(self)
+        prnt('chain',chain)
+        prnt('secondChain',secondChain)
         self.save()
         chain.add_item_to_queue(self)
         secondChain.add_item_to_queue(self)

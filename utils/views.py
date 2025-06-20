@@ -1123,7 +1123,7 @@ def clear_test_data_view(request):
             'Election',
             'Notification',
             'UserNotification',
-            # 'Blockchain',
+            'Blockchain',
             # 'Validator',
             # 'Wallet',
             # 'UserTransaction',
