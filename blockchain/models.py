@@ -2911,7 +2911,7 @@ class Tidy:
                             val_map = {obj: val for val in vals for obj in val.data.keys()}
                             for obj in objs:
                                 # creator_nodes, validator_nodes = get_scraping_order(dt=obj.created, chainId=obj.blockchainId, func_name=obj.func)
-                                creator_nodes, validator_nodes = get_node_assignment(dt=obj.created, chainId=obj.blockchainId, func_name=obj.func)
+                                creator_nodes, validator_nodes = get_node_assignment(dt=obj.created, chainId=obj.blockchainId, func=obj.func)
                                 val_found = False
                                 val = val_map.get(obj.id)
                                 if val and val.CreatorNode_obj.id in validator_nodes and obj.id in val.data:

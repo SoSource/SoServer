@@ -997,8 +997,8 @@ class Update(BaseModel):
         return self.Pointer_obj
         
     def verify_is_valid(self, use_assigned_val=False):
-        from blockchain.models import Validator, sigData_to_hash, get_scraping_order
-        from utils.locked import verify_obj_to_data
+        from blockchain.models import Validator, sigData_to_hash
+        from utils.locked import verify_obj_to_data, get_node_assignment
         if use_assigned_val:
             v = self.Validator_obj
         else:
@@ -1006,8 +1006,9 @@ class Update(BaseModel):
         if v:
             if self.id in v.data and v.data[self.id] == sigData_to_hash(self):
                 if verify_obj_to_data(v, v):
-                    validator_node_id = get_scraping_order(dt=self.added, chainId=self.blockchainId, func_name=self.func, validator_only=True)
-                    if self.validatorNodeId == validator_node_id:
+                    creator_nodes, validator_nodes = get_node_assignment(dt=self.added, chainId=self.blockchainId, func=self.func, strings_only=True)
+                    # validator_node_id = get_scraping_order(dt=self.added, chainId=self.blockchainId, func=self.func, validator_only=True)
+                    if self.validatorNodeId in validator_nodes:
                         return True
         return False
 
@@ -1509,7 +1510,7 @@ class Post(models.Model):
         if v:
             if self.pointerId in v.data and v.data[self.pointerId] == sigData_to_hash(pointer):
                 if verify_obj_to_data(v, v):
-                    creator_nodes, validator_nodes = get_node_assignment(dt=pointer.added, func=pointer.func, chainId=pointer.blockchainId)
+                    creator_nodes, validator_nodes = get_node_assignment(dt=pointer.added, func=pointer.func, chainId=pointer.blockchainId, strings_only=True)
                     # validator_nodes = get_scraping_order(dt=pointer.added, chainId=pointer.blockchainId, func_name=func_name, validator_only=True)
                     if pointer.validatorNodeId in validator_nodes:
                         pointer_valid = True

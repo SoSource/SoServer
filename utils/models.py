@@ -2974,8 +2974,6 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                     i.func = 'super'
                     i.creatorNodeId = self_node.id
                     i.validatorNodeId = self_node.id
-                    i.created = job_time
-                    obj = sign_obj(i, operatorData=operatorData)
                     if has_field(obj, 'proposed_modification') and obj.proposed_modification:
                         prnt('handle proposed_modification')
                         modded_obj = obj
@@ -2993,6 +2991,9 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                             obj.save()
                             obj = sign_obj(obj, operatorData=operatorData)
                             super(get_model(modded_obj.object_type), modded_obj).delete()
+                    elif not is_locked(obj):
+                        i.created = job_time
+                        obj = sign_obj(i, operatorData=operatorData)
 
                     if not blockchain:
                         prnt('get blockchain')

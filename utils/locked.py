@@ -1154,7 +1154,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
                         proceed = True
                         break
                     else:
-                        creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, node_block_data=node_block_data)
+                        creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func=target.func, node_block_data=node_block_data)
                         # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, validator_only=True, node_block_data=node_block_data)
                         if target.validatorNodeId in validator_nodes:
                             validator_node_id = target.validatorNodeId
@@ -1191,7 +1191,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
                                 validator_node_id = validator.CreatorNode_obj.id
                                 err = '444a' + validator_node_id
                             else:
-                                creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, node_block_data=node_block_data)
+                                creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func=target.func, node_block_data=node_block_data)
                                 # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, validator_only=True, node_block_data=node_block_data)
                                 err = '444b' + str(validator_nodes)
                         if target.validatorNodeId in validator_nodes:
@@ -2234,7 +2234,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
         vals = Validator.objects.filter(data__has_any_keys=requested_validators, is_valid=True).order_by('-created')
         if vals:
             for i in requested_validators:
-                creator_nodes, validator_nodes = get_node_assignment(dt=i.created, chainId=i.blockchainId, func_name=i.func)
+                creator_nodes, validator_nodes = get_node_assignment(dt=i.created, chainId=i.blockchainId, func=i.func)
 
                 for val in vals:
                     # prnt('val',val)
