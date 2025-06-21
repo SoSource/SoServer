@@ -2974,9 +2974,9 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                     i.func = 'super'
                     i.creatorNodeId = self_node.id
                     i.validatorNodeId = self_node.id
-                    if has_field(obj, 'proposed_modification') and obj.proposed_modification:
+                    if has_field(i, 'proposed_modification') and i.proposed_modification:
                         prnt('handle proposed_modification')
-                        modded_obj = obj
+                        modded_obj = i
                         prnt('modded_obj',modded_obj)
                         obj = get_or_create_model(modded_obj.object_type, id=modded_obj.proposed_modification)
                         prnt('obj',obj)
@@ -2991,7 +2991,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                             obj.save()
                             obj = sign_obj(obj, operatorData=operatorData)
                             super(get_model(modded_obj.object_type), modded_obj).delete()
-                    elif not is_locked(obj):
+                    elif not is_locked(i):
                         i.created = job_time
                         obj = sign_obj(i, operatorData=operatorData)
 
