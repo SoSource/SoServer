@@ -108,7 +108,7 @@ def set_object_data_view(request):
                     if valid_obj:
                         if has_method(obj, 'boot'):
                             obj.boot()
-                        objs, good = super_share(obj, func='set_object', val_type='set_object', job_id=random.randint(1, 100))
+                        objs, good = super_share(obj, func='set_object', val_type='set_object', job_id=random.randint(1, 100), adjust_created_time=False)
                         prntDebug('obj-good',good)
                         prnt('obj-good',good)
                         if good:

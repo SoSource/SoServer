@@ -2861,7 +2861,7 @@ def get_all_objects(items):
     return x
     
 
-def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
+def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, adjust_created_time=True):
     # super_share can handle a single scrape function or a singular item at a time, not items for multiple chains
     # from blockchain.models import get_scraperScripts, get_latest_dataPacket, get_self_node, Validator, sigData_to_hash, get_operatorData, get_user, logEvent, DataPacket, convert_to_dict
     prnt('---super_share', gov, 'func:', func,'log1:',log)
@@ -2982,6 +2982,8 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                         prnt('obj',obj)
                         if not obj.Name or obj.Name == modded_obj.Name:
                             prnt('super sync')
+                            if not obj.created:
+                                obj.created = job_time
                             # prntn('convert_to_dict(modded_obj)',convert_to_dict(modded_obj))
                             # prntn('convert_to_dict(obj)',convert_to_dict(obj))
                             obj = super_sync(obj, convert_to_dict(modded_obj), skip_fields=['latestModel','id'])
@@ -2992,7 +2994,8 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None):
                             obj = sign_obj(obj, operatorData=operatorData)
                             super(get_model(modded_obj.object_type), modded_obj).delete()
                     elif not is_locked(i):
-                        i.created = job_time
+                        if adjust_created_time or not i.created:
+                            i.created = job_time
                         obj = sign_obj(i, operatorData=operatorData)
 
                     if not blockchain:
