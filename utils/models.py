@@ -3135,7 +3135,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
                 prnt('log7:',log)
                 if log and isinstance(log, models.Model) and log.object_type == 'DataPacket':
                     try:
-                        log.completed(ompleted='all')
+                        log.completed(completed='all')
                     except Exception as e:
                         prnt('del log fail',str(e))
                 prnt('completed super share','items length:',len(items),'func:',func, 'updates:',updates.count(), 'posts:',posts.count())
