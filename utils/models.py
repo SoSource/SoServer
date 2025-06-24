@@ -2985,6 +2985,7 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
                             break
                 if proceed:
                     prnt('proceed')
+                    obj = None
                     if has_field(i, 'Validator_obj') and i.Validator_obj:
                         if has_field(i, 'signature') and i.signature:
                             processed_data['hashes'][i.id] = sigData_to_hash(i)
@@ -3015,42 +3016,42 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
                             obj.save()
                             obj = sign_obj(obj, operatorData=operatorData)
                             super(get_model(modded_obj.object_type), modded_obj).delete()
-                    elif not is_locked(i):
+                    elif not has_field(i, 'Block_obj') or not i.Block_obj or not i.Block_obj.validated:
                         if adjust_created_time or not i.created:
                             i.created = job_time
                         obj = sign_obj(i, operatorData=operatorData)
+                    if obj:
+                        if not blockchain:
+                            prnt('get blockchain')
+                            chainId = 'All'
+                            if has_field(obj, 'blockchainType'):
+                                # from utils.models import find_or_create_chain_from_object
+                                blockchain, obj, receiverChain = find_or_create_chain_from_object(obj)
+                                if blockchain:
+                                    chainId = blockchain.id
 
-                    if not blockchain:
-                        prnt('get blockchain')
-                        chainId = 'All'
-                        if has_field(obj, 'blockchainType'):
-                            # from utils.models import find_or_create_chain_from_object
-                            blockchain, obj, receiverChain = find_or_create_chain_from_object(obj)
-                            if blockchain:
-                                chainId = blockchain.id
+                        if not dataPacket:
+                            prnt('get datapacket')
+                            dataPacket = get_latest_dataPacket(chainId)
+                            prnt('dataPacket',dataPacket)
 
-                    if not dataPacket:
-                        prnt('get datapacket')
-                        dataPacket = get_latest_dataPacket(chainId)
-                        prnt('dataPacket',dataPacket)
-
-                    if not validator:
-                        prnt('get validator')
-                        validator = Validator.objects.filter(data__has_key=obj.id, CreatorNode_obj=self_node, func='super', is_valid=True).first()
                         if not validator:
-                            validator = Validator(jobId=job_id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
-                            if blockchain:
-                                validator.blockchainType=blockchain.genesisType
-                                validator.blockchainId=blockchain.id
-                            validator.save()
-                            # validator = Validator.objects.create(blockchainType=blockchain.genesisType, blockchainId=blockchain.id, CreatorNode_obj=self_node, validatorType='scraper', func='super', is_valid=True)
-                    processed_data['obj_ids'].append(obj.id)
+                            prnt('get validator')
+                            validator = Validator.objects.filter(data__has_key=obj.id, CreatorNode_obj=self_node, func='super', is_valid=True).first()
+                            if not validator:
+                                validator = Validator(jobId=job_id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
+                                if blockchain:
+                                    validator.blockchainType=blockchain.genesisType
+                                    validator.blockchainId=blockchain.id
+                                validator.save()
+                                # validator = Validator.objects.create(blockchainType=blockchain.genesisType, blockchainId=blockchain.id, CreatorNode_obj=self_node, validatorType='scraper', func='super', is_valid=True)
+                        processed_data['obj_ids'].append(obj.id)
 
-                    obj_hash = sigData_to_hash(obj)
-                    validator.data[obj.id] = obj_hash
-                    obj.Validator_obj = validator
-                    obj.save()
-                    processed_data['hashes'][obj.id] = obj_hash
+                        obj_hash = sigData_to_hash(obj)
+                        validator.data[obj.id] = obj_hash
+                        obj.Validator_obj = validator
+                        obj.save()
+                        processed_data['hashes'][obj.id] = obj_hash
             prnt('log6:',log)
             prnt('super next')
             if validator:

@@ -5965,7 +5965,7 @@ def send_for_validation(log=None, gov=None):
                             processed_data['obj_ids'].append(i.id)
                             if True == False:
                                 ...
-                            elif not is_locked(i):
+                            elif not has_field(i, 'Block_obj') or not i.Block_obj or not i.Block_obj.validated:
                                 # prntDev(i.object_type)
                                 i.func = func
                                 i.creatorNodeId = self_node.id
