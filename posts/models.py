@@ -972,9 +972,11 @@ class Update(BaseModel):
                     if f.name not in self.skipFields:
                         attr = getattr(current, f.name)
                         setattr(self, f.name, attr)
-            elif current:
-                prnt('current 2',current.id)
-                return current
+            else:
+                current = Update.objects.filter(pointerId=obj.id, created__gte=self.created).first()
+                if current:
+                    prnt('current 2',current.id)
+                    return current
         else:
             current = Update.objects.filter(pointerId=self.pointerId, validated=True).first()
             if current and current.created < self.created:
@@ -984,9 +986,11 @@ class Update(BaseModel):
                     if f.name not in self.skipFields:
                         attr = getattr(current, f.name)
                         setattr(self, f.name, attr)
-            elif current:
-                prnt('current 4',current.id)
-                return current
+            else:
+                current = Update.objects.filter(pointerId=obj.id, created__gte=self.created).first()
+                if current:
+                    prnt('current 4',current.id)
+                    return current
         prnt('no current update')
         return self
 
