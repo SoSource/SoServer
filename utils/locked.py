@@ -1168,7 +1168,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
                     err = '1a'
                     prnt('validator created outside of window')
                     if obj and has_field(obj, 'notes'):
-                        obj.notes[(now_utc())] = f'validator created outside of window:{err}.'
+                        obj.notes[dt_to_string(now_utc())] = f'validator created outside of window:{err}.'
                         obj.save()
                     prnt('failed to validaed post',err,target)
                     return False
