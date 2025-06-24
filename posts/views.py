@@ -3250,7 +3250,7 @@ def officials_list(request, region):
     else:
         positions = country.Office_array
         prnt('pos',positions)
-        prnt('pos',positions)
+        # prnt('pos',positions)
         if not positions:
             posts = []
         elif subRegion == 'All':

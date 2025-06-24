@@ -3037,13 +3037,13 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
 
                         if not validator:
                             prnt('get validator')
-                            validator = Validator.objects.filter(data__has_key=obj.id, CreatorNode_obj=self_node, func='super', is_valid=True).first()
-                            if not validator:
-                                validator = Validator(jobId=job_id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
-                                if blockchain:
-                                    validator.blockchainType=blockchain.genesisType
-                                    validator.blockchainId=blockchain.id
-                                validator.save()
+                            # validator = Validator.objects.filter(data__has_key=obj.id, CreatorNode_obj=self_node, func='super', is_valid=True).first()
+                            # if not validator:
+                            validator = Validator(jobId=job_id, CreatorNode_obj=self_node, validatorType=val_type, func='super', is_valid=True)
+                            if blockchain:
+                                validator.blockchainType=blockchain.genesisType
+                                validator.blockchainId=blockchain.id
+                            validator.save()
                                 # validator = Validator.objects.create(blockchainType=blockchain.genesisType, blockchainId=blockchain.id, CreatorNode_obj=self_node, validatorType='scraper', func='super', is_valid=True)
                         processed_data['obj_ids'].append(obj.id)
 

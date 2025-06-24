@@ -353,7 +353,7 @@ def get_cookies(request, c, country=None):
         nodeData['blockDatetime'] = dt_to_string(now_utc())
         nodeData['id_data'] = {'All':['nodSo40693jf95jd94']}
         nodeData['addresses'] = {'nodSo40693jf95jd94': '127.0.0.1:3005'}
-    prnt('returning nodeData',json.dumps(nodeData))
+    # prnt('returning nodeData',json.dumps(nodeData))
 
 
     sonet = Sonet.objects.first()
@@ -383,7 +383,7 @@ def get_cookies(request, c, country=None):
     if not userData:
         from utils.locked import generate_id
         context['anonId'] = 'tusrSo' + generate_id(len=10)
-    prnt('done cookies',context)
+    # prnt('done cookies',context)
     return {**context, **get_paginator_url(request, c)}
 
 def get_user_data(request):
@@ -431,7 +431,7 @@ def get_user_sending_data(user):
     from utils.locked import sort_for_sign
     user_json = sort_for_sign(user_json)
     userData = json.dumps(user_json, separators=(',', ':'))
-    prnt('returning userData;',userData)
+    # prnt('returning userData;',userData)
     return userData
 
 def get_isMobile(request):
