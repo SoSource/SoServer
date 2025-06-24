@@ -5828,8 +5828,10 @@ def send_for_validation(log=None, gov=None):
                 content = process_received_dp(log.data['content'], 'send_for_validation')
                 items = get_all_objects(content)
                 prnt('func2:',func)
-
-            if not gov and 'gov_id' in log.data:
+            if gov and is_id(gov):
+                from legis.models import Government
+                gov = Government.objects.filter(id=gov).first()
+            elif not gov and 'gov_id' in log.data:
                 from legis.models import Government
                 gov = Government.objects.filter(id=log.data['gov_id']).first()
             q = 2
@@ -5850,13 +5852,15 @@ def send_for_validation(log=None, gov=None):
         job_time = round_time(dt=now_utc(), dir='down', amount='hour')
     logEvent(f'--send_for_validation initial func:{func} log:{log.id if log else"none"} q:{q} items:{len(items)}, start_len:{start_len}', log_type='Tasks', code='9046')
     if items and 'post_processed' in log.notes and log.notes['post_processed']:
-        for i in items:
-            # if not job_time or has_field(i, 'added') and i.added and i.added < job_time:
-            #     job_time = i.added
-            if not gov and has_field(i, 'Government_obj') and i.Government_obj:
-                gov = i.Government_obj
-            if gov:
-                break
+        if not gov:
+            for i in items:
+                if i.object_type == 'Government':
+                    gov = i
+                    break
+                elif not gov and has_field(i, 'Government_obj') and i.Government_obj:
+                    gov = i.Government_obj
+                # if gov:
+                    break
         if not gov:
             from legis.models import Government
             for i in items:
@@ -5892,13 +5896,15 @@ def send_for_validation(log=None, gov=None):
             log.save()
     elif items:
         prnt('length', len(items))
-        for i in items:
-            # if not job_time or has_field(i, 'added') and i.added and i.added < job_time:
-            #     job_time = i.added
-            if not gov and has_field(i, 'Government_obj') and i.Government_obj:
-                gov = i.Government_obj
-            if gov:
-                break
+        if not gov:
+            for i in items:
+                if i.object_type == 'Government':
+                    gov = i
+                    break
+                elif not gov and has_field(i, 'Government_obj') and i.Government_obj:
+                    gov = i.Government_obj
+                # if gov:
+                    break
         if not gov:
             from legis.models import Government
             for i in items:

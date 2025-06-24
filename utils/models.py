@@ -1278,15 +1278,32 @@ def finishScript(log, gov=None, special=None, func=None, log_event=True, send_of
     if not log:
         return None
     prnt('finishScript', log.data['func'], gov, special)
+    if gov and isinstance(gov, models.Model):
+        gov_id = gov.id
+    else:
+        gov_id = None
     if 'shareData' in log.data:
         r = len(log.data['shareData'])
+        if not gov_id:
+            gov_prefix = get_model_prefix('Government')
+            for i in log.data['shareData']:
+                if isinstance(i, str):
+                    if i.startswith(gov_prefix):
+                        gov = i
+                        gov_id = i
+                        break
+                elif isinstance(i, models.Model):
+                    if i.object_type == 'Government':
+                        gov = i
+                        gov_id = gov.id
+                        break
     else:
         r = 'unknown'
     log.data['content_length'] = r
     do_save = False
-    if gov:
-        if 'gov_id' not in log.data or log.data['gov_id'] != gov.id:
-            log.data['gov_id'] = gov.id
+    if gov_id:
+        if 'gov_id' not in log.data or log.data['gov_id'] != gov_id:
+            log.data['gov_id'] = gov_id
             do_save = True
     if 'special' in log.data:
         special = log.data['special']
@@ -2914,11 +2931,16 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
             items = [items]
         if not gov:
             for i in items:
-                if has_field(i, 'Government_obj') and i.Government_obj:
+                if i.object_type == 'Government':
+                    gov = i
+                    break
+                elif has_field(i, 'Government_obj') and i.Government_obj:
                     gov = i.Government_obj
                     break
         if gov:
             prnt('hasgov',gov)
+            if is_id(gov):
+                gov = get_dynamic_model('Government', id=gov)
             scraperScripts = get_scraperScripts(gov)
             approved_models = scraperScripts.approved_models
             model_types = []

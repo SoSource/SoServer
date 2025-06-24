@@ -105,7 +105,7 @@ state_list = {
 }
 
 runTimes = {
-    'initialize_region' : 1000,
+    'initialize_region' : 2000,
     'get_bills' : 600, 'add_bill': 120, 
     'get_house_motions' : 600, 'add_house_motion': 300, 
     'get_senate_motions' : 600, 'add_senate_motion': 150, 
