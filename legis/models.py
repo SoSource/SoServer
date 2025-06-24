@@ -1992,9 +1992,9 @@ class District(ModifiableModel):
         return p
 
     def delete(self):
-        pass
-    #     # if not is_locked(self):
-    #     superDelete(self)
+        # pass
+        if not is_locked(self):
+            superDelete(self)
 
     def fillout(self):
         print('fillout - Riding: %s' %(self.Name))
