@@ -1108,7 +1108,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
     # pointer = None
     target = None
     proceed = False
-    validator_node_id = None
+    validator_nodes = []
     err = 0
     from posts.models import update_post, Post, Update
     if pointer and not obj and save_obj:
@@ -1138,26 +1138,26 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
             # else:
             if validator:
                 if validator.func.lower() == 'super' and validator.CreatorNode_obj.User_obj.assess_super_status(dt=convert_to_datetime(validator.created)):
-                    validator_node_id = validator.CreatorNode_obj.id
+                    validator_nodes = [validator.CreatorNode_obj.id]
                     proceed = True
                 else:
                     creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, node_block_data=node_block_data)
                     # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=, func_name=target.func, validator_only=True, node_block_data=node_block_data)
                     if target.validatorNodeId in validator_nodes:
-                        validator_node_id = target.validatorNodeId
+                        # validator_node_id = target.validatorNodeId
                         proceed = True
             else:
                 validators = Validator.objects.filter(data__contains={target.id: sigData_to_hash(target)}, is_valid=True).order_by('-created')
                 for validator in validators:
                     if validator.func.lower() == 'super' and validator.CreatorNode_obj.User_obj.assess_super_status(dt=convert_to_datetime(validator.created)):
-                        validator_node_id = validator.CreatorNode_obj.id
+                        validator_nodes = [validator.CreatorNode_obj.id]
                         proceed = True
                         break
                     else:
                         creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func=target.func, node_block_data=node_block_data)
                         # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, validator_only=True, node_block_data=node_block_data)
                         if target.validatorNodeId in validator_nodes:
-                            validator_node_id = target.validatorNodeId
+                            # validator_node_id = target.validatorNodeId
                             proceed = True
                             break   
         err = 1
@@ -1186,10 +1186,10 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
                         #     v_created = validator.created_dt
                         # if v_created >= pointer.added and v_created <= (pointer.added + datetime.timedelta(hours=12)):
                         err = 5
-                        if not validator_node_id:
+                        if not validator_nodes:
                             if validator.func.lower() == 'super' and validator.CreatorNode_obj.User_obj.assess_super_status(dt=convert_to_datetime(validator.created)):
-                                validator_node_id = validator.CreatorNode_obj.id
-                                err = '444a' + validator_node_id
+                                validator_nodes = [validator.CreatorNode_obj.id]
+                                err = '444a' + validator.CreatorNode_obj.id
                             else:
                                 creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func=target.func, node_block_data=node_block_data)
                                 # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=target.blockchainId, func_name=target.func, validator_only=True, node_block_data=node_block_data)
@@ -2501,9 +2501,11 @@ def check_commit_data(target, data, return_err=False, return_obj=False):
             logEvent(f'check_commit_error1:{obj_id}', log_type='Errors')
     elif 'modifiable' in data and data['modifiable']:
         if is_model:
-            target_created = obj.created
+            target_created = string_to_dt(obj.created)
         else:
             target_created = string_to_dt(obj_data['created'])
+        prnt('target_created',target_created)
+        prnt("string_to_dt(data['created'])",string_to_dt(data['created']))
         if string_to_dt(data['created']) == target_created:
             success = True
         else:
