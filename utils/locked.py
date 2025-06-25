@@ -222,7 +222,7 @@ def process_posts_for_validating(received_json):
                                                     q = 6
                                                     prnt('q6')
                                                     # obj = create_dynamic_model(z['object_type'], id=z['id'])
-                                                    if has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.id in obj.Validator_obj.data and obj.Validator_obj.data[obj.id] == sigData_to_hash(obj) and validator.dt_appropriate(obj):
+                                                    if has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.id in obj.Validator_obj.data and obj.Validator_obj.data[obj.id] == sigData_to_hash(obj) and obj.Validator_obj.dt_appropriate(obj):
                                                         skipped_items.append(obj.id)
                                                     else:
                                                         proceed = True
@@ -351,7 +351,7 @@ def process_posts_for_validating(received_json):
                                                                         validator.data[obj.id] = obj_hash
                                                                         matched_idens.append(obj.id)
                                                 
-                                                elif obj and has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.Validator_obj.is_valid and validator.dt_appropriate(obj):
+                                                elif obj and has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.Validator_obj.is_valid and obj.Validator_obj.dt_appropriate(obj):
                                                     q = 81
                                                     matches += 1
                                                     if dataPacket:
@@ -1144,7 +1144,7 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
                     validator_nodes = [validator.CreatorNode_obj.id]
                     proceed = True
                 else:
-                    creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), chainId=target.blockchainId, node_block_data=node_block_data)
+                    creator_nodes, validator_nodes = get_node_assignment(dt=convert_to_datetime(target.created), func=target.func, chainId=target.blockchainId, node_block_data=node_block_data)
                     # validator_node_id = get_scraping_order(dt=convert_to_datetime(target.created), chainId=, func_name=target.func, validator_only=True, node_block_data=node_block_data)
                     if target.validatorNodeId in validator_nodes:
                         # validator_node_id = target.validatorNodeId
