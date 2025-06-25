@@ -2000,6 +2000,14 @@ class Validator(models.Model):
         if int(version) >= 1:
             return ['hash','is_valid','signature','CreatorNode_obj','created','blockchainId']
 
+    def dt_appropriate(self, obj):
+        if is_id(obj):
+            obj = get_dynamic_model(obj, id=obj)
+        if convert_to_datetime(self.created) < convert_to_datetime(obj.created) + datetime.timedelta(days=max_validation_window) and convert_to_datetime(self.created) >= convert_to_datetime(obj.created):
+            return True
+        return False
+
+
     def save(self, share=False, *args, **kwargs):
         from utils.locked import verify_obj_to_data
         if self.id == '0':

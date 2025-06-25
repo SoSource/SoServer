@@ -1164,7 +1164,8 @@ def validate_obj(obj=None, pointer=None, validator=None, save_obj=True, update_p
         prnt('validator in use:',validator)
         if proceed and target and validator and validator.is_valid and validator.signature and target.signature:
             if has_field(target, 'created'):
-                if convert_to_datetime(validator.created) > convert_to_datetime(target.created) + datetime.timedelta(days=max_validation_window) or convert_to_datetime(validator.created) < convert_to_datetime(target.created):
+                if not validator.dt_appropriate(target):
+                # if convert_to_datetime(validator.created) > convert_to_datetime(target.created) + datetime.timedelta(days=max_validation_window) or convert_to_datetime(validator.created) < convert_to_datetime(target.created):
                     err = '1a'
                     prnt('validator created outside of window')
                     if obj and has_field(obj, 'notes'):
@@ -2196,7 +2197,7 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
         total_found += len(storedModels)
         for x in storedModels:
             prnt('x',x)
-            if not has_field(x, 'Validator_obj') or x.Validator_obj and x.Validator_obj.is_valid and x.id in x.Validator_obj.data and x.Validator_obj.data[x.id] == sigData_to_hash(x):
+            if not has_field(x, 'Validator_obj') or x.Validator_obj and x.Validator_obj.is_valid and x.id in x.Validator_obj.data and x.Validator_obj.data[x.id] == sigData_to_hash(x) and x.Validator_obj.dt_appropriate(x):
                 # prnt('a')
                 if x.id in block.data:
                     i_dt = get_timeData(x)
@@ -2209,16 +2210,15 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
                             requested_idens.append(x.id)
             elif has_field(x, 'Validator_obj') and not x.Validator_obj:
                 if validate_obj(obj=None, pointer=x, node_block_data={}):
-                    pass
+                    if x.id in block.data:
+                        # prnt('az')
+                        i_dt = get_timeData(x)
+                        if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt <= self_dt:
+                            # prnt('ax')
+                            if check_commit_data(x, block.data[x.id]):
+                                obj_idens.append(x.id)
                 else:
                     requested_idens.append(x.id)
-                if x.id in block.data:
-                    # prnt('az')
-                    i_dt = get_timeData(x)
-                    if i_dt and i_dt <= content_dt + datetime.timedelta(hours=24) and i_dt >= self_dt - datetime.timedelta(days=max_commit_window) and i_dt <= self_dt:
-                        # prnt('ax')
-                        if check_commit_data(x, block.data[x.id]):
-                            obj_idens.append(x.id)
             else:
                 requested_validators.append(x.id)
 
@@ -2314,7 +2314,6 @@ def check_block_contents(block, retrieve_missing=True, log_missing=True, downstr
     if return_missing:
         return obj_idens, problem_idens
     return obj_idens
-
 
 
 def dt_to_string(dt_input):
