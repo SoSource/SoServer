@@ -250,6 +250,8 @@ def process_posts_for_validating(received_json):
                                                                         attr = attr.id
                                                                 except Exception as e:
                                                                     pass
+                                                                if isinstance(attr, datetime.datetime):
+                                                                    attr = dt_to_string(attr)
                                                                 try:
                                                                     z_field = z[f.name]
                                                                     z_field = dt_to_string(z_field)
