@@ -2283,7 +2283,7 @@ class Blockchain(models.Model):
                 if pending:
                     self.queuedData['pending'] = pending
                 self.save()
-                prnt('no data')
+                prnt('no data', self)
                 return None
             else:
                 to_commit_data = {}

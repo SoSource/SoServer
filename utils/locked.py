@@ -66,8 +66,8 @@ def process_posts_for_validating(received_json):
     if received_json and received_json['type'] == 'for_validation':
         from posts.models import Update, Post
         from legis.models import Government
-        from blockchain.models import logError, logEvent, Validator, Blockchain,script_created_modifiable_models,get_scrape_duty,max_validation_window
-        from utils.models import get_model_prefix, get_self_node, get_node, find_or_create_chain_from_object, get_latest_dataPacket, data_sort_priority, testing, check_missing_data, prntDebugn, prntDebug, is_locked, has_field, has_method, convert_to_datetime, sigData_to_hash,get_or_create_model,super_sync,get_model,exists_in_worker,create_dynamic_model,dynamic_bulk_update,seperate_by_type,get_model_prefix,debugging,string_to_dt
+        from blockchain.models import logError, logEvent, Validator, Blockchain,script_created_modifiable_models,get_scrape_duty,max_validation_window, NodeChain_genesisId
+        from utils.models import get_model_prefix, get_self_node, get_node, find_or_create_chain_from_object, get_latest_dataPacket, data_sort_priority, testing, check_missing_data, prntDebugn, prntDebug, is_locked, has_field, has_method, convert_to_datetime, sigData_to_hash,get_or_create_model,super_sync,get_model,exists_in_worker,create_dynamic_model,dynamic_bulk_update,seperate_by_type,get_model_prefix,debugging,string_to_dt, get_dynamic_model
         validator = None
         invalid_validator = None
         add_val_to_obj = []
@@ -147,7 +147,7 @@ def process_posts_for_validating(received_json):
                 if i['id'] != hash_obj_id(i):
                     prnt('hash_obj_id(i)',hash_obj_id(i),"i['id']",i['id'])
                     err = err + f'hash_obj_id(i) {hash_obj_id(i)}, id:{i["id"]}, '
-                    from posts.models import get_dynamic_model
+                    # from posts.models import get_dynamic_model
                     obj = get_dynamic_model(i['object_type'], id=i['id'])
                     prnt('obj',obj)
                     if obj:
