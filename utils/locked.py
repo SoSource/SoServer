@@ -180,7 +180,7 @@ def process_posts_for_validating(received_json):
                     q = 1
                     if i['function_name'] == func and region_id == i['region_id']:
                         q = 2
-                        if sender_node.id in i['scraping_order'] and self_node.id == i['validator']:
+                        if sender_node.id in i['scraping_order'] and self_node.id in i['validators']:
                             q = 21
                             # if self_node.id not in i['scraping_order'] or len(i['scraping_order']) == 1:
                             # q = 3
@@ -222,7 +222,7 @@ def process_posts_for_validating(received_json):
                                                     q = 6
                                                     prnt('q6')
                                                     # obj = create_dynamic_model(z['object_type'], id=z['id'])
-                                                    if has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.id in obj.Validator_obj.data and obj.Validator_obj.data[obj.id] == sigData_to_hash(obj):
+                                                    if has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.id in obj.Validator_obj.data and obj.Validator_obj.data[obj.id] == sigData_to_hash(obj) and validator.dt_appropriate(obj):
                                                         skipped_items.append(obj.id)
                                                     else:
                                                         proceed = True
@@ -341,14 +341,15 @@ def process_posts_for_validating(received_json):
                                                                 #     validator.save()
                                                                 #     prnt('scrape val created',validator.id)
                                                                 q = 91
-                                                                if not is_locked(obj):
-                                                                    if has_field(obj, 'creatorNodeId') and obj.creatorNodeId == self_node.id:
-                                                                        obj = super_sync(obj, z, do_save=True)
-                                                                    obj_hash = sigData_to_hash(obj)
-                                                                    validator.data[obj.id] = obj_hash
-                                                                    matched_idens.append(obj.id)
+                                                                if not has_field(obj, 'Block_obj') or not obj.Block_obj or not obj.Block_obj.validated:
+                                                                    if validator.dt_appropriate(obj):
+                                                                        if has_field(obj, 'creatorNodeId') and obj.creatorNodeId == self_node.id:
+                                                                            obj = super_sync(obj, z, do_save=True)
+                                                                        obj_hash = sigData_to_hash(obj)
+                                                                        validator.data[obj.id] = obj_hash
+                                                                        matched_idens.append(obj.id)
                                                 
-                                                elif obj and has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.Validator_obj.is_valid:
+                                                elif obj and has_field(obj, 'Validator_obj') and obj.Validator_obj and obj.Validator_obj.is_valid and validator.dt_appropriate(obj):
                                                     q = 81
                                                     matches += 1
                                                     if dataPacket:

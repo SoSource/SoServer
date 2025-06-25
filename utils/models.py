@@ -266,7 +266,7 @@ def string_to_dt(dt_str):
     if isinstance(dt_str, str):
         if 'Z' in dt_str:
             dt = datetime.datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
-            print(dt)
+            # print(dt)
             return dt
         return datetime.datetime.fromisoformat(dt_str)
     return None
