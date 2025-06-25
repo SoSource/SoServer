@@ -6003,7 +6003,7 @@ def send_for_validation(log=None, gov=None):
 
                             
 
-                            sending_data = {'type':'for_validation', 'packet_id':packet_id, 'job_id':job_id, 'job_dt':dt_to_string(job_time), 'func':func, 'senderId':self_node.id, 'gov_id':gov.id, 'gov_level':gov.gov_level, 'scrapers':[s for s in scrapers], 'validator':validator_node_id, 'region_dict':json.dumps(convert_to_dict(gov.Region_obj)), 'content_length':len(obj_list), 'content': compressed_data}
+                            sending_data = {'type':'for_validation', 'packet_id':packet_id, 'job_id':job_id, 'job_dt':dt_to_string(job_time), 'func':func, 'senderId':self_node.id, 'gov_id':gov.id, 'gov_level':gov.gov_level, 'scrapers':[s for s in creator_nodes], 'validator':validator_node, 'region_dict':json.dumps(convert_to_dict(gov.Region_obj)), 'content_length':len(obj_list), 'content': compressed_data}
                             
                             sending_data = sign_for_sending(sending_data)
 

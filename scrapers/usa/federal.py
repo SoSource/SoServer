@@ -930,7 +930,7 @@ def get_bills(special=None, dt=now_utc(), iden=None, target_dt=None, target_link
         def check_item_updates(item, i, log, driver=None, driver_service=None):
             pubDate = item.find('pubDate')
             pub_dt = datetime.datetime.strptime(pubDate.text, "%a, %d %b %Y %H:%M:%S %z")
-            prnt(pubDate.text)
+            # prnt(pubDate.text)
             desc = item.find('description')
             # prnt(desc.text)
             soup = BeautifulSoup(desc.text, 'html.parser')
