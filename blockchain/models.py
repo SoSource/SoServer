@@ -2283,6 +2283,7 @@ class Blockchain(models.Model):
                 if pending:
                     self.queuedData['pending'] = pending
                 self.save()
+                prnt('no data')
                 return None
             else:
                 to_commit_data = {}
@@ -2405,6 +2406,7 @@ class Blockchain(models.Model):
                     #     dummy_block.delete()
                     # except:
                     #     pass
+                    prnt('dummy_block.data = none')
                     return None
                 dummy_block.data = sort_dict(dummy_block.data)
                 dummy_block.notes['data_length'] = len(dummy_block.data)
