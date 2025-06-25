@@ -67,7 +67,7 @@ def process_posts_for_validating(received_json):
         from posts.models import Update, Post
         from legis.models import Government
         from blockchain.models import logError, logEvent, Validator, Blockchain,script_created_modifiable_models,get_scrape_duty,max_validation_window
-        from utils.models import get_model_prefix, get_self_node, get_node, find_or_create_chain_from_object, get_latest_dataPacket, data_sort_priority, testing, check_missing_data, prntDebugn, prntDebug, is_locked, has_field, has_method, convert_to_datetime, sigData_to_hash,get_or_create_model,super_sync,get_model,exists_in_worker,create_dynamic_model,skipped_items,dynamic_bulk_update,seperate_by_type,get_model_prefix,debugging,string_to_dt
+        from utils.models import get_model_prefix, get_self_node, get_node, find_or_create_chain_from_object, get_latest_dataPacket, data_sort_priority, testing, check_missing_data, prntDebugn, prntDebug, is_locked, has_field, has_method, convert_to_datetime, sigData_to_hash,get_or_create_model,super_sync,get_model,exists_in_worker,create_dynamic_model,dynamic_bulk_update,seperate_by_type,get_model_prefix,debugging,string_to_dt
         validator = None
         invalid_validator = None
         add_val_to_obj = []
