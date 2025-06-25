@@ -3079,15 +3079,24 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
                 prnt('pointerIdens',pointerIdens)
                 while pointerIdens:
                     posts = Post.all_objects.filter(pointerId__in=pointerIdens[:500]).exclude(validated=True)
+                    to_queue = []
                     if testing():
                         for p in posts:
                             p.validated = True
                             p, updated_fields = update_post(p=p, save_p=True)
+                            to_queue.append(p.pointerId)
                     else:
                         for p in posts:
-                            p.validate(validator=validator)
-                    if blockchain:
-                        blockchain.add_item_to_queue(pointerIdens[:500])
+                            validated = p.validate(validator=validator)
+                            if validated:
+                                to_queue.append(p.pointerId)
+                            else:
+                                pointer = p.get_pointer()
+                                if pointer and pointer.Validatod_obj == validator:
+                                    pointer.Validatod_obj = None
+                                    pointer.save()
+                    if blockchain and to_queue:
+                        blockchain.add_item_to_queue(to_queue)
                     if len(pointerIdens) >= 500:
                         pointerIdens = pointerIdens[500:]
                     else:
@@ -3095,25 +3104,32 @@ def super_share(log=None, gov=None, func=None, val_type='super', job_id=None, ad
                 updateIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix('Update'))]
                 prnt('updateIdens',updateIdens)
                 updates = Update.objects.filter(validated=False, id__in=updateIdens)
+                to_queue = []
                 if testing():
                     for u in updates:
                         u.validated = True
                         super(Update, u).save()
                         u.sync_with_post()
+                        to_queue.append(u)
                 
                 else:
                     for u in updates:
-                        u.validate(validator=validator)
-                if blockchain:
-                    blockchain.add_item_to_queue(updates)
+                        validated = u.validate(validator=validator)
+                        if validated:
+                            to_queue.append(u)
+                if blockchain and to_queue:
+                    blockchain.add_item_to_queue(to_queue)
                 from accounts.models import Notification
                 notiIdens = [u for u in processed_data['obj_ids'] if u.startswith(get_model_prefix('Notification'))]
                 prnt('notiIdens',notiIdens)
                 notifications = Notification.objects.filter(validated=False, id__in=notiIdens)
+                to_queue = []
                 for n in notifications:
-                    n.validate(validator=validator)
-                if blockchain:
-                    blockchain.add_item_to_queue(notifications)
+                    validated = n.validate(validator=validator)
+                    if validated:
+                        to_queue.append(n)
+                if blockchain and to_queue:
+                    blockchain.add_item_to_queue(to_queue)
                 chains = {}
                 from blockchain.models import script_created_modifiable_models
                 for m in script_created_modifiable_models:

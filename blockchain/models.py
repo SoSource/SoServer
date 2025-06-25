@@ -2329,7 +2329,7 @@ class Blockchain(models.Model):
                             i_dt = get_timeData(i)
                             if i_dt:
                                 cq = cq + 'a'
-                                if not has_field(i, 'Validator_obj') or i.Validator_obj and i.Validator_obj.is_valid and i.id in i.Validator_obj.data and i.Validator_obj.data[i.id] == sigData_to_hash(i):
+                                if not has_field(i, 'Validator_obj') or i.Validator_obj and i.Validator_obj.is_valid and i.id in i.Validator_obj.data and i.Validator_obj.data[i.id] == sigData_to_hash(i) and i.Validator_obj.dt_appropriate(i):
                                     cq = cq + 'B'
                                     if i_dt >= dummy_block.DateTime - datetime.timedelta(days=max_commit_window) and i_dt < dummy_block.DateTime:
                                         cq = cq + 'b'
