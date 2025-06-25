@@ -5977,14 +5977,14 @@ def send_for_validation(log=None, gov=None):
                                 # prntDev(i.object_type)
                                 i.func = func
                                 i.creatorNodeId = self_node.id
-                                i.validatorNodeId = validator_node.id
+                                i.validatorNodeId = validator_node
                                 if not has_field(i, 'is_modifiable'):
                                     i.created = job_time
                                 obj, err = sign_obj(i, operatorData=operatorData, return_error=True)
                                 if obj.signature and not err:
                                     obj_list.append(convert_to_dict(obj))
                     if obj_list:
-                        if len(creator_nodes) == 1 or validator_node.id != self_node.id:
+                        if len(creator_nodes) == 1 or validator_node != self_node.id:
                             # posts = Post.objects.filter(pointerId__in=processed_data['obj_ids'])
                             # for p in posts:
                             #     p = update_post(p=p)
