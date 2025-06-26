@@ -52,13 +52,6 @@ from selenium.webdriver.chrome.service import Service
 from utils.locked import dt_to_string
 
 
-# 20gb demand
-twenty_pod_id = '9kzmbd8wyowzue'
-twenty_url = "https://9kzmbd8wyowzue-5000.proxy.runpod.net/v1"
-
-#48gb spot
-fourtyeight_pod_id = 'mkwhgqn52r2yhf'
-fourtyeight_url = "https://mkwhgqn52r2yhf-5000.proxy.runpod.net/v1"
 
 import platform
 import os
@@ -1080,7 +1073,7 @@ def sigData_to_hash(obj):
 
 
 def sort_dict(data):
-    # prnt('sort_ditc',data)
+    prnt('sort_ditc')
     if isinstance(data, dict):
         r = {key: sort_dict(value) for key, value in sorted(data.items())}
         return r

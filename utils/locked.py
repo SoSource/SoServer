@@ -2612,7 +2612,7 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
                 data[key] = objDict[key]
         sorted_dict = sort_for_sign(data)
         json_dump = json.dumps(sorted_dict, separators=(',', ':'))
-        # prntDebug('json_dump1', json_dump, '\n')
+        prntDebug('json_dump1', str(json_dump)[:20], '\n')
         return json_dump
     else:
         try: # obj may or not be json object
@@ -2632,7 +2632,7 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
 
     sorted_dict = sort_for_sign(data)
     json_dump = json.dumps(sorted_dict, separators=(',', ':'))
-    # prntDebug('json_dump2', json_dump, '\n')
+    prntDebug('json_dump2', str(json_dump)[:20], '\n')
     return json_dump
 
 
@@ -2944,7 +2944,7 @@ def convert_to_dict(obj, broadcast=False, withold_fields=True):
                     del data[f]
                 except Exception as e:
                     pass
-    # prnt('--convert_to_dict new_dict',data)
+    prntDebug('--convert_to_dict new_dict',str(data)[:20])
     return data
 
 id_len = 14
@@ -3153,6 +3153,7 @@ def verify_data(data, public_key, signature):
 def sort_for_sign(data):
     # recursively sort data for signing
     from utils.models import deep_sort_key, process_value, stringify_if_bool, prnt
+    prnt('sort_for_sign')
     if not data:
         return data
     if isinstance(data, dict):
