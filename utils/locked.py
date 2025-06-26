@@ -2638,6 +2638,7 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
 
 def sign_for_sending(sending_data, operatorData=None):
     from utils.models import now_utc, get_operator_obj, prnt
+    prnt('sign_for_sending',dt_to_string(now_utc()),sending_data)
     # from blockchain.models import 
     sending_data['dt'] = dt_to_string(now_utc())
     

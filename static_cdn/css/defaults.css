@@ -240,10 +240,10 @@ body a:hover{
   padding-right: 5px;
   top: 4px;
 }
-#modalForm #field2{
+/* #modalForm #field2{
   position: relative;
   left: 11px;
-}
+} */
 #modalForm input{
   width: 200px;
 }

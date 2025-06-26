@@ -59,7 +59,7 @@ async function retrieveAndDecrypt(key) {
 // </html>
 
 async function connect_to_node2(url, payload = null) {
-  console.log('Connecting to node:', url);
+  console.log('Connecting to node2:', url);
   try {
     const options = {};
 
@@ -119,21 +119,7 @@ async function connect_to_node(url, payload = null) {
   }
 }
 
-function openDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('KeyDB', 1);
 
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains('keys')) {
-        db.createObjectStore('keys');
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
 
 
 function storeItem(value, key) {
@@ -159,7 +145,21 @@ function getItem(key) {
     });
   });
 }
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('KeyDB', 1);
 
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('keys')) {
+        db.createObjectStore('keys');
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
 // function storeItem(key, name) {
 //   return new Promise((resolve, reject) => {
@@ -199,7 +199,7 @@ function getItem(key) {
 //   });
 // }
 
-function generate_mnemonic_new() {
+function generate_mnemonic() {
   // import { generateMnemonic } from 'https://cdn.skypack.dev/@scure/bip39';
   // import { wordlist } from 'https://cdn.skypack.dev/@scure/bip39/wordlists/english';
 
@@ -1223,7 +1223,7 @@ async function clearLocalUserData(pass) {
   
 
 }
-function generatePassword2() {
+function generatePassword() {
   // // var length = 20,
   // //     charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&",
   // //     retVal = "";
@@ -1265,15 +1265,25 @@ function generatePassword2() {
   form.elements["password"].value = password;
 }
 function displayPassword() {
-    var clicker = document.getElementById("passwordVisibility");
-    if (clicker.innerHTML == 'visibility_off') {
-        clicker.innerHTML = 'visibility'
+    var clicker = document.getElementById("showPassword");
+    
+    if (clicker.innerHTML == 'Show Passphrase') {
+        clicker.innerHTML = ' Hide Passphrase '
         var x = document.getElementById("password");
         x.type = "text";
     } else {
-        clicker.innerHTML = 'visibility_off'
+        clicker.innerHTML = 'Show Passphrase'
         var x = document.getElementById("password");
         x.type = "password";
+
+    // if (clicker.innerHTML == 'visibility_off') {
+    //     clicker.innerHTML = 'visibility'
+    //     var x = document.getElementById("password");
+    //     x.type = "text";
+    // } else {
+    //     clicker.innerHTML = 'visibility_off'
+    //     var x = document.getElementById("password");
+    //     x.type = "password";
 
     }
 }
@@ -1334,6 +1344,42 @@ async function modalPopUp(title, target){
         var instruction = html.find('#instruction').attr('value');
         m.querySelector("#modalContent").innerHTML = data;
         enact_user_instruction(instruction, {})
+        console.log('addEventListener')
+    const usernameInput = document.getElementById("username");
+    const statusSpan = document.getElementById("username-status");
+    if (!usernameInput || !statusSpan) return;
+
+    let timeout = null;
+
+    usernameInput.addEventListener("input", function () {
+        clearTimeout(timeout);
+        const username = usernameInput.value;
+
+        if (!username.trim()) {
+            statusSpan.textContent = "";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch(`/accounts/username_avail/?username=${encodeURIComponent(username)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        // statusSpan.textContent = " ✓";
+                        statusSpan.textContent = "Available";
+                        statusSpan.style.color = "green";
+                    } else {
+                        // statusSpan.textContent = " ✗";
+                        statusSpan.textContent = "Not Available";
+                        statusSpan.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    statusSpan.textContent = "Error";
+                    statusSpan.style.color = "gray";
+                });
+        }, 300);
+    });
 
     } else {
       m.querySelector("#modalContent").innerHTML = 'Failed to reach server';
@@ -2780,10 +2826,10 @@ async function update_userData(receivedUserData) {
   console.log('is_valid',is_valid,'modelupgrade',modelupgrade,'engage_rename',engage_rename)
   if (modelupgrade) {
     console.log('modelupgrade')
-    var userData = get_stored_userData();
+    var userData = await get_stored_userData();
     console.log('stroed userData',userData)
     console.log('parsedReceivedUserData',parsedReceivedUserData)
-    if (updated_model in parsedReceivedUserData) {
+    if ('updated_model' in parsedReceivedUserData) {
       var newUserModel = JSON.parse(JSON.parse(parsedReceivedUserData.updated_model))
       console.log('newUserModel',newUserModel)
       await migrate_userData(userData, newUserModel)
@@ -3185,7 +3231,8 @@ async function load_queue() {
     isLoading = document.getElementsByClassName('lds-dual-ring')[0];
     // alert(isLoading)
     if (isLoading){
-      assignment = get_assignment(iden=null, DateTime=null, nodeIds=[], relevantNodes={})
+      var assignment = await get_assignment(obj=null, iden=null, DateTime=null, nodeIds=[], relevantNodes={});
+      console.log('assignment result',assignment)
       addresses = assignment.addresses;
       // broadcastList = assignment.broadcastList;
       orderOfNodes = assignment.orderOfNodes;
@@ -3560,7 +3607,7 @@ function formatDateToDjango(isoString) {
 }
 
 async function browser_shuffle(text_input, dt, node_ids) {
-    // console.log('browser_shuffle');=
+    console.log('browser_shuffle');
     async function sha256Hex(input) {
       const encoder = new TextEncoder();
       const data = encoder.encode(input);
@@ -3571,105 +3618,22 @@ async function browser_shuffle(text_input, dt, node_ids) {
     }
     
     const dt_str = formatDateToDjango(dt);
-    // console.log('dt_str', dt_str);
-    // `${text_input}_${dt_str}_${item}`
     const seed_input = `${text_input}_${dt_str}`;
-    // console.log('seed_input', seed_input);
-    // console.log('seed_inputEE', seed_input + node_ids[0]);
+
     const hashes = await Promise.all(node_ids.map(async item => {
         const hash = await sha256Hex(seed_input + item);
         return { item, hash };
     }));
     hashes.sort((a, b) => a.hash.localeCompare(b.hash));
+    console.log('hashes',hashes)
     return hashes.map(obj => obj.item);
 }
 
 
 
 
-
 async function get_assignment(obj=null, iden=null, DateTime=null, nodeIds=[], relevantNodes={}, region='All') {
-  console.log('get_assignment')
-  // function hashToInt(hashString, length) {
-  //     let filteredHash = hashString.replace(/[^a-fA-F0-9]/g, '');
-  //     let hashInt = parseInt(filteredHash, 16);
-  //     return length === 0 ? 0 : hashInt % length;
-  // }
-  // function dateToInt(date, startingDate) {
-  //     if (typeof date === 'string') {
-  //         date = new Date(date);
-  //     }
-  //     // let startDt = myStartingDate;
-  //     let timeDifference = (date - startingDate) / (1000 * 60 * 60);
-  //     console.log('timeDifference',timeDifference)
-  //     return Math.floor(timeDifference);
-  // }
-  // function getPeerNodes(broadcaster, position, nodeIds, checkedNodeList) { // peer nodes not needed by user, but it affects list order. needs to match what nodes create
-  //     // console.log('getPeerNodes',broadcaster,position, nodeIds);
-  //     if (!broadcastList.hasOwnProperty(broadcaster)) {
-  //         if (!orderOfNodes.includes(broadcaster)) {
-  //           orderOfNodes.push(broadcaster);
-  //         }
-  //         let index = nodeIds.indexOf(broadcaster);
-  //         // console.log('nodeIdsx0', nodeIds)
-  //         if (index !== -1) {
-  //           // console.log('splice',index)
-  //             nodeIds.splice(index, 1);
-  //         }
-  //         // console.log('nodeIdsx1', nodeIds)
-  //         let broadcasterHashedInt = hashToInt(broadcaster, nodeIds.length);
-          
-  //         function run(position, nodeIds) {
-  //           // console.log('run',nodeIds)
-  //             position += (broadcasterHashedInt + dateInt);
-  //             position = position % nodeIds.length;
-  //             // console.log('new posi',position)
-  //             let newNodeId = nodeIds.splice(position, 1)[0];
-  //             return { newNodeId, position, nodeIds };
-  //         }
-
-  //         let peers = [];
-  //         while (peers.length < numberOfPeers && nodeIds.length > 0) {
-  //           // console.log('whle again', nodeIds)
-  //             let { newNodeId, position: newPosition, nodeIds: newNodeIds } = run(position, nodeIds);
-  //             if (!(newNodeId in orderOfNodes)) {
-  //               // peers.push(relevantNodes[newNodeId]);
-  //               orderOfNodes.push(newNodeId);
-  //             }
-  //             if (newNodeId !== broadcaster) {
-  //                 peers.push(relevantNodes[newNodeId]);
-  //                 // orderOfNodes.push(newNodeId);
-  //             }
-  //             nodeIds = newNodeIds;
-  //             position = newPosition;
-  //             // console.log('whle again end',nodeIds)
-  //         }
-  //         broadcastList[broadcaster] = peers;
-  //     }
-  //     return { broadcastList, orderOfNodes, nodeIds };
-  // }
-  // function process(broadcaster, position, nodeIds, orderOfNodes, broadcastList) {
-  //     // console.log('process',broadcaster,position,nodeIds);
-  //     let result = getPeerNodes(broadcaster, position, nodeIds, orderOfNodes);
-  //     broadcastList = result.broadcastList;
-  //     orderOfNodes = result.orderOfNodes;
-  //     nodeIds = result.nodeIds;
-  //     // console.log('end process: orderOfNodes',orderOfNodes,'requiredValidators',requiredValidators,'nodeIds',nodeIds)
-      
-  //     if (!orderOfNodes.includes(broadcaster)) {
-  //       orderOfNodes.push(broadcaster);
-  //     }
-  //     // if (func && scraperList.length < requiredScrapers && broadcaster !== validatorNode && !scraperList.includes(broadcaster)) {
-  //     //     scraperList.push(broadcaster);
-  //     // }
-  //     return { broadcastList, orderOfNodes, nodeIds };
-  // }
-
-
-  // id = 'usrSo93jd85hd7ydbh39j3'
-  // DateTime = get_current_time()
-  // nodeIds = ['nodSo4958fj47dh4', 'nodSo93jd74yhb49f4n', 'nodSod83nnf84u394je49fu4']
-  // relevantNodes = {'nodSo4958fj47dh4':'127.0.0.1', 'nodSo93jd74yhb49f4n':'10.0.0.51', 'nodSod83nnf84u394je49fu4':'10.0.0.97'}
+  console.log('get_assignment','obj',obj,'iden',iden,'DateTime',DateTime,'nodeIds',nodeIds)
   if (obj != null) {
     if (DateTime == null) {
       var DateTime = obj.DateTime;
@@ -3731,9 +3695,9 @@ async function get_assignment(obj=null, iden=null, DateTime=null, nodeIds=[], re
   }
   console.log('relevantNodes',relevantNodes)
   console.log('nodeIds',nodeIds)
-  const sorted = await browser_shuffle(iden, DateTime, node_ids);
+  const sorted = await browser_shuffle(iden, DateTime, nodeIds);
   console.log('sorted',sorted)
-  return sorted;
+  return {'orderOfNodes':sorted, 'addresses':relevantNodes} ;
 
   // const sonetInitializedDatetime = new Date(getItem('sonetInitializedDatetime'));
   // // let sonetInitializedDatetime = localStorage.getItem('sonetInitializedDatetime');
@@ -3804,24 +3768,29 @@ async function get_assignment(obj=null, iden=null, DateTime=null, nodeIds=[], re
 async function check_for_node_updates(document) {
   console.log('check_for_node_updates')
   var nodeData = document.getElementById("nodeData")
-  // console.log('nodeData',nodeData.getAttribute("value"))
+  console.log('nodeData',nodeData.getAttribute("value"))
   if (nodeData.getAttribute("value")) {
     parsed_nodeData = JSON.parse(nodeData.getAttribute("value"))
-    // console.log('save node data0')
+    console.log('save node data00',parsed_nodeData)
     // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
-    var saved_nodeData = JSON.parse(await getItem("nodeData"));
-    // console.log('saved node data0', saved_nodeData)
+    var saved_nodeData_str = await getItem("nodeData");
+    if (saved_nodeData_str) {
+      var saved_nodeData = JSON.parse(saved_nodeData_str);
+    } else {
+      var saved_nodeData = null;
+    }
+    console.log('saved node data0', saved_nodeData)
     // console.log('saved node dt', JSON.parse(saved_nodeData)['blockDatetime'])
     if (!saved_nodeData) {
-      // console.log('save node data1')
+      console.log('save node data1')
       await storeItem(JSON.stringify(parsed_nodeData), 'nodeData');
       // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
     } else if (formatDateToDjango(saved_nodeData['blockDatetime']) < formatDateToDjango(parsed_nodeData['blockDatetime'])) {
-      // console.log('save node data2')
+      console.log('save node data2')
       await storeItem(JSON.stringify(parsed_nodeData), 'nodeData');
       // localStorage.setItem('nodeData', JSON.stringify(parsed_nodeData));
-    // } else {
-    //   console.log('no save node data')
+    } else {
+      console.log('no save node data')
     //   console.log('d1',formatDateToDjango(saved_nodeData['blockDatetime']))
     //   console.log('d2',formatDateToDjango(parsed_nodeData['blockDatetime']))
     }
@@ -4109,7 +4078,7 @@ $(document).ready(
     //     adjustNavBar($navbar)
     //   }
     console.log('document ready done');
-    my_test();
+    // my_test();
   }
 )
 
@@ -4366,3 +4335,4 @@ async function key_test() {
   
 //   });
 // }
+
