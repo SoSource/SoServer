@@ -3608,6 +3608,7 @@ function formatDateToDjango(isoString) {
 
 async function browser_shuffle(text_input, dt, node_ids) {
     console.log('browser_shuffle',text_input,'dt',dt,'node_ids',node_ids);
+    console.log('crypto?.subtle',crypto?.subtle);
     async function sha256Hex(input) {
       const encoder = new TextEncoder();
       const data = encoder.encode(input);
