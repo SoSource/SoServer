@@ -1072,14 +1072,15 @@ def sigData_to_hash(obj):
     return hashed
 
 
+
 def sort_dict(data):
     prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
     if isinstance(data, dict):
         r = {key: sort_dict(value) for key, value in sorted(data.items())}
         return r
     elif str(data).startswith('['):
-        r = list(data)
-        return r
+        # r = list(data)
+        return [sort_dict(item) for item in list(data)]
     else:
         return data
 
