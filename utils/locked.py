@@ -2340,20 +2340,27 @@ def sign_obj(item, operatorData=None, do_save=True, return_error=False):
         from accounts.models import  User
         from .models import get_operator_obj, get_operatorData, now_utc, has_field, has_method, testing, get_model, prnt
         from django.db import models
+        err = 'A'
         if has_method(item, 'get_hash_to_id') and item.id != hash_obj_id(item) or isinstance(item, models.Model) and item.id == '0':
             prnt('failSign4958', item)
             logError('item.id != hash_obj_id', code='4958', func='sign_obj', extra={'item.id':item.id, 'correct_id':hash_obj_id(item), 'hash_obj_id_data':hash_obj_id(item, return_data=True), 'dict':str(convert_to_dict(item))[:500]})
             if return_error:
                 return item, 'err1'
             return item
+        err += 'B'
         if has_field(item, 'latestModel'):
             item.modelVersion = item.latestModel
+        err += 'C'
         if has_field(item, 'last_updated'):
             item.last_updated = now_utc()
+        err += 'D'
         if not operatorData:
             operatorData = get_operatorData()
+        err += 'E'
         if operatorData:
+            err += 'F'
             if has_field(item, 'func') and item.func and item.func.lower() == 'super':
+                err += 'G'
                 if do_save and testing() and User.objects.all().count() <= 2:
                     pass
                 else:
@@ -2362,24 +2369,30 @@ def sign_obj(item, operatorData=None, do_save=True, return_error=False):
                         if return_error:
                             return item, 'err2'
                         return item
+            err += 'H'
             keyPair = get_operator_obj('keyPair', operatorData=operatorData)
+            err += 'I'
             if isinstance(item, dict):
                 item['publicKey'] = keyPair['pubKey']
             elif has_field(item, 'publicKey'):
                 item.publicKey = keyPair['pubKey']
+            err += 'J'
             sig = simpleSign(keyPair['privKey'], get_signing_data(item))
+            err += 'K'
             if isinstance(item, dict):
                 item['signature'] = sig
             else:
                 item.signature = sig
                 if do_save:
                     item.save()
+            err += 'L'
             # prntn('signed:',get_signing_data(item))
         elif do_save and testing() and User.objects.all().count() <= 2:
+            err += 'M'
             prnt('bypass sign')
             super(get_model(item.object_type), item).save()
     except Exception as e:
-        prnt('fail472549',str(e),convert_to_dict(item))
+        prnt('fail472549',str(e),'err',err,convert_to_dict(item))
         logError(str(e), code='7532', func='sign_obj', extra={'dict':str(convert_to_dict(item))[:500]})
         if return_error:
             return item, str(e)
@@ -2585,10 +2598,10 @@ def check_commit_data(target, data, return_err=False, return_obj=False):
 def get_signing_data(obj, extra_data=None, include_sig=False):
     # WARNING changes here could break ALL signing and verifying abilities
     
-    # prntDev('--get_signing_data')
     from django.db import models
     # from blockchain.models import convert_to_dict
-    from utils.models import get_model, has_method, prnt
+    from utils.models import get_model, has_method, prnt, prntDebug
+    prntDebug('--get_signing_data')
     data = {}
     if isinstance(obj, models.Model):
         objDict = convert_to_dict(obj)
@@ -2640,7 +2653,8 @@ def sign_for_sending(sending_data, operatorData=None):
 
 
 def simpleSign(private_key, data):
-    # prntDebugn('simpleSign',data)
+    from utils.models import prntDebugn
+    prntDebugn('simpleSign',str(data)[:500])
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -2874,7 +2888,8 @@ def verify_obj_to_data(obj, target_data, user=None, return_user=False, requireSu
 
 
 def convert_to_dict(obj, broadcast=False, withold_fields=True): 
-    # prntDebug('--convert_to_dict')
+    from utils.models import prntDebug
+    prntDebug('--convert_to_dict')
     if not obj:
         return None
     from django.db.models import Model
@@ -3101,7 +3116,7 @@ def create_keys(user_id, user_pass):
 
 def verify_data(data, public_key, signature):
     from utils.models import prnt, prntDebug
-    prnt('verifying...',data, public_key, signature)
+    prnt('verifying...',str(data)[:500], public_key, signature)
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives import hashes
     from cryptography.exceptions import InvalidSignature
