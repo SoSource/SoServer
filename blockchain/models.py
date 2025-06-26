@@ -2833,7 +2833,7 @@ class Tidy:
                     else:
                         try:
                             obj = p.get_pointer()
-                            if has_field(obj, 'created') and obj.created < dt - datetime.timedelta(days=3) or not obj.signature and has_field(obj, 'created') and obj.created < dt - datetime.timedelta(hours=8):
+                            if has_field(obj, 'created') and obj.created < dt - datetime.timedelta(days=2) or not obj.signature and has_field(obj, 'created') and obj.created < dt - datetime.timedelta(hours=8):
                                 deleted = obj.delete()
                                 delled += 1
                                 m_type = get_pointer_type(p.pointerId)

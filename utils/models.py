@@ -1071,23 +1071,37 @@ def sigData_to_hash(obj):
     hashed = hashlib.sha256(text_bytes).hexdigest()
     return hashed
 
-
+#  'type': 'Standing'}]}}
+# '<' not supported between instances of 'tuple' and 'str'
 
 def sort_dict(data):
     prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
-    # if isinstance(data, dict):
-    if str(data).startswith('{'):
-        if not isinstance(data, dict):
-            data = dict(data)
-        r = {key: sort_dict(value) for key, value in sorted(data.items())}
-        return r
-    elif str(data).startswith('['):
-        if not isinstance(data, list):
-            data = list(data)
-        # r = list(data)
+
+    if isinstance(data, str):
+        try:
+            parsed = json.loads(data)
+            return sort_dict(parsed)
+        except json.JSONDecodeError:
+            return data
+    if isinstance(data, dict):
+        return {key: sort_dict(value) for key, value in sorted(data.items(), key=lambda x: str(x[0]))}
+    elif isinstance(data, (list, tuple)):
         return [sort_dict(item) for item in data]
     else:
         return data
+
+
+    # if str(data).startswith('{'):
+    #     if not isinstance(data, dict):
+    #         data = dict(data)
+    #     r = {key: sort_dict(value) for key, value in sorted(data.items())}
+    #     return r
+    # elif str(data).startswith('['):
+    #     if not isinstance(data, list):
+    #         data = list(data)
+    #     return [sort_dict(item) for item in data]
+    # else:
+    #     return data
 
 
 
