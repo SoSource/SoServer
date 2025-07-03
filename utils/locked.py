@@ -259,7 +259,7 @@ def process_posts_for_validating(received_json):
                                                                     prnt('err 5692',str(e))
                                                                     pass
                                                                 if f.name not in bypass_fields and attr and z_field and sort_for_sign(attr) != sort_for_sign(z_field):
-                                                                    prnt('mismatch break!','field:',f.name,'-getattr',sort_for_sign(attr),'-received:',sort_for_sign(z_field))
+                                                                    prnt('mismatch break!','field:',f.name,'-getattr',sort_for_sign(attr, print_data=True),'-received:',sort_for_sign(z_field, print_data=True))
                                                                     # logError('mismatch break', code='9457264', func='processes_posts_for_validating', extra={'z':z['id'],'field':f.name,'getattr':attr,'received':z_field})
                                                                     mismatch = True
                                                                     break
@@ -3151,26 +3151,35 @@ def verify_data(data, public_key, signature):
         # prnt()
     return False
 
-def sort_for_sign(data):
+def sort_for_sign(data, print_data=False):
     # recursively sort data for signing
     from utils.models import deep_sort_key, process_value, stringify_if_bool, prnt
-    # prnt('sort_for_sign')
+    if print_data:
+        prnt('sort_for_sign print_data- type:',type(data), str(data)[:500])
     if not data:
+        if print_data:
+            prnt('is_none')
         return data
     if isinstance(data, dict):
+        if print_data:
+            prnt('is_dictt')
         order_list = [
             'id', 'object_type', 'modelVersion', 'created', 'created_dt', 'added', 'updated_on_node', 'last_updated', 'func',
             'creatorNodeId', 'validatorNodeId', 'Validator_obj', 'blockchainId', 'Block_obj', 'publicKey', 'Name', 'Title', 'display_name'
         ]
-        data = {k: process_value(v) for k, v in data.items()}
+        data = {k: process_value(v, print_data=print_data) for k, v in data.items()}
         sorted_dict = dict(sorted(data.items(), key=lambda item: item[0].lower()))
         starting_dict = {key: sorted_dict.pop(key) for key in order_list if key in sorted_dict}
         return {**starting_dict, **sorted_dict}
     elif isinstance(data, list):
+        if print_data:
+            prnt('is_listt')
         return sorted(
-            (process_value(v) for v in data), 
+            (process_value(v, print_data=print_data) for v in data), 
             key=deep_sort_key
         )
+    if print_data:
+        prnt('not dictor list')
     return stringify_if_bool(data)
 
 _super_id = None

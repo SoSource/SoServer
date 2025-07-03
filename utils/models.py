@@ -705,21 +705,25 @@ def round_time(dt=None, dir='down', amount='hour'):
         if amount == '10mins':
             return round_mins(dt, 10, dir='up')
 
-def deep_sort_key(value):
+def deep_sort_key(value, print_data=False):
+    if print_data:
+        prnt('deep_sort_key', type(value))
     """Returns a sortable tuple representing the value."""
     if isinstance(value, dict):
-        return tuple((k.lower(), deep_sort_key(v)) for k, v in sorted(value.items()))
+        return tuple((k.lower(), deep_sort_key(v, print_data=print_data)) for k, v in sorted(value.items()))
     elif isinstance(value, list):
-        return tuple(deep_sort_key(v) for v in value)
+        return tuple(deep_sort_key(v, print_data=print_data) for v in value)
     elif value is None:
         return ''
     else:
         return str(value)  # Ensure consistent type for comparison
 
-def process_value(value):
+def process_value(value, print_data=False):
+    if print_data:
+        prnt('process_value', type(value))
     if isinstance(value, (dict, list)):
         from utils.locked import sort_for_sign
-        return sort_for_sign(value)
+        return sort_for_sign(value, print_data=print_data)
     return stringify_if_bool(value)
 
 def stringify_if_bool(value):
