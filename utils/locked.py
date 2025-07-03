@@ -294,7 +294,7 @@ def process_posts_for_validating(received_json):
                                                                 #     u_time = obj.updated_on_node.isoformat()
                                                                 # else:
                                                                 #     u_time = 'none'
-                                                                err_data = {'id':z['id'],'now':dt_to_string(now_utc()),'mismatch_field':f.name, 'z-valid':verify_obj_to_data(None, z, user=sender_node.User_obj), 'obj-valid':verify_obj_to_data(None, obj, user=sender_node.User_obj),'field_comparison': compare_texts(str(attr),str(z_field))}
+                                                                err_data = {'id':z['id'],'now':dt_to_string(now_utc()),'mismatch_field':f.name, 'z-valid':verify_obj_to_data(None, z, user=sender_node.User_obj), 'obj-valid':verify_obj_to_data(None, obj, user=sender_node.User_obj),'field_comparison': compare_texts(str(sort_for_sign(attr)),str(sort_for_sign(z_field)))}
                                                                 # err_data = {'id':z['id'],'now':dt_to_string(now_utc()),'obj_updated_on_node':u_time,'f.name':f.name,'z':z[f.name], 'z-valid':verify_obj_to_data(None, z, user=sender_node.User_obj), 'obj-valid':verify_obj_to_data(None, obj, user=sender_node.User_obj),'obj_attr':str(attr)[:500],'received_attr':str(z_field)[:500]}
                                                                 # if 'created' in z:
                                                                 #     err_data['z_created'] = z['created']
@@ -316,7 +316,7 @@ def process_posts_for_validating(received_json):
 
 
 
-                                                                logError('mismatch break', code='64523', func='processes_posts_for_validating', extra=str(err_data)[:1000])
+                                                                logError('mismatch break', code='64523', func='processes_posts_for_validating', extra=str(err_data)[:700])
                                                             else:
                                                                 q = 9
                                                                 prnt('---items match', obj)
