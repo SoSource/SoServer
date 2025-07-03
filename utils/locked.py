@@ -2404,7 +2404,7 @@ def sign_obj(item, operatorData=None, do_save=True, return_error=False):
 
 def get_commit_data(target, extra_data=None):
     from .models import get_dynamic_model, get_model, has_method, has_field, sigData_to_hash, dt_to_string, prnt, prntDebug
-    prntDebug('-get_commit_data',target)
+    # prntDebug('-get_commit_data',target)
     if isinstance(target, str):
         obj_id = target
         obj = get_dynamic_model(target, id=target)
@@ -2601,7 +2601,7 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
     from django.db import models
     # from blockchain.models import convert_to_dict
     from utils.models import get_model, has_method, prnt, prntDebug
-    prntDebug('--get_signing_data')
+    # prntDebug('--get_signing_data')
     data = {}
     if isinstance(obj, models.Model):
         objDict = convert_to_dict(obj)
@@ -2612,7 +2612,7 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
                 data[key] = objDict[key]
         sorted_dict = sort_for_sign(data)
         json_dump = json.dumps(sorted_dict, separators=(',', ':'))
-        prntDebug('json_dump1', str(json_dump)[:20], '\n')
+        # prntDebug('json_dump1', str(json_dump)[:20], '\n')
         return json_dump
     else:
         try: # obj may or not be json object
@@ -2632,13 +2632,13 @@ def get_signing_data(obj, extra_data=None, include_sig=False):
 
     sorted_dict = sort_for_sign(data)
     json_dump = json.dumps(sorted_dict, separators=(',', ':'))
-    prntDebug('json_dump2', str(json_dump)[:20], '\n')
+    # prntDebug('json_dump2', str(json_dump)[:20], '\n')
     return json_dump
 
 
 def sign_for_sending(sending_data, operatorData=None):
     from utils.models import now_utc, get_operator_obj, prnt
-    prnt('sign_for_sending',dt_to_string(now_utc()),sending_data)
+    # prnt('sign_for_sending',dt_to_string(now_utc()),sending_data)
     # from blockchain.models import 
     sending_data['dt'] = dt_to_string(now_utc())
     
@@ -2655,7 +2655,7 @@ def sign_for_sending(sending_data, operatorData=None):
 
 def simpleSign(private_key, data):
     from utils.models import prntDebugn
-    prntDebugn('simpleSign',str(data)[:500])
+    # prntDebugn('simpleSign',str(data)[:500])
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -2713,7 +2713,7 @@ def verify_obj_to_data(obj, target_data, user=None, return_user=False, requireSu
     from utils.models import prnt, prntDebug
     # requires data and obj or data and user
     f = '---verify_obj_to_data'
-    prntDebug(f)
+    # prntDebug(f)
     is_valid = False
     x = 0
     try:
@@ -2945,7 +2945,7 @@ def convert_to_dict(obj, broadcast=False, withold_fields=True):
                     del data[f]
                 except Exception as e:
                     pass
-    prntDebug('--convert_to_dict new_dict',str(data)[:20])
+    # prntDebug('--convert_to_dict new_dict',str(data)[:20])
     return data
 
 id_len = 14
@@ -3154,7 +3154,7 @@ def verify_data(data, public_key, signature):
 def sort_for_sign(data):
     # recursively sort data for signing
     from utils.models import deep_sort_key, process_value, stringify_if_bool, prnt
-    prnt('sort_for_sign')
+    # prnt('sort_for_sign')
     if not data:
         return data
     if isinstance(data, dict):
