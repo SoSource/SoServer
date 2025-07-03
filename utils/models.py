@@ -1724,7 +1724,7 @@ def get_app_name(model_name=None, prefix=None, return_prefix=False, return_model
             # prefix = models[model_name]['prefix']
             return models[model_name]
         else:
-            prnt('hey qhat')
+            prnt('hey qhat, model_name:',model_name)
             prnt(models)
     elif prefix:
         for m in models:
@@ -1740,7 +1740,7 @@ def get_app_name(model_name=None, prefix=None, return_prefix=False, return_model
     elif am_i_model and model_name in models['apps']:
         return model_name
     # prnt('None resp',model_name,prefix,return_prefix)
-    return None
+    return ''
 
 def get_model(obj_type):
     # prntDebug('-get_model', obj_type)
