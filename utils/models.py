@@ -1075,7 +1075,7 @@ def sigData_to_hash(obj):
 # '<' not supported between instances of 'tuple' and 'str'
 
 def sort_dict(data):
-    prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
+    # prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
 
     if isinstance(data, str):
         try:
