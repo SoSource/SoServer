@@ -473,10 +473,12 @@ def run_super_function_view(request, region, func, worker, super):
                             cmd = getattr(scraperScripts, f)
                             from utils.cronjobs import clear_chrome
                             if super == 'Test' and worker == 'False':
+                                prnt('j0')
                                 result = cmd(special='testing')
                                 # prnt('returned:',result)
                                 clear_chrome()
                             elif super == 'Test' and worker == 'True':
+                                prnt('j1')
                                 queue = django_rq.get_queue('low')
                                 queue.enqueue(cmd, special='testing', job_timeout=scraperScripts.runTimes[f]*7)
                                 queue = django_rq.get_queue('low')
@@ -487,6 +489,7 @@ def run_super_function_view(request, region, func, worker, super):
                                 result = cmd(special='super')
                                 clear_chrome()
                             elif super == 'Super' and worker == 'True':
+                                prnt('j2')
                                 queue = django_rq.get_queue('low')
                                 queue.enqueue(cmd, special='super', job_timeout=scraperScripts.runTimes[f]*7)
                     
@@ -494,9 +497,11 @@ def run_super_function_view(request, region, func, worker, super):
                                 queue.enqueue(clear_chrome, job_timeout=15)
 
                             elif super == 'False' and worker == 'False':
+                                prnt('j3')
                                 result = cmd()
                                 clear_chrome()
                             elif super == 'False' and worker == 'True':
+                                prnt('j4')
                                 queue = django_rq.get_queue('low')
                                 queue.enqueue(cmd, job_timeout=scraperScripts.runTimes[f]*7)
                     

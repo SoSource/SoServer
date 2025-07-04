@@ -888,6 +888,7 @@ def get_senator_details(driver, personId):
     return photoLink, startingYear, bio
 
 def get_bills(special=None, dt=now_utc(), iden=None, target_dt=None, target_links=None):
+    prnt('run get_bills', special)
     func = 'get_bills'
     log = []
     country = Region.valid_objects.filter(modelType='country', Name='USA').first()
@@ -970,7 +971,7 @@ def get_bills(special=None, dt=now_utc(), iden=None, target_dt=None, target_link
                         target_links = links[:max_bills_run]
 
                         queue = django_rq.get_queue('low')
-                        queue.enqueue(get_bills, target_links=target_links, target_dt=pub_dt, job_timeout=runTimes[func], result_ttl=3600)
+                        queue.enqueue(get_bills, special=special, target_links=target_links, target_dt=pub_dt, job_timeout=runTimes[func], result_ttl=3600)
                         if len(links) > max_bills_run:
                             links = links[max_bills_run:]
                         else:
@@ -2005,7 +2006,7 @@ def add_bill(url=None, log=[], update_dt=now_utc(), driver=None, driver_service=
                     prnt(f'actionType: {actionType.text}')
                     prnt(f'date: {date.text}')
                 except Exception as e:
-                    prnt(str(e))
+                    prnt('bills err 345',str(e))
                 formats = i.find('formats')
                 if formats:
                     for x in formats.findall('item'):
