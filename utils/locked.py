@@ -2754,11 +2754,12 @@ def verify_obj_to_data(obj, target_data, user=None, return_user=False, requireSu
                 if not val:
                     failed = True
                     x += 'd'
-                if iden not in val.data:
-                    failed = True
-                    x += 'e'
-                if val.data[iden] != sigData_to_hash(target_data):
-                    failed = True
+                else:
+                    if iden not in val.data:
+                        failed = True
+                        x += 'e'
+                    if val.data[iden] != sigData_to_hash(target_data):
+                        failed = True
                     x += 'f'
             # prntDebug('verify_obj_to_data failed', x)
         else:

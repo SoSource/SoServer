@@ -729,11 +729,11 @@ def process_value(value, print_data=False):
 def stringify_bool(value):
     if isinstance(value, bool):
         return capitalize(str(value))
-    if not isinstance(value, str):
-        if isinstance(value, datetime.datetime):
-            value = dt_to_string(value)
-        else:
-            value = str(value)
+    # if not isinstance(value, str):
+    if isinstance(value, datetime.datetime):
+        value = dt_to_string(value)
+    elif isinstance(value, int):
+        value = str(value)
     return value
 
 def capitalize(string):
