@@ -259,7 +259,7 @@ def process_posts_for_validating(received_json):
                                                                     prnt('err 5692',str(e))
                                                                     pass
                                                                 if f.name not in bypass_fields and attr and z_field and sort_for_sign(attr) != sort_for_sign(z_field):
-                                                                    prnt('mismatch break!','field:',f.name,'-getattr',sort_for_sign(attr, print_data=True),'-received:',sort_for_sign(z_field, print_data=True))
+                                                                    prnt('mismatch break!','field:',f.name,'-getattr',sort_for_sign(attr, print_data=False),'-received:',sort_for_sign(z_field, print_data=False))
                                                                     # logError('mismatch break', code='9457264', func='processes_posts_for_validating', extra={'z':z['id'],'field':f.name,'getattr':attr,'received':z_field})
                                                                     mismatch = True
                                                                     break
