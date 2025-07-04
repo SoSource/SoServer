@@ -906,7 +906,7 @@ def get_bills(special=None, dt=now_utc(), iden=None, target_dt=None, target_link
         updates = Update.objects.filter(pointerId__startswith=get_model_prefix('Bill'), Region_obj=country, data__data_link__in=target_links, created__gte=target_dt)
         for u in updates:
             if u.data['data_link'] in target_links:
-                if u.validated or u.created > now_utc() - datetime.timedelta(minutes=60):
+                if u.validated or u.created > now_utc() - datetime.timedelta(minutes=60) and not special:
                     target_links.remove(u.data['data_link'])
 
         for link in target_links:
@@ -945,7 +945,7 @@ def get_bills(special=None, dt=now_utc(), iden=None, target_dt=None, target_link
             updates = Update.objects.filter(pointerId__startswith=get_model_prefix('Bill'), Region_obj=country, data__data_link__in=links, created__gte=pub_dt)
             for u in updates:
                 if u.data['data_link'] in links:
-                    if u.validated or u.created > now_utc() - datetime.timedelta(minutes=60):
+                    if u.validated or u.created > now_utc() - datetime.timedelta(minutes=60) and not special:
                         links.remove(u.data['data_link'])
 
             # first_link = soup.find_all('a')[0]
