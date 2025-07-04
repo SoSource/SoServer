@@ -3153,7 +3153,7 @@ def verify_data(data, public_key, signature):
 
 def sort_for_sign(data, print_data=False):
     # recursively sort data for signing
-    from utils.models import deep_sort_key, process_value, stringify_if_bool, prnt
+    from utils.models import deep_sort_key, process_value, stringify_bool, prnt
     if print_data:
         prnt('sort_for_sign print_data- type:',type(data), str(data)[:500])
     if not data:
@@ -3180,7 +3180,7 @@ def sort_for_sign(data, print_data=False):
         )
     if print_data:
         prnt('not dictor list')
-    return stringify_if_bool(data)
+    return stringify_bool(data)
 
 _super_id = None
 

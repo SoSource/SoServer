@@ -724,10 +724,17 @@ def process_value(value, print_data=False):
     if isinstance(value, (dict, list)):
         from utils.locked import sort_for_sign
         return sort_for_sign(value, print_data=print_data)
-    return stringify_if_bool(value)
+    return stringify_bool(value)
 
-def stringify_if_bool(value):
-    return capitalize(str(value)) if isinstance(value, bool) else value
+def stringify_bool(value):
+    if isinstance(value, bool):
+        return capitalize(str(value))
+    if not isinstance(value, str):
+        if isinstance(value, datetime.datetime):
+            value = dt_to_string(value)
+        else:
+            value = str(value)
+    return value
 
 def capitalize(string):
     if isinstance(string, str):
