@@ -638,8 +638,13 @@ def request_data_view(request):
                             hash_history = []
                         if 'index' in requested_data:
                             index = requested_data['index']
+                            try:
+                                index = int(index)
+                            except Exception as e:
+                                prnt('err 7421', str(e))
                         else:
                             index = 1
+                        prnt('index',index)
                         if 'force_check' in requested_data:
                             force_check = requested_data['force_check']
                         else:
@@ -650,6 +655,7 @@ def request_data_view(request):
                             if not chain:
                                 return JsonResponse({'message' : 'Not Found', 'type':obj_type, 'blockchainId' : blockchainId})
                         try:
+                            blocks = None
                             if hash_history:
                                 block = Block.objects.filter(Blockchain_obj=chain, validated=True, hash__in=hash_history).defer("data").order_by('-index').first()
                                 if block:
@@ -667,7 +673,7 @@ def request_data_view(request):
                                 block = Block.objects.filter(Blockchain_obj=chain, validated=True, hash=index).defer("data").order_by('-index').first()
                                 if block:
                                     blocks = Block.objects.filter(Blockchain_obj=chain, validated=True, index__gte=block.index).defer("data").order_by('index')[:items]
-                            
+                            prnt('blocks',blocks)
                             if not blocks:
                                 return JsonResponse({'message' : 'Not Found', 'type':obj_type, 'blockchainId' : blockchainId, 'index' : index})
                             elif items == 1:
