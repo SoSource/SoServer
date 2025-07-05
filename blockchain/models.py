@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.indexes import GinIndex
 
 from utils.models import *
-from utils.locked import sort_for_sign, hash_obj_id, super_id, validate_obj, generate_id, sign_obj, get_relevant_nodes_from_block, get_node_assignment, get_broadcast_list, check_block_contents, get_commit_data, check_commit_data, get_signing_data, sign_for_sending, convert_to_dict, check_validation_consensus, verify_data
+from utils.locked import sort_for_sign, hash_obj_id, super_id, validate_obj, sort_dict, sign_obj, get_relevant_nodes_from_block, get_node_assignment, get_broadcast_list, check_block_contents, get_commit_data, check_commit_data, get_signing_data, sign_for_sending, convert_to_dict, check_validation_consensus, verify_data
 
 import datetime
 import pytz

@@ -256,7 +256,7 @@ def process_posts_for_validating(received_json):
                                                                     z_field = z[f.name]
                                                                     z_field = dt_to_string(z_field)
                                                                 except Exception as e:
-                                                                    prnt('err 5692',str(e))
+                                                                    # prnt('err 5692',str(e))
                                                                     pass
                                                                 if f.name not in bypass_fields and attr and z_field and sort_for_sign(attr) != sort_for_sign(z_field):
                                                                     prnt('mismatch break!','field:',f.name,'-getattr',sort_for_sign(attr, print_data=False),'-received:',sort_for_sign(z_field, print_data=False))
@@ -479,11 +479,16 @@ def process_posts_for_validating(received_json):
                             posts = None
                             q = 122
                             prnt(f'val posts bulk_update: {str(bulk_update)[:100]}')
+                            prnt(f'val posts bulk_update len: {len(bulk_update)}')
+                            prnt(f'val posts pointerIdens len: {len(pointerIdens)}')
                             if bulk_update:
                                 dynamic_bulk_update(model=Post, items_field_update=['validated', 'updated_on_node'] + fields, items=bulk_update)
                             if len(pointerIdens) >= 500:
+                                prnt('val posts path 1')
                                 pointerIdens = pointerIdens[500:]
+                                prnt(f'val posts pointerIdens new len: {len(pointerIdens)}')
                             else:
+                                prnt('val posts path 2')
                                 pointerIdens = []
                             q = 123
                         q = 124
@@ -923,7 +928,7 @@ def check_validation_consensus(block, do_mark_valid=True, broadcast_if_unknown=F
     return is_valid, False, validations
 
 def validate_block(block, creator_nodes=None, node_block_data={}, create_validator=True):
-    from utils.models import get_self_node, prntDebugn, sigData_to_hash, sort_dict,now_utc,prnt,dt_to_string,is_id
+    from utils.models import get_self_node, prntDebugn, sigData_to_hash,now_utc,prnt,dt_to_string,is_id
     prnt('---validate_block now_utc:', now_utc(),block)
     from blockchain.models import Validator, logEvent, NodeChain_genesisId, toBroadcast
     self_node = get_self_node()
@@ -2895,7 +2900,7 @@ def convert_to_dict(obj, broadcast=False, withold_fields=True):
     if not obj:
         return None
     from django.db.models import Model
-    from utils.models import get_dynamic_model, has_field, has_method, sort_dict
+    from utils.models import get_dynamic_model, has_field, has_method
     # from blockchain.models import 
     if not isinstance(obj, Model):
         return obj
@@ -2969,7 +2974,7 @@ def generate_id(data=None, len=id_len):
 
     
 def hash_obj_id(obj, verify=False, specific_data=None, return_data=False, model=None, version=None, len=id_len):
-    from utils.models import has_method, has_field, get_model_prefix, get_model,sort_dict,prnt
+    from utils.models import has_method, has_field, get_model_prefix, get_model,prnt
     # prnt('hash_obj_id', obj)
     if not len:
         len = id_len
@@ -3152,9 +3157,25 @@ def verify_data(data, public_key, signature):
         # prnt()
     return False
 
+def sort_dict(data):
+    # prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
+
+    if isinstance(data, str):
+        try:
+            parsed = json.loads(data)
+            return sort_dict(parsed)
+        except json.JSONDecodeError:
+            return data
+    if isinstance(data, dict):
+        return {key: sort_dict(value) for key, value in sorted(data.items(), key=lambda x: str(x[0]))}
+    elif isinstance(data, (list, tuple)):
+        return [sort_dict(item) for item in data]
+    else:
+        return data
+    
 def sort_for_sign(data, print_data=False):
     # recursively sort data for signing
-    from utils.models import deep_sort_key, process_value, stringify_bool, prnt
+    from utils.models import prnt
     if print_data:
         prnt('sort_for_sign print_data- type:',type(data), str(data)[:500])
     if not data:
@@ -3182,6 +3203,43 @@ def sort_for_sign(data, print_data=False):
     if print_data:
         prnt('not dictor list')
     return stringify_bool(data)
+
+def deep_sort_key(value, print_data=False):
+    if print_data:
+        from utils.models import prnt
+        prnt('deep_sort_key', type(value))
+    """Returns a sortable tuple representing the value."""
+    if isinstance(value, dict):
+        return tuple((k.lower(), deep_sort_key(v, print_data=print_data)) for k, v in sorted(value.items()))
+    elif isinstance(value, list):
+        return tuple(deep_sort_key(v, print_data=print_data) for v in value)
+    elif value is None:
+        return ''
+    else:
+        return str(value)  # Ensure consistent type for comparison
+
+def process_value(value, print_data=False):
+    if print_data:
+        from utils.models import prnt
+        prnt('process_value', type(value))
+    if isinstance(value, (dict, list)):
+        return sort_for_sign(value, print_data=print_data)
+    return stringify_bool(value)
+
+def stringify_bool(value):
+    if isinstance(value, bool):
+        return capitalize(str(value))
+    # if not isinstance(value, str):
+    if isinstance(value, datetime.datetime):
+        value = dt_to_string(value)
+    elif isinstance(value, int):
+        value = str(value)
+    return value
+
+def capitalize(string):
+    if isinstance(string, str):
+        return string[0].upper() + string[1:]
+    return string
 
 _super_id = None
 

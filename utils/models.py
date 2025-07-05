@@ -705,41 +705,6 @@ def round_time(dt=None, dir='down', amount='hour'):
         if amount == '10mins':
             return round_mins(dt, 10, dir='up')
 
-def deep_sort_key(value, print_data=False):
-    if print_data:
-        prnt('deep_sort_key', type(value))
-    """Returns a sortable tuple representing the value."""
-    if isinstance(value, dict):
-        return tuple((k.lower(), deep_sort_key(v, print_data=print_data)) for k, v in sorted(value.items()))
-    elif isinstance(value, list):
-        return tuple(deep_sort_key(v, print_data=print_data) for v in value)
-    elif value is None:
-        return ''
-    else:
-        return str(value)  # Ensure consistent type for comparison
-
-def process_value(value, print_data=False):
-    if print_data:
-        prnt('process_value', type(value))
-    if isinstance(value, (dict, list)):
-        from utils.locked import sort_for_sign
-        return sort_for_sign(value, print_data=print_data)
-    return stringify_bool(value)
-
-def stringify_bool(value):
-    if isinstance(value, bool):
-        return capitalize(str(value))
-    # if not isinstance(value, str):
-    if isinstance(value, datetime.datetime):
-        value = dt_to_string(value)
-    elif isinstance(value, int):
-        value = str(value)
-    return value
-
-def capitalize(string):
-    if isinstance(string, str):
-        return string[0].upper() + string[1:]
-    return string
 
 
 def get_operator_obj(obj, operatorData=None):
@@ -1085,21 +1050,6 @@ def sigData_to_hash(obj):
 #  'type': 'Standing'}]}}
 # '<' not supported between instances of 'tuple' and 'str'
 
-def sort_dict(data):
-    # prnt('sort_ditc','str:',isinstance(data,str),'tuple:',isinstance(data, tuple), str(data)[:200])
-
-    if isinstance(data, str):
-        try:
-            parsed = json.loads(data)
-            return sort_dict(parsed)
-        except json.JSONDecodeError:
-            return data
-    if isinstance(data, dict):
-        return {key: sort_dict(value) for key, value in sorted(data.items(), key=lambda x: str(x[0]))}
-    elif isinstance(data, (list, tuple)):
-        return [sort_dict(item) for item in data]
-    else:
-        return data
 
 
     # if str(data).startswith('{'):
@@ -2305,6 +2255,7 @@ def set_model_attr(obj, data, user=None, dt=None, skip_user_check=False, skip_fi
     # from blockchain.models import sort_dict
     import decimal
     from django.contrib.contenttypes.models import ContentType
+    from utils.locked import sort_dict
     prnt('set_model_attr',obj)
     prntDebug('user',user)
     updatedDB = False
